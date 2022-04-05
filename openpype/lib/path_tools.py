@@ -4,12 +4,15 @@ import abc
 import json
 import logging
 import six
+from datetime import date
 
 from openpype.settings import get_project_settings
 from openpype.settings.lib import get_site_local_overrides
 
 from .anatomy import Anatomy
 from .profiles_filtering import filter_profiles
+
+from .freenas import FreenasAPI
 
 log = logging.getLogger(__name__)
 
@@ -161,20 +164,100 @@ def create_project_folders(basic_paths, project_name):
     else:
         roots_paths.append(anatomy.roots.value)
 
-    for root_path in roots_paths:
-        project_root = os.path.join(root_path, project_name)
-        full_paths = compute_paths(basic_paths, project_root)
-        # Create folders
-        for path in full_paths:
-            full_path = path.format(project_root=project_root)
-            if os.path.exists(full_path):
-                log.debug(
-                    "Folder already exists: {}".format(full_path)
-                )
-            else:
-                log.debug("Creating folder: {}".format(full_path))
-                os.makedirs(full_path)
+    SERVER = {'prod1': {'fqdn': 'prod1.prs.vfx.int',
+                'mount_opt': '-fstype=nfs,rw,noatime,proto=tcp,hard,intr,timeo=600,retrans=2,wsize=32768,rsize=32768',
+                'directory_type': 'folder'},
+            'prod2':
+                {'fqdn': 'prod2.prs.vfx.int',
+                'mount_opt': '-fstype=nfs,rw,noatime,proto=tcp,hard,intr,timeo=600,retrans=2,wsize=32768,rsize=32768',
+                'directory_type': 'folder'},
+            'prod3':
+                {'fqdn': 'prod3.prs.vfx.int',
+                'mount_opt': '-fstype=nfs,rw,noatime,proto=tcp,hard,intr,timeo=600,retrans=2,wsize=32768,rsize=32768',
+                'directory_type': 'folder'},
+            'prod4':
+                {'fqdn': 'prod4.prs.vfx.int',
+                'mount_opt': '-fstype=nfs,rw,noatime,proto=tcp,hard,intr,timeo=600,retrans=2,wsize=32768,rsize=32768',
+                'directory_type': 'dataset',
+                'root_dataset_name': 'fs202'},
+            'prod5':
+                {'fqdn': 'prod5.prs.vfx.int',
+                'mount_opt': '-fstype=nfs,rw,noatime,proto=tcp,hard,intr,timeo=600,retrans=2,wsize=32768,rsize=32768',
+                'directory_type': 'folder'},
+            'prod6':
+                {'fqdn': 'prod6.prs.vfx.int',
+                'mount_opt': '-fstype=nfs,rw,noatime,proto=tcp,hard,intr,timeo=600,retrans=2,wsize=32768,rsize=32768',
+                'directory_type': 'folder'},
+            'prod7':
+                {'fqdn': 'prod7.prs.vfx.int',
+                'mount_opt': '-fstype=nfs,rw,noatime,proto=tcp,hard,intr,timeo=600,retrans=2,wsize=32768,rsize=32768',
+                'directory_type': 'dataset',
+                'root_dataset_name': 'prod7'},
+            'prod8':
+                {'fqdn': 'prod8.prs.vfx.int',
+                'mount_opt': '-fstype=nfs,rw,noatime,proto=tcp,hard,intr,timeo=600,retrans=2,wsize=32768,rsize=32768',
+                'directory_type': 'dataset',
+                'root_dataset_name': 'fs208'},
+            'prod9':
+                {'fqdn': 'prod9.prs.vfx.int',
+                'mount_opt': '-fstype=nfs,rw,noatime,proto=tcp,hard,intr,timeo=600,retrans=2,wsize=32768,rsize=32768',
+                'directory_type': 'dataset',
+                'root_dataset_name': 'fs209'}}
 
+    root_path = os.path.normpath(roots_paths[0])
+    server_name = root_path.split(os.sep)[2]
+    project_path = os.path.join(root_path[0], project_name)
+    year = str(date.today().year)
+    folder_type = SERVER[server_name].get('directory_type')
+
+    if folder_type == 'dataset':
+        dataset_path = os.path.join(
+            SERVER[server_name].get('root_dataset_name'),
+            'Projets', year, project_name)
+        try:
+            freenas = FreenasAPI(
+                hostname=SERVER[server_name].get('fqdn'),
+                user='admin',
+                secret='sysadmin+11')
+        except Exception as e:
+            logging.warning("Unable to connect Freenas server")
+
+        try:
+            freenas.create_dataset(dataset_path)
+            logging.info("Dataset %s created." % dataset_path)
+        except Exception as e:
+            logging.warning("Perhaps dataset:%s already exists." % project_path)
+
+        try:
+            freenas.create_nfs_share(os.path.join('/mnt', dataset_path),
+                                    nfs_mapall_user='nobody',
+                                    nfs_mapall_group='nogroup')
+            logging.info("Nfs share created for %s." % dataset_path)
+        except Exception as e:
+            logging.warning("Unable to create nfs share for %s." % project_path)
+
+        try:
+            ret = freenas.set_permission(os.path.join('/mnt', dataset_path))
+
+            logging.info("Permissions set on %s." % project_path)
+        except Exception as e:
+            logging.warning("Unable to set permission on %s\n%s" % (project_path, e))
+
+    else:
+
+        for root_path in roots_paths:
+            project_root = os.path.join(root_path, project_name)
+            full_paths = compute_paths(basic_paths, project_root)
+            # Create folders
+            for path in full_paths:
+                full_path = path.format(project_root=project_root)
+                if os.path.exists(full_path):
+                    log.debug(
+                        "Folder already exists: {}".format(full_path)
+                    )
+                else:
+                    log.debug("Creating folder: {}".format(full_path))
+                    os.makedirs(full_path)
 
 def _list_path_items(folder_structure):
     output = []
