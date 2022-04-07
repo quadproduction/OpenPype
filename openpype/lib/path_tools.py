@@ -224,9 +224,9 @@ def create_project_folders(basic_paths, project_name):
 
         try:
             freenas.create_dataset(dataset_path)
-            logging.info("Dataset %s created." % dataset_path)
+            logging.info(f"Dataset {dataset_path} created.")
         except Exception as e:
-            logging.warning("Perhaps dataset:%s already exists." % project_path)
+            logging.warning(f"Perhaps dataset:{project_path} already exists.")
 
         try:
             freenas.create_nfs_share(os.path.join('/mnt', dataset_path),

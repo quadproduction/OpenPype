@@ -2,7 +2,6 @@
 Python module to interact with Freenas API through requests
 """
 
-
 import os
 import sys
 import argparse
@@ -11,10 +10,8 @@ import json
 import requests
 import urllib3
 
-# from ppUtils.ppSettings import SERVER
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 
 class FreenasAPI(object):
     """
@@ -36,18 +33,11 @@ class FreenasAPI(object):
         self._user = user
         self._secret = secret
 
-        self._ep = 'http://%s/api/v1.0' % hostname
+        self._ep = f'http://{hostname}/api/v1.0'
 
-    def __request(self, resource, method='GET', data=None, params=None):
-        if data is None:
-            data = ''
-
-        if params is None:
-            params = ''
-
-        url = '%s/%s/' % (self._ep, resource)
-
-        r = requests.request(
+    def __request(self, resource, method='GET', data='', params=''):
+        url = f'{self._ep}/{resource}/'
+        result = requests.request(
             method,
             url,
             data=json.dumps(data),
@@ -56,17 +46,17 @@ class FreenasAPI(object):
             auth=(self._user, self._secret),
             verify=False)
 
-        if r.ok:
+        if result.ok:
             try:
-                return r.json()
+                return result.json()
             except Exception:
-                return r.text
+                return result.text
 
-        raise ValueError(r)
+        raise ValueError(result)
 
     def _get_disks(self):
         disks = self.__request('storage/disk')
-        return [disk['disk_name'] for disk in disks]
+        return [disk.get('disk_name') for disk in disks]
 
     def _get_volumes(self):
         volumes = self.__request('storage/volume')
@@ -82,23 +72,26 @@ class FreenasAPI(object):
 
     def create_pool(self):
         disks = self._get_disks()
-        self.__request('storage/volume', method='POST', data={
-            'volume_name': 'tank',
-            'layout': [
-                {'vdevtype': 'stripe', 'disks': disks},
-            ],
-        })
+        self.__request(
+            'storage/volume',
+            method='POST',
+            data={
+                'volume_name': 'tank',
+                'layout': [
+                    {'vdevtype': 'stripe', 'disks': disks},
+                ],
+            })
 
     def __create_dataset(self, path, **kwargs):
         parent, name = os.path.split(path)
         data = {'name': name}
         if kwargs:
             data.update(kwargs)
-        self.__request('/storage/dataset/%s' % parent, method='POST', data=data)
+        self.__request(f'/storage/dataset/{parent}', method='POST', data=data)
 
     def create_dataset(self, path, **kwargs):
         names = path.split('/')
-        existing_datasets_name = [n['name'] for n in self._get_datasets()]
+        existing_datasets_name = [n.get('name') for n in self._get_datasets()]
 
         for i, _ in enumerate(names):
             dataset_path = "/".join(names[:i + 1])
@@ -127,12 +120,13 @@ class FreenasAPI(object):
         self.__request('sharing/cifs', method='POST', data=data)
 
     def set_permission(self, path, **kwargs):
-        data = {}
-        data['mp_path'] = path
-        data['mp_acl'] = 'unix'
-        data['mp_mode'] = '777'
-        data['mp_user'] = 'nobody'
-        data['mp_group'] = 'nobody'
+        data = {
+            'mp_path': path,
+            'mp_acl': 'unix',
+            'mp_mode': '777',
+            'mp_user': 'nobody',
+            'mp_group': 'nobody',
+        }
 
         if kwargs:
             data.update(kwargs)
@@ -146,21 +140,8 @@ class FreenasAPI(object):
         :param name: Service name to start
         :type name: str
         """
-        self.__request('services/services/%s' % name, method='PUT', data={
-            'srv_enable': True,
-        })
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-H', '--hostname', required=True, type=str)
-    parser.add_argument('-u', '--user', required=True, type=str)
-    parser.add_argument('-p', '--passwd', required=True, type=str)
-
-    # args = parser.parse_args(sys.argv[1:])
-
-    # startup = FreenasAPI(args.hostname, args.user, args.passwd)
-
-
-if __name__ == '__main__':
-    main()
+        self.__request(
+            f'services/services/{name}',
+            method='PUT', 
+            data={'srv_enable': True}
+        )
