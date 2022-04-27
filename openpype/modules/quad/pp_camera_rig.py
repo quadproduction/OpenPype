@@ -74,9 +74,9 @@ class Camera(object):
         """
         """
         if self.namespace:
-            return "{namespace}:{ctrl}".format(
-                namespace=self.namespace,
-                ctrl=self.ctrl.get(name)
+            return "{}:{}".format(
+                self.namespace,
+                self.ctrl.get(name)
             )
         else:
             return self.ctrl.get(name)
@@ -112,7 +112,7 @@ class Camera(object):
                 translation=world_translation
             )
             cmds.setAttr(
-                "{n}.rotate".format(n=self._get_ctrl_name("triangle")),
+                "{}.rotate".format(self._get_ctrl_name("triangle")),
                 0,
                 0,
                 0
@@ -128,7 +128,7 @@ class Camera(object):
                 translation=world_translation
             )
             cmds.setAttr(
-                "{n}.rotate".format(n=self._get_ctrl_name("circle")),
+                "{}.rotate".format(self._get_ctrl_name("circle")),
                 rotation[0],
                 rotation[1],
                 rotation[2]
@@ -144,7 +144,7 @@ class Camera(object):
                 translation=world_translation
             )
             cmds.setAttr(
-                "{n}.rotate".format(n=self._get_ctrl_name("square")),
+                "{}.rotate".format(self._get_ctrl_name("square")),
                 rotation[0],
                 rotation[1],
                 rotation[2]
@@ -160,7 +160,7 @@ class Camera(object):
                 translation=world_translation
             )
             cmds.setAttr(
-                "{n}.rotate".format(n=self._get_ctrl_name("cross")),
+                "{}.rotate".format(self._get_ctrl_name("cross")),
                 rotation[0],
                 rotation[1],
                 rotation[2]
@@ -176,13 +176,13 @@ class Camera(object):
             )
             # set attr translateZ -10
             cmds.setAttr(
-                "{n}.translateZ".format(n=self._get_ctrl_name("target")),
-                cmds.getAttr("{n}.translateZ".format(n=self._get_ctrl_name("target"))) - 10,
+                "{}.translateZ".format(self._get_ctrl_name("target")),
+                cmds.getAttr("{}.translateZ".format(self._get_ctrl_name("target"))) - 10,
             )
 
         # reset value to camera
-        cmds.setAttr("{n}.translate".format(n=self.camera), 0, 0, 0)
-        cmds.setAttr("{n}.rotate".format(n=self.camera), 0, 0, 0)
+        cmds.setAttr("{}.translate".format(self.camera), 0, 0, 0)
+        cmds.setAttr("{}.rotate".format(self.camera), 0, 0, 0)
 
         return True
 
