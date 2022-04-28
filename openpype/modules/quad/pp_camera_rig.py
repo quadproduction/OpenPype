@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+a module to transfer camera transformation to the rig and reset the camera.
+"""
+
 import maya.cmds as cmds
 
 
@@ -48,81 +52,86 @@ def push_camera_position_to_rig():
     )
 
     # set world translation to triangle_ctrl
-    if cmds.objExists(_get_ctrl_name(namespace, "triangle")):
+    ctrl = _get_ctrl_name(namespace, "triangle")
+    if cmds.objExists(ctrl):
         # set attr
         cmds.xform(
-            _get_ctrl_name(namespace, "triangle"),
+            ctrl,
             worldSpace=True,
             translation=world_translation
         )
         cmds.setAttr(
-            "{}.rotate".format(_get_ctrl_name(namespace, "triangle")),
+            "{}.rotate".format(ctrl),
             0,
             0,
             0
         )
 
     # set world rotation Y to circle
-    if cmds.objExists(_get_ctrl_name(namespace, "circle")):
+    ctrl = _get_ctrl_name(namespace, "circle")
+    if cmds.objExists(ctrl):
         # set attr
         rotation = [0, world_rotation[1], 0]
         cmds.xform(
-            _get_ctrl_name(namespace, "circle"),
+            ctrl,
             worldSpace=True,
             translation=world_translation
         )
         cmds.setAttr(
-            "{}.rotate".format(_get_ctrl_name(namespace, "circle")),
+            "{}.rotate".format(ctrl),
             rotation[0],
             rotation[1],
             rotation[2]
         )
 
     # set world rotation X to square
-    if cmds.objExists(_get_ctrl_name(namespace, "square")):
+    ctrl = _get_ctrl_name(namespace, "square")
+    if cmds.objExists(ctrl):
         # set attr
         rotation = [world_rotation[0], 0, 0]
         cmds.xform(
-            _get_ctrl_name(namespace, "square"),
+            ctrl,
             worldSpace=True,
             translation=world_translation
         )
         cmds.setAttr(
-            "{}.rotate".format(_get_ctrl_name(namespace, "square")),
+            "{}.rotate".format(ctrl),
             rotation[0],
             rotation[1],
             rotation[2]
         )
 
     # set world rotation Z to cross
-    if cmds.objExists(_get_ctrl_name(namespace, "cross")):
+    ctrl = _get_ctrl_name(namespace, "cross")
+    if cmds.objExists(ctrl):
         # set attr
         rotation = [0, 0, world_rotation[2]]
         cmds.xform(
-            _get_ctrl_name(namespace, "cross"),
+            ctrl,
             worldSpace=True,
             translation=world_translation
         )
         cmds.setAttr(
-            "{}.rotate".format(_get_ctrl_name(namespace, "cross")),
+            "{}.rotate".format(ctrl),
             rotation[0],
             rotation[1],
             rotation[2]
         )
 
     # set target
-    if cmds.objExists(_get_ctrl_name(namespace, "target")):
+    ctrl = _get_ctrl_name(namespace, "target")
+    if cmds.objExists(ctrl):
         # set attr translation same as camera
         cmds.xform(
-            _get_ctrl_name(namespace, "target"),
+            ctrl,
             worldSpace=True,
             translation=world_translation
         )
         # set attr translateZ -10
         cmds.setAttr(
-            "{}.translateZ".format(_get_ctrl_name(namespace, "target")),
+            "{}.translateZ".format(ctrl),
             cmds.getAttr("{}.translateZ".format(
-                _get_ctrl_name(namespace, "target")
+                ctrl
             )) - 10,
         )
 
@@ -133,7 +142,7 @@ def push_camera_position_to_rig():
     return True
 
 
-def _get_ctrl_name(self, namespace, name):
+def _get_ctrl_name(namespace, name):
     """ get ctrl name
     """
     ctrl = {
@@ -153,7 +162,7 @@ def _get_ctrl_name(self, namespace, name):
 
     if namespace:
         return "{}:{}".format(
-            self.namespace,
+            namespace,
             ctrl.get(name)
         )
     else:
