@@ -19,9 +19,9 @@ class ScriptsMenu(QtWidgets.QMenu):
 
         Args:
             title (str): the name of the root menu which will be created
-        
+
             parent (QtWidgets.QObject) : the QObject to parent the menu to
-        
+
         Returns:
             None
 
@@ -94,7 +94,7 @@ class ScriptsMenu(QtWidgets.QMenu):
             parent(QtWidgets.QWidget): the object to parent the menu to
 
             title(str): the title of the menu
-        
+
         Returns:
              QtWidget.QMenu instance
         """
@@ -253,7 +253,7 @@ class ScriptsMenu(QtWidgets.QMenu):
 
     def _update_search(self, search):
         """Hide all the samples which do not match the user's import
-        
+
         Returns:
             None
 
