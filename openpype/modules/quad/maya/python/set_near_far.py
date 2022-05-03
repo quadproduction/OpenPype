@@ -69,7 +69,7 @@ def set_near_far_based_on_scene_diagonal():
 	cameras = cmds.ls(type="camera")
 
 	max_value = maxSize
-	min_value = maxSize/10000.0
+	min_value = maxSize/3333.3333
 	if min_value < 0.001:
 		min_value = 0.001
 	
