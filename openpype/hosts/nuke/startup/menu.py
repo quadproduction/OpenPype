@@ -1,6 +1,7 @@
 import nuke
-import avalon.api
+import os
 
+import avalon.api
 from openpype.api import Logger
 from openpype.hosts.nuke import api
 from openpype.hosts.nuke.api.lib import (
@@ -9,6 +10,7 @@ from openpype.hosts.nuke.api.lib import (
     WorkfileSettings,
     dirmap_file_name_filter
 )
+from openpype.settings import get_project_settings
 
 log = Logger.get_logger(__name__)
 
@@ -28,3 +30,35 @@ nuke.addOnScriptLoad(WorkfileSettings().set_context_settings)
 nuke.addFilenameFilter(dirmap_file_name_filter)
 
 log.info('Automatic syncing of write file knob to script version')
+
+
+def add_scripts_menu():
+    try:
+        import scriptsmenu.launchfornuke as launchfornuke
+    except ImportError:
+        log.warning(
+            "Skipping studio.menu install, because "
+            "'scriptsmenu' module seems unavailable."
+        )
+        return
+
+    # load configuration of custom menu
+    project_settings = get_project_settings(os.getenv("AVALON_PROJECT"))
+    config = project_settings["nuke"]["scriptsmenu"]["definition"]
+    _menu = project_settings["nuke"]["scriptsmenu"]["name"]
+
+    if not config:
+        log.warning("Skipping studio menu, no definition found.")
+        return
+
+    # run the launcher for Maya menu
+    studio_menu = launchfornuke.main(
+        title=_menu.title(),
+        objectName=_menu.title().lower().replace(" ", "_")
+    )
+
+    # apply configuration
+    studio_menu.build_from_configuration(studio_menu, config)
+
+
+add_scripts_menu()
