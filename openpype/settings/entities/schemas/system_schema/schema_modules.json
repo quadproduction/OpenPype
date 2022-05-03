@@ -176,7 +176,7 @@
                     "object_type": {
                         "type": "number",
                         "minimum": 0,
-                        "maximum": 300
+                        "maximum": 90000
                     },
                     "is_group": true,
                     "key": "templates_mapping",

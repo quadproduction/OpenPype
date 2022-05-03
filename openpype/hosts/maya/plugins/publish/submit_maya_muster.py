@@ -293,7 +293,7 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
         renderglobals = instance.data["renderGlobals"]
         # legacy_layers = renderlayer_globals["UseLegacyRenderLayers"]
         # deadline_user = context.data.get("deadlineUser", getpass.getuser())
-        jobname = "%s - %s" % (filename, instance.name)
+        jobname = "%s_%s" % (filename, instance.name)
 
         # Get the variables depending on the renderer
         render_variables = get_renderer_variables(renderlayer)
@@ -310,7 +310,7 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
         output_dir = instance.data["outputDir"]
         metadata_path = os.path.join(output_dir, metadata_filename)
 
-        pype_root = os.environ["OPENPYPE_SETUP_PATH"]
+        pype_root = os.environ["OPENPYPE_ROOT"]
 
         # we must provide either full path to executable or use musters own
         # python named MPython.exe, residing directly in muster bin
@@ -331,14 +331,14 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
         # inherit environment from publisher including PATH, so there's
         # no problem finding PYPE, but there is now way (as far as I know)
         # to set environment dynamically for dispatcher. Therefore this hack.
-        args = [muster_python,
-                _get_script().replace('\\', '\\\\'),
-                "--paths",
-                metadata_path.replace('\\', '\\\\'),
-                "--pype",
-                pype_root.replace('\\', '\\\\')]
+        # args = [muster_python,
+        #         _get_script().replace('\\', '\\\\'),
+        #         "--paths",
+        #         metadata_path.replace('\\', '\\\\'),
+        #         "--pype",
+        #         pype_root.replace('\\', '\\\\')]
 
-        postjob_command = " ".join(args)
+        postjob_command = ""  # " ".join(args)
 
         try:
             # Ensure render folder exists
@@ -354,7 +354,7 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                 "job": {
                     "jobName": jobname,
                     "templateId": _get_template_id(
-                        instance.data["renderer"]),
+                        renderglobals["musterTemplate"]),
                     "chunksInterleave": 2,
                     "chunksPriority": "0",
                     "chunksTimeoutValue": 320,
@@ -521,7 +521,8 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                     if not path:
                         continue
                     try:
-                        path.decode('UTF-8', 'strict')
+                        if not isinstance(path, str):
+                            path.decode('UTF-8', 'strict')
                         valid_paths.append(os.path.normpath(path))
                     except UnicodeDecodeError:
                         print('path contains non UTF characters')
