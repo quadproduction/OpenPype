@@ -1,0 +1,58 @@
+from tank_vendor import yaml
+import os
+import nuke
+import ppnk  # do not remove. IT is used on must commands defined in ppMenu.yml
+
+
+def build_menu():
+    """
+    This function grab all yaml menu file and launch a build menu for each
+    """
+    menu_location = [
+        {"env": "PP_PIPE_NUKE_COMMON_PATH", "suffix": "pp"},
+        {"env": "PP_PIPE_NUKE_VERSION_PATH", "suffix": "ppV"},
+        {"env": "PP_TD_NUKE_COMMON_PATH", "suffix": "td"},
+        {"env": "PP_TD_NUKE_VERSION_PATH", "suffix": "tdV"},
+        {"env": "PP_USER_NUKE_COMMON_PATH", "suffix": "us"},
+        {"env": "PP_USER_NUKE_VERSION_PATH", "suffix": "usV"}
+    ]
+    for item in menu_location:
+        yaml_path = os.path.join(os.environ.get(item.get("env")), 'ppMenu.yml')
+        if os.path.exists(yaml_path):
+            with open(yaml_path, 'r') as menu_yaml_file:
+                suffix = item.get("suffix")
+                try:
+                    menus_list = yaml.load(menu_yaml_file.read())
+                except:
+                    print("Build Menu Failed for {0}".format(yaml_path))
+                    break
+                if not menus_list:
+                    break
+                for menu_dict in menus_list:
+                    menu_name = menu_dict.keys()[0]
+                    beauty_menu_name = "{0} [{1}]".format(menu_dict.keys()[0], suffix)
+                    menu_command_dict = menu_dict[menu_name]
+                    if 'separator' not in menu_name:
+                        # hotkey
+                        hotkey = str()
+                        if 'hotkey' in menu_command_dict.keys():
+                            hotkey = menu_command_dict['hotkey']
+                        # icon
+                        icon_path = str()
+                        if 'icon' in menu_command_dict.keys():
+                            icon_path = os.path.abspath(
+                                os.path.join(
+                                    os.path.dirname(yaml_path),
+                                    'menu_icons',
+                                    menu_command_dict['icon']))
+                        python_str = 'nuke.menu(\'Nuke\').addCommand("{command_name}", command=\'{command}\', shortcut="{hotkey}", icon="{icon_path}")'.format(
+                            command_name=beauty_menu_name,
+                            command=menu_command_dict['command'],
+                            hotkey=hotkey,
+                            icon_path=icon_path)
+                        print(python_str)
+                        exec(python_str)
+                    else:
+                        parent_menu_name = '/'.join(menu_name.split('/')[0:-1])
+                        menu = nuke.menu('Nuke').findItem(parent_menu_name)
+                        menu.addSeparator()
