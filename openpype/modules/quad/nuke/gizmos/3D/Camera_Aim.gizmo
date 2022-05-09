@@ -1,0 +1,76 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+help "Camera Aim\n\nThe Camera is always looking at the Target.\n"
+tile_color 0xa30000ff
+gl_color 0xffffffff
+note_font Verdana
+addUserKnob {20 User l "Camera Aim"}
+addUserKnob {26 T00 l "@b; Camera" T " "}
+addUserKnob {41 display l Display t "How to draw in 3D preview. The Viewer can override this setting." T Camera.display}
+addUserKnob {41 selectable l Selectable -STARTLINE T Camera.selectable}
+addUserKnob {41 xform_order l INVISIBLE +INVISIBLE T Camera.xform_order}
+addUserKnob {41 rot_order l INVISIBLE +INVISIBLE T Camera.rot_order}
+addUserKnob {41 translate l Translate T Camera.translate}
+addUserKnob {41 uniform_scale l "Uniform Scale" T Camera.uniform_scale}
+addUserKnob {26 S1 l " " T " \n\n"}
+addUserKnob {26 T01 l "@b; Target" T " "}
+addUserKnob {41 selectable_1 l INVISIBLE +INVISIBLE T Target.selectable}
+addUserKnob {41 transform_1 l Transform T Target.transform}
+addUserKnob {41 translate_1 l Translate T Target.translate}
+addUserKnob {41 uniform_scale_1 l "Uniform Scale" T Target.uniform_scale}
+addUserKnob {20 "" n -1}
+addUserKnob {26 by0 l " " T " "}
+addUserKnob {26 by1 l " " T " "}
+addUserKnob {26 by2 l " " T "                                                                                               "}
+addUserKnob {20 Projection}
+addUserKnob {41 projection_mode l Projection T Camera.projection_mode}
+addUserKnob {41 focal l "Focal Length" T Camera.focal}
+addUserKnob {41 haperture l "Horiz Aperture" T Camera.haperture}
+addUserKnob {41 vaperture l "Vert Aperture" T Camera.vaperture}
+addUserKnob {41 near l Near T Camera.near}
+addUserKnob {41 far l Far T Camera.far}
+addUserKnob {41 win_translate l "Window Translate" T Camera.win_translate}
+addUserKnob {41 win_scale l "Window Scale" T Camera.win_scale}
+addUserKnob {41 winroll l "Window Roll" T Camera.winroll}
+addUserKnob {41 focal_point l "Focal Distance" T Camera.focal_point}
+addUserKnob {41 fstop l Fstop T Camera.fstop}
+}
+Input {
+inputs 0
+name Input
+xpos -913
+ypos 444
+}
+set N86beab70 [stack 0]
+Camera2 {
+translate {10 10 10}
+rotate {{"-degrees(atan2 ((Camera.translate.y-Target.translate.y),sqrt(pow2(Camera.translate.z-Target.translate.z)+pow2(Camera.translate.x-Target.translate.x))))"} {"(Camera.translate.z-Target.translate.z)<=0?180-degrees(atan2 ((Camera.translate.x-Target.translate.x),abs(Camera.translate.z-Target.translate.z))):-degrees(atan2 ((Target.translate.x-Camera.translate.x),abs(Camera.translate.z-Target.translate.z)))"} {curve}}
+name Camera
+tile_color 0xffffffff
+gl_color 0xccccccff
+xpos -903
+ypos 530
+}
+Scene {
+name FT
+xpos -903
+ypos 622
+}
+Output {
+name Output1
+xpos -913
+ypos 709
+}
+push $N86beab70
+Axis2 {
+display solid+wireframe
+translate {0.07999999821 0.1199999973 -0.9399999976}
+name Target
+tile_color 0xffffffff
+gl_color 0xff0000ff
+selected true
+xpos -780
+ypos 535
+}
+end_group

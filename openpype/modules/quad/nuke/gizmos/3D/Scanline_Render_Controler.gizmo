@@ -1,0 +1,32 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+ inputs 0
+ help "ScanlineRender Controler\n\nLink with expression sample and antialiasing knobs of Scanline Render nodes you want. \n\nThe curent node become the master of each linked nodes.\nYou can have a different value for each knob in user interface and in batch.\n"
+ tile_color 0xdfff00ff
+ note_font_color 0xff
+ addUserKnob {20 ScanlineRender l "ScanlineRender Controler"}
+ addUserKnob {26 T02 l "                      " T " "}
+ addUserKnob {22 linkselect l "<font color='#2EFE2E'>Link Selected Nodes" t "Link with expression samples and antialiasing knobs of all selected Scanline Render nodes.\nThe curent node become the master of each linked nodes." T "\nnodeName = nuke.thisNode().name()\nnodes = nuke.root().begin().selectedNodes()\n\nfor node in nodes:\n\tif node.Class() == 'ScanlineRender':\n\t\tnode\['samples'].setExpression(  '\$gui ? ' + nodeName + '.sampleV   : ' + nodeName + '.sampleRF ')\n\t\tnode\['antialiasing'].setExpression(  '\$gui ? ' + nodeName + '.antiLocal : ' + nodeName + '.antiBatch ')\n\t\tnode\['icon'].setValue('F_ctrl.png')\n\telse:\n\t\tnuke.message('This is not a Scanline Render node!')\n" +STARTLINE}
+ addUserKnob {26 SP02 l "" -STARTLINE T "                 "}
+ addUserKnob {22 unlinkselect l "<font color='black'> Unlink Selected Nodes" t "Remove the expression in the selected Scanline Render nodes." -STARTLINE T "\nnodes = nuke.root().begin().selectedNodes()\nfor node in nodes:\n\tif node.Class() == 'ScanlineRender':\n\t\tnode\['samples'].setExpression('')\n\t\tnode\['samples'].setValue(1)\n\t\tnode\['samples'].clearAnimated()\n\t\tnode\['antialiasing'].setExpression('')\n\t\tnode\['antialiasing'].setValue(0)\n\t\tnode\['antialiasing'].clearAnimated()\n\t\tnode\['icon'].setValue('')\n\telse:\n\t\tnuke.message('This is not a Scanline Render node!')\n"}
+ addUserKnob {22 LinkTo l "<font color='#2EFE2E'>Link All Nodes " t "Link with expression samples and antialiasing knobs of all Scanline Render nodes in script.\nThe curent node become the master of each linked nodes." T "\nnodeName = nuke.thisNode().name()\n\nfor node in nuke.allNodes('ScanlineRender', nuke.root()):\n\tnode\['samples'].setExpression(  '\$gui ? ' + nodeName + '.sampleV   : ' + nodeName + '.sampleRF ')\n\tnode\['antialiasing'].setExpression(  '\$gui ? ' + nodeName + '.antiLocal : ' + nodeName + '.antiBatch ')\n\tnode\['icon'].setValue('F_ctrl.png')\n" +STARTLINE}
+ addUserKnob {26 SP03 l "" -STARTLINE T "                         "}
+ addUserKnob {22 unlink l "<font color='black'>Unlink All Nodes" t "Remove the expression in all Scanline Render nodes in script." -STARTLINE T "\nfor node in nuke.allNodes('ScanlineRender', nuke.root()):\n\tnode\['samples'].setExpression('')\n\tnode\['samples'].setValue(1)\n\tnode\['samples'].clearAnimated()\n\tnode\['antialiasing'].setExpression('')\n\tnode\['antialiasing'].setValue(0)\n\tnode\['antialiasing'].clearAnimated()\n\tnode\['icon'].setValue('')\n"}
+ addUserKnob {26 S05 l " " T " "}
+ addUserKnob {26 S08 l " " T " "}
+ addUserKnob {7 sampleV l "< font color='white'>Samples Local" t "This samples value is set to all the linked Scanline Render nodes.\nThis value is use for the user interface ONLY!" R 1 20}
+ sampleV 1
+ addUserKnob {7 sampleRF l "<font color=\"red\">Batch" t "This value is use only during a batch but not in user interface!" R 1 20}
+ sampleRF 10
+ addUserKnob {26 S06 l " " T " "}
+ addUserKnob {4 antiLocal l "< font color='white'>Antialias Local" t "This antialiasing mode is set to all the linked Scanline Render nodes.\nThe mode is use for the user interface ONLY!" M {none low medium high "" "" "" "" ""}}
+ addUserKnob {4 antiBatch l "<font color=\"red\">Batch" t "This mode is use only during a batch but not in user interface!" M {none low medium high "" "" "" "" ""}}
+ antiBatch high
+ addUserKnob {1 list l INVISIBLE +INVISIBLE}
+ addUserKnob {26 S03 l " " T " "}
+ addUserKnob {26 by2 l "                     " T "                                                                                               "}
+ addUserKnob {1 output l INVISIBLE +INVISIBLE}
+ output Controler
+}
+end_group

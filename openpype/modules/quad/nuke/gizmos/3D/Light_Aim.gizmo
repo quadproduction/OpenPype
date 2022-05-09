@@ -1,0 +1,82 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+ help "Light Aim\n\nThe Light is always looking at the Target.\n"
+ knobChanged "node = nuke.thisNode()\nknob = nuke.thisKnob()\nif knob.name() in ('light_choise', 'showPanel'):\n    mode = node\['light_choise'].value()\n\n    if mode == 'Light':\n        node\['translateL'].setVisible(True)\n        node\['translateP'].setVisible(False)\n        node\['translateD'].setVisible(False)\n        node\['translateS'].setVisible(False)\n\n    elif mode == 'Point':\n        node\['translateL'].setVisible(False)\n        node\['translateP'].setVisible(False)\n        node\['translateD'].setVisible(True)\n        node\['translateS'].setVisible(False)\n\n    elif mode == 'Direct':\n        node\['translateL'].setVisible(False)\n        node\['translateP'].setVisible(True)\n        node\['translateD'].setVisible(False)\n        node\['translateS'].setVisible(False)\n\n    elif mode == 'Spot':\n        node\['translateL'].setVisible(False)\n        node\['translateP'].setVisible(False)\n        node\['translateD'].setVisible(False)\n        node\['translateS'].setVisible(True)"
+ tile_color 0xffffffff
+ gl_color 0xffffffff
+ note_font Verdana
+ addUserKnob {20 User l "Light Aim"}
+ addUserKnob {41 light_type l "@b; Light Type" t "The light type can be point, directional, or spot.\nThe \"Falloff Type\" is enable for point and spot lights. The \"Cone Angle\", \"Cone Pen. Angle\" and \"Cone Falloff\" knobs are enable for spot light." T Light.light_type}
+ addUserKnob {20 Light_options l "     Light Options" n 1}
+ addUserKnob {41 color l Color T Light.color}
+ addUserKnob {41 intensity l Intensity T Light.intensity}
+ addUserKnob {41 cone_angle l "Cone Angle" T Light.cone_angle}
+ addUserKnob {41 cone_penumbra_angle l "Cone Pen. Angle" T Light.cone_penumbra_angle}
+ addUserKnob {41 cone_falloff l "Cone Falloff" T Light.cone_falloff}
+ addUserKnob {41 falloff_type l "Falloff Type" t "Light falloff type controls how much light the object gets from the light source. It is based on the distance between the light source and the object. A linear type will diminish the light at a fixed rate as it travels from the object. Quadatic and Cubic types will diminish the light at an exponential rate." T Light.falloff_type}
+ addUserKnob {26 S00 l " " T " "}
+ addUserKnob {20 endGroup n -1}
+ addUserKnob {26 S01 l " "}
+ addUserKnob {41 display l Display t "How to draw in 3D preview. The Viewer can override this setting." T Light.display}
+ addUserKnob {41 selectable l Selectable -STARTLINE T Light.selectable}
+ addUserKnob {41 translate l Translate T Light.translate}
+ addUserKnob {26 rotate l "<font color=\"#1C1C1C\">Rotate" t "Always looking to the target." T "<font color=\"#1C1C1C\">x ---------------------------------------------------"}
+ addUserKnob {41 scaling l Scale T Light.scaling}
+ addUserKnob {41 uniform_scale l "        Uniform Scale" T Light.uniform_scale}
+ addUserKnob {26 S02 l " " T " "}
+ addUserKnob {26 ""}
+ addUserKnob {26 S03 l " " T " "}
+ addUserKnob {26 T02 l "@b; Target" T ""}
+ addUserKnob {41 translate_1 l Translate T Target.translate}
+ addUserKnob {41 uniform_scale_1 l "Uniform Scale" T Target.uniform_scale}
+ addUserKnob {26 by0 l " " T " "}
+ addUserKnob {26 by1 l " " T " "}
+ addUserKnob {26 by2 l " " T "                                                                                               "}
+ addUserKnob {20 "" l Shadows}
+ addUserKnob {41 cast_shadows l "cast shadows" T Light.cast_shadows}
+ addUserKnob {41 samples T Light.samples}
+ addUserKnob {41 sample_width l "sample width" T Light.sample_width}
+ addUserKnob {41 depthmap_bias l bias T Light.depthmap_bias}
+ addUserKnob {41 shadow_jitter_scale l "jitter scale" T Light.shadow_jitter_scale}
+ addUserKnob {41 depthmap_width l "depthmap resolution" T Light.depthmap_width}
+ addUserKnob {41 shadow_mask l "output mask" T Light.shadow_mask}
+ addUserKnob {1 output l INVISIBLE +INVISIBLE}
+ output "\[value light_type]"
+}
+ Input {
+  inputs 0
+  name Input
+  xpos -993
+  ypos 327
+ }
+set N56a5910 [stack 0]
+ Axis2 {
+  display solid+wireframe
+  name Target
+  tile_color 0xffffffff
+  gl_color 0xff0000ff
+  xpos -854
+  ypos 414
+ }
+push $N56a5910
+ Light2 {
+  light_type directional
+  translate {10 10 10}
+  rotate {{"-degrees(atan2 ((Light.translate.y-Target.translate.y),sqrt(pow2(Light.translate.z-Target.translate.z)+pow2(Light.translate.x-Target.translate.x))))"} {"(Light.translate.z-Target.translate.z)<=0?180-degrees(atan2 ((Light.translate.x-Target.translate.x),abs(Light.translate.z-Target.translate.z))):-degrees(atan2 ((Target.translate.x-Light.translate.x),abs(Light.translate.z-Target.translate.z)))"} {curve}}
+  name Light
+  xpos -983
+  ypos 415
+ }
+ Scene {
+  selectable false
+  name FT
+  xpos -983
+  ypos 521
+ }
+ Output {
+  name Output1
+  xpos -993
+  ypos 620
+ }
+end_group
