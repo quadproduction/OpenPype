@@ -34,7 +34,7 @@ log.info('Automatic syncing of write file knob to script version')
 
 def add_scripts_menu():
     try:
-        import scriptsmenu.launchfornuke as launchfornuke
+        from scriptsmenu import launchfornuke
     except ImportError:
         log.warning(
             "Skipping studio.menu install, because "
@@ -52,13 +52,9 @@ def add_scripts_menu():
         return
 
     # run the launcher for Maya menu
-    studio_menu = launchfornuke.main(
-        title=_menu.title(),
-        objectName=_menu.title().lower().replace(" ", "_")
-    )
+    studio_menu = launchfornuke.main(title=_menu.title())
 
     # apply configuration
     studio_menu.build_from_configuration(studio_menu, config)
-
 
 add_scripts_menu()
