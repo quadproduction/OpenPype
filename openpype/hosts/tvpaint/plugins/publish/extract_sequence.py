@@ -5,11 +5,6 @@ import tempfile
 from PIL import Image
 
 import pyblish.api
-import importlib
-import openpype
-import openpype.hosts.tvpaint.lib
-importlib.reload(openpype.hosts.tvpaint.lib)
-
 
 from openpype.hosts.tvpaint.api import lib
 from openpype.hosts.tvpaint.lib import (
