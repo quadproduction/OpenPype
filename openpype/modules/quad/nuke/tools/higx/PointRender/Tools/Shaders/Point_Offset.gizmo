@@ -1,0 +1,171 @@
+Group {
+ name Point_OffsetShader3
+ tile_color 0x434343ff
+ note_font_color 0x55ffffff
+ selected true
+ xpos 713
+ ypos -472
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Point Offset Shader v1.0\n\nCalcualtes the distance between 2 point sets.\nThis can for example be used to see the difference between the original generator\nand the modified one."}
+ addUserKnob {26 devider_general l "<b><font color=#70EE70>General</font><b>"}
+ addUserKnob {7 Gain}
+ Gain 1
+ addUserKnob {7 Offset R -0.5 0.5}
+ addUserKnob {6 Absolute +STARTLINE}
+ addUserKnob {6 Reverse +STARTLINE}
+}
+ BackdropNode {
+  inputs 0
+  name BackdropNode1
+  tile_color 0x388e8e00
+  label Offset
+  note_font_size 42
+  xpos -591
+  ypos 304
+  bdwidth 224
+  bdheight 161
+ }
+ Input {
+  inputs 0
+  name Input2
+  xpos -438
+  ypos 40
+  number 1
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle1
+  xpos -438
+  ypos 120
+ }
+ Dot {
+  name Dot4
+  xpos -404
+  ypos 285
+ }
+ Dot {
+  name Dot1
+  xpos -404
+  ypos 392
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos -580
+  ypos 50
+ }
+ Shuffle {
+  in pos
+  name Shuffle5
+  xpos -580
+  ypos 120
+ }
+ Dot {
+  name Dot3
+  xpos -546
+  ypos 256
+ }
+ MergeExpression {
+  inputs 2
+  temp_name0 xd
+  temp_expr0 A.red-B.red
+  temp_name1 yd
+  temp_expr1 A.green-B.green
+  temp_name2 zd
+  temp_expr2 A.blue-B.blue
+  temp_name3 Distance
+  temp_expr3 "sqrt(xd*xd + yd*yd + zd*zd)"
+  expr0 Distance
+  expr1 Distance
+  expr2 Distance
+  name Distance
+  xpos -584
+  ypos 388
+ }
+ Grade {
+  add {{parent.Offset}}
+  black_clamp false
+  name Grade3
+  xpos -584
+  ypos 412
+ }
+ Grade {
+  white {{parent.Gain}}
+  black_clamp {{!parent.Absolute}}
+  name Grade1
+  xpos -584
+  ypos 436
+ }
+ Expression {
+  expr0 abs(r)
+  expr1 abs(g)
+  expr2 abs(b)
+  name Expression1
+  xpos -584
+  ypos 459
+  disable {{!parent.Absolute}}
+ }
+ Expression {
+  expr0 max(0,1-r)
+  expr1 max(0,1-r)
+  expr2 max(0,1-r)
+  name Expression2
+  selected true
+  xpos -584
+  ypos 483
+  disable {{!parent.Reverse}}
+ }
+ Group {
+  name SoftLook_NF1
+  xpos -584
+  ypos 650
+  disable true
+  addUserKnob {20 User}
+  addUserKnob {26 Info l "" +STARTLINE T "SoftLook\nby Mads Hagbarth Lund - 2016"}
+  addUserKnob {26 ""}
+  addUserKnob {7 Add R 0 4}
+  Add 1.14
+  addUserKnob {7 Offset R 0 4}
+  Offset 0.86
+ }
+  Input {
+   inputs 0
+   name Input1
+   xpos -248
+   ypos 500
+  }
+set N2cf14b90 [stack 0]
+  Expression {
+   expr0 r/(r+parent.Offset)*parent.Add
+   expr1 g/(g+parent.Offset)*parent.Add
+   expr2 b/(b+parent.Offset)*parent.Add
+   expr3 a/(a+parent.Offset)*parent.Add
+   name Expression1
+   selected true
+   xpos -339
+   ypos 576
+  }
+push $N2cf14b90
+  ShuffleCopy {
+   inputs 2
+   red red
+   green green
+   blue blue
+   alpha alpha2
+   name ShuffleCopy1
+   xpos -248
+   ypos 576
+  }
+  Output {
+   name Output1
+   xpos -248
+   ypos 651
+  }
+ end_group
+ Output {
+  name Output1
+  xpos -584
+  ypos 686
+ }
+end_group

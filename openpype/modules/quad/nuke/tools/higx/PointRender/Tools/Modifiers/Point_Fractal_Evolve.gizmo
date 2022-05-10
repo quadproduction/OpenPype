@@ -1,0 +1,239 @@
+Group {
+ name Point_Fractal_Evolve
+ knobChanged "\nif nuke.thisKnob() == nuke.thisNode()\[\"GravityType\"]:\n    if nuke.thisKnob().value() == \"Spherical\":\n        nuke.thisNode()\[\"Gravity\"].setVisible(False)\n        nuke.thisNode()\[\"gravity_spherical\"].setVisible(True)\n        nuke.thisNode()\[\"gravity_center\"].setVisible(True)\n    else:\n        nuke.thisNode()\[\"Gravity\"].setVisible(True)\n        nuke.thisNode()\[\"gravity_spherical\"].setVisible(False)\n        nuke.thisNode()\[\"gravity_center\"].setVisible(False)\nelif nuke.thisKnob() == nuke.thisNode()\[\"enable_floor\"]:\n    if nuke.thisNode()\[\"enable_floor\"].value():\n        nuke.thisNode()\[\"floor_height\"].setEnabled(True)\n        nuke.thisNode()\[\"floor_drag\"].setEnabled(True)     \n    else:   \n        nuke.thisNode()\[\"floor_height\"].setEnabled(False)\n        nuke.thisNode()\[\"floor_drag\"].setEnabled(False)    \nelif nuke.thisKnob() == nuke.thisNode()\[\"NoiseType\"]:\n    if nuke.thisNode()\[\"NoiseType\"].value() == \"Regular\":\n        nuke.thisNode()\[\"Noise_Octaves\"].setEnabled(True)    \n        nuke.thisNode()\[\"Noise_Gain\"].setEnabled(True)    \n        nuke.thisNode()\[\"Noise_Lacunarity\"].setEnabled(True)    \n    else:\n        nuke.thisNode()\[\"Noise_Octaves\"].setEnabled(False)    \n        nuke.thisNode()\[\"Noise_Gain\"].setEnabled(False)    \n        nuke.thisNode()\[\"Noise_Lacunarity\"].setEnabled(False)    \n"
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info_header l "" +STARTLINE T "Point FractalEvolve v1.3"}
+ addUserKnob {6 useGpu l "Use GPU if available" +STARTLINE}
+ useGpu true
+ addUserKnob {7 Resolution l INVISIBLE +INVISIBLE R 1e-05 1}
+ Resolution 1
+ addUserKnob {41 filter l INVISIBLE +INVISIBLE T Reformat2.filter}
+ addUserKnob {26 info_evolution l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {3 start_frame l "Start Frame"}
+ start_frame 1
+ addUserKnob {3 FadeIn l "Fade In" -STARTLINE}
+ addUserKnob {3 FadeOut l Out -STARTLINE}
+ FadeOut 14
+ addUserKnob {7 Speed}
+ Speed 0.275
+ addUserKnob {7 Evolution R 0 50}
+ Evolution {{max(0,(frame-start_frame)*Speed)}}
+ addUserKnob {26 divider_simulation l "<b><font color=#7DADF9>Simulation</font><b>"}
+ addUserKnob {7 Drag}
+ Drag 0.15
+ addUserKnob {13 InitialVelocity l "Initial Velocity"}
+ addUserKnob {6 InputMask l "Enable Velocity Multiplier Map" t "This will enable the VelMultMap input on the node.\nThe Red Green and Blue channal will act as a custom initial velocity. So rather than the initial velocity knob that sets the overall velocity, this input will let you define a \"per point\" velocity.\n\nThe Alpha channel of the input will act as a general magnitude. So if the alpha is 0, no velocity is applied." -STARTLINE}
+ addUserKnob {13 force_direction l "Force Direction"}
+ addUserKnob {13 Flow}
+ addUserKnob {26 _1 l "<b><font color=#7DADF9>Collision</font><b>"}
+ addUserKnob {6 enable_floor l "Enable Collision Floor" t "This will add a collision object to the scene.\nIf the gravity type is \"Regular\" it will add a horizontal floor where the \"Floor Height\" defines the \"Y Axis\" of the floor.\n\nIf the gravity type is \"Spherical\" it will add a spherical floor where the \"Floor Height\" defines the distance from the sphere center.\nRemember that the floor height must be a positive value if you want to use it in spherical mode." +STARTLINE}
+ addUserKnob {7 floor_height l "Floor Height" +DISABLED}
+ floor_height -0.1
+ addUserKnob {7 floor_drag l "Floor Drag" +DISABLED}
+ floor_drag 0.325
+ addUserKnob {26 divier_gravity l "<b><font color=#7DADF9>Gravity</font><b>"}
+ addUserKnob {4 GravityType l "Gravity Type" M {Regular Spherical "" ""}}
+ addUserKnob {13 Gravity}
+ addUserKnob {7 gravity_spherical l Gravity +HIDDEN}
+ gravity_spherical 5
+ addUserKnob {13 gravity_center l "Gravity Center" +HIDDEN}
+ addUserKnob {26 devider_noise l "<b><font color=#7DADF9>Fractal Settings</font><b>"}
+ addUserKnob {4 NoiseType M {Regular Curl}}
+ addUserKnob {6 Noise_Absolute l Absolute +INVISIBLE +STARTLINE}
+ addUserKnob {3 Noise_Octaves l Octaves}
+ Noise_Octaves 8
+ addUserKnob {7 Noise_Gain l Gain}
+ Noise_Gain 0.5
+ addUserKnob {7 Noise_Lacunarity l Lacunarity R 0 4}
+ Noise_Lacunarity 2
+ addUserKnob {7 Noise_Amplitude l Amplitude}
+ Noise_Amplitude 0.5
+ addUserKnob {26 invis_devider_noise l "" +STARTLINE T " "}
+ addUserKnob {26 Devider_Frequency l "<b><font color=#7DADF9>Frequency Control</font><b>"}
+ addUserKnob {19 Freq_Offset l "General Offset" R 0 10}
+ Freq_Offset {0 0 0 0}
+ addUserKnob {6 Freq_Offset_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 Freq_GeneralScale l "Genral Scale"}
+ Freq_GeneralScale 0.25
+ addUserKnob {6 Freq_GeneralScale_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {26 invis_devider_freq l "" +STARTLINE T " "}
+ addUserKnob {19 Freq_EvolveLow l "Evolve Low" R 0 10}
+ Freq_EvolveLow {0 0 0 0}
+ addUserKnob {6 Freq_EvolveLow_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {6 Freq_ScaleLow_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 Freq_EvolveHigh l "Evolve High"}
+ Freq_EvolveHigh {0 0 0 0}
+ addUserKnob {6 Freq_EvolveHigh_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {26 invis_devider_freq2 l "" +STARTLINE T " "}
+ addUserKnob {19 Freq_ScaleLow l "Scale Low"}
+ Freq_ScaleLow 1
+ addUserKnob {6 Freq_ScaleLow_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 Freq_ScaleHigh l "Scale High"}
+ Freq_ScaleHigh 1
+ addUserKnob {6 Freq_ScaleHigh_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {26 ""}
+ addUserKnob {20 Extra}
+ addUserKnob {4 AlphaMode l "Vel Mult Alpha Mode" t "By default the alpha input of the Velocity Multiplier Map will act as a general magnitude of the velocity.\n\nBut if you want to you can change this behaivour to be a offset to the evolution of the simulation." M {"General Velocity Magnitude" "Simulatioin Evolution Offset" ""}}
+ addUserKnob {26 invis_devider_freq3 l "" +STARTLINE T " "}
+ addUserKnob {26 Curve l "Curve Noise"}
+ addUserKnob {6 CurveNoise_Enable l Enable +STARTLINE}
+ addUserKnob {7 CurveGain l "Curve Gain" R -10 10}
+ CurveGain 1
+ addUserKnob {7 CurveOffset R -2 2}
+ addUserKnob {6 CurveNoise_Invert l Invert -STARTLINE}
+}
+ Input {
+  inputs 0
+  name InputVelMultMap
+  xpos -205
+  ypos 1
+  number 1
+ }
+ Reformat {
+  type "to box"
+  box_width {{parent.InputFormat.box.r}}
+  box_height {{parent.InputFormat.box.t}}
+  box_fixed true
+  resize distort
+  name Reformat3
+  xpos -205
+  ypos 48
+ }
+ Expression {
+  expr3 -1
+  name Expression3
+  selected true
+  xpos -205
+  ypos 115
+  disable {{parent.InputMask}}
+ }
+ Dot {
+  name Dot3
+  xpos -171
+  ypos 171
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos -582
+  ypos 8
+ }
+ Crop {
+  box {0 0 {width} {height}}
+  reformat true
+  crop false
+  name InputFormat
+  xpos -582
+  ypos 50
+ }
+ Dot {
+  name Dot1
+  xpos -548
+  ypos 114
+ }
+set N6198e800 [stack 0]
+ Reformat {
+  type scale
+  scale {{parent.Resolution}}
+  center false
+  filter Impulse
+  pbb true
+  name Reformat1
+  xpos -459
+  ypos 111
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle1
+  xpos -317
+  ypos 110
+ }
+ BlinkScript {
+  inputs 2
+  kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Modify/EvolveNoise_v08.cpp
+  recompileCount 194
+  ProgramGroup 1
+  KernelDescription "2 \"Noise4D\" iterate pixelWise af3b0fa6c57f6f5eaa44273e7b02b82853fc0136a046b43248f4c0b0243a7781 3 \"src\" Read Point \"vel_mult\" Read Point \"dst\" Write Point 34 \"evolution\" Float 1 AACAPw== \"particleDrag\" Float 1 AAAAAA== \"absNoise\" Bool 1 AA== \"curlNoise\" Bool 1 AA== \"curveNoise\" Bool 1 AA== \"curveInvert\" Bool 1 AA== \"curveGain\" Float 1 AACAPw== \"curveOffset\" Float 1 AACAPw== \"Octaves\" Int 1 CgAAAA== \"Gain\" Float 1 AAAAPw== \"Lacunarity\" Float 1 AAAAQA== \"Gamma\" Float 1 AAAAPw== \"amplitude\" Float 1 AAAAPw== \"Offset\" Float 4 AAAAAAAAAAAAAAAAAAAAAA== \"Scale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"suboffset\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"topoffset\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"subscale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"topscale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"gravity\" Float 3 AAAAAJqZmb4AAAAAAAAAAA== \"initialVelocity\" Float 3 AAAAAJqZmb4AAAAAAAAAAA== \"forceDirection\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"flow\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"entryAmplitude\" Float 1 AACAPw== \"exitAmplitude\" Float 1 AACAPw== \"ampEntryFrame\" Int 1 AAAAAA== \"ampExitFrame\" Int 1 CAAAAA== \"enableFloor\" Bool 1 AA== \"floorHeight\" Float 1 AAAAvw== \"floorDragMultiplier\" Float 1 AAAAAA== \"floorBounce\" Float 1 AAAAAA== \"grav_center\" Float 3 AAAAAJqZmb4AAAAAAAAAAA== \"sphericalGravity\" Bool 1 AA== \"alpha_mode\" Int 1 AAAAAA== 34 \"evolution\" 1 1 \"particleDrag\" 1 1 \"absNoise\" 1 1 \"curlNoise\" 1 1 \"curveNoise\" 1 1 \"curveInvert\" 1 1 \"curveGain\" 1 1 \"curveOffset\" 1 1 \"octaves\" 1 1 \"gain\" 1 1 \"lacunarity\" 1 1 \"gamma\" 1 1 \"amplitude\" 1 1 \"offset\" 4 1 \"scale\" 4 1 \"suboffset\" 4 1 \"topoffset\" 4 1 \"subscale\" 4 1 \"topscale\" 4 1 \"gravity\" 3 1 \"initialVelocity\" 3 1 \"forceDirection\" 3 1 \"flow\" 3 1 \"entryAmplitude\" 1 1 \"exitAmplitude\" 1 1 \"ampEntryFrame\" 1 1 \"ampExitFrame\" 1 1 \"enableFloor\" 1 1 \"floorHeight\" 1 1 \"floorDragMultiplier\" 1 1 \"floorBounce\" 1 1 \"grav_center\" 3 1 \"sphericalGravity\" 1 1 \"a_mode\" 1 1 0"
+  kernelSource "//Based on https://github.com/Draradech/csworldgen/blob/master/simplexnoise.cpp\n//Ported by Mads Hagbarth Lund 2014\n\n/* Copyright (c) 2007-2012 Eliot Eshelman\n *\n * This program is free software: you can redistribute it and/or modify\n * it under the terms of the GNU General Public License as published by\n * the Free Software Foundation, either version 3 of the License, or\n * (at your option) any later version.\n *\n * This program is distributed in the hope that it will be useful,\n * but WITHOUT ANY WARRANTY; without even the implied warranty of\n * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n * GNU General Public License for more details.\n *\n * You should have received a copy of the GNU General Public License\n * along with this program. If not, see <http://www.gnu.org/licenses/>.\n *\n */\n\n\n/*\nYou can think of the EvolveNoise/FractalEvolve as a way to apply the point fractal over x number of itterations \nand then let standard physics drive the simulation to a hold.\nThe way this works is that you define and in and out point for the simulation\nthe fractal displacement is then driven from the first frame to the last slowly \"fading out\" it's impact.\n\nAt this point the simulation is driven by gravity and drag.\nGravity is a contious force that is applied on each frame and drag counters any force applied.\n\nBy default the points start with no internal velocity but this can be controled with the initial velocity knob.\nOriginally this was the only way to control this, but i figured that due to the fact that an equal initial force is applied\nthe look is quite static. That is why you can now control the initial velocity using a custom map.\nThis gives a much more fine grained control and let you create more \"eexplotion like effects\"\n\n\n\nFor a bit of extra effect a \"floor\" have been added to make sure that the points does not just continue to fall when gravity is applied.\n*/\n\n\n//=========================\n//fastfloor\n//=========================\nint fastfloor( const float x ) \{ return x > 0 ? (int) x : (int) x - 1; \}\n\n//=========================\n//Frac\n//=========================\ninline float Frac(float a_X)\n\{\n    return a_X-floor(a_X);\n\}\n\n//-------------------------------------\n// Smoothstep\n//-------------------------------------\ninline float smoothstep(float edge0, float edge1, float x)\n\{\n    float t;  /* Or genDType t; */\n    t = clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);\n    return t * t * (3.0f - 2.0f * t);\n\}\n\n//-------------------------------------\n// basic mix function\n//-------------------------------------\ninline float3 mix(float3 _X,float3 _Y,float _A)\{\n  return _X*(1.0f-_A)+_Y*_A;\n\}\n\n//=========================\n//hash\n//=========================\nfloat hash( float n ) \{ return Frac(sin(n)*753.5453123f); \}\n\n\n//=========================\n//cheap_noise\n//=========================\ninline float cheap_noise( float x ,float y, float z )\n\{\n    float3 p = floor(float3(x,y,z));\n    float3 f = float3(Frac(x),Frac(y),Frac(z));\n    f = f*f*(3.0f-2.0f*f);\n    \n    float n = p.x + p.y*157.0f + 113.0f*p.z;\n    return _fc_lerp(_fc_lerp(_fc_lerp( hash(n+  0.0f), hash(n+  1.0f),f.x),\n                   _fc_lerp( hash(n+157.0f), hash(n+158.0f),f.x),f.y),\n               _fc_lerp(_fc_lerp( hash(n+113.0f), hash(n+114.0f),f.x),\n                   _fc_lerp( hash(n+270.0f), hash(n+271.0f),f.x),f.y),f.z);\n\}\n\n//=========================\n//raw_noise_4d\n//=========================\ninline float raw_noise_4d( const float x, const float y, const float z, const float w ) \n\{\nint simplex\[64]\[4] = \{\n    \{0,1,2,3\},\{0,1,3,2\},\{0,0,0,0\},\{0,2,3,1\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{1,2,3,0\},\n    \{0,2,1,3\},\{0,0,0,0\},\{0,3,1,2\},\{0,3,2,1\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{1,3,2,0\},\n    \{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\n    \{1,2,0,3\},\{0,0,0,0\},\{1,3,0,2\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{2,3,0,1\},\{2,3,1,0\},\n    \{1,0,2,3\},\{1,0,3,2\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{2,0,3,1\},\{0,0,0,0\},\{2,1,3,0\},\n    \{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\n    \{2,0,1,3\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{3,0,1,2\},\{3,0,2,1\},\{0,0,0,0\},\{3,1,2,0\},\n    \{2,1,0,3\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{3,1,0,2\},\{0,0,0,0\},\{3,2,0,1\},\{3,2,1,0\}\n\};\n    int perm\[512] = \{\n        151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,\n        8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,\n        35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,\n        134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,\n        55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208, 89,\n        18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,\n        250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,\n        189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,\n        172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,\n        228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,\n        107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,\n        138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180,\n\n        151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,\n        8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,\n        35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,\n        134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,\n        55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208, 89,\n        18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,\n        250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,\n        189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,\n        172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,\n        228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,\n        107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,\n        138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180\n    \};\n   int grad4\[32]\[4]= \{\n    \{0,1,1,1\},  \{0,1,1,-1\},  \{0,1,-1,1\},  \{0,1,-1,-1\},\n    \{0,-1,1,1\}, \{0,-1,1,-1\}, \{0,-1,-1,1\}, \{0,-1,-1,-1\},\n    \{1,0,1,1\},  \{1,0,1,-1\},  \{1,0,-1,1\},  \{1,0,-1,-1\},\n    \{-1,0,1,1\}, \{-1,0,1,-1\}, \{-1,0,-1,1\}, \{-1,0,-1,-1\},\n    \{1,1,0,1\},  \{1,1,0,-1\},  \{1,-1,0,1\},  \{1,-1,0,-1\},\n    \{-1,1,0,1\}, \{-1,1,0,-1\}, \{-1,-1,0,1\}, \{-1,-1,0,-1\},\n    \{1,1,1,0\},  \{1,1,-1,0\},  \{1,-1,1,0\},  \{1,-1,-1,0\},\n    \{-1,1,1,0\}, \{-1,1,-1,0\}, \{-1,-1,1,0\}, \{-1,-1,-1,0\}\n   \};\n    float F4 = (sqrt(5.0f)-1.0f)/4.0f;\n    float G4 = (5.0f-sqrt(5.0f))/20.0f;\n    float n0, n1, n2, n3, n4;\n    float s = (x + y + z + w) * F4;\n    int i = fastfloor(x + s);\n    int j = fastfloor(y + s);\n    int k = fastfloor(z + s);\n    int l = fastfloor(w + s);\n    float t = (i + j + k + l) * G4;\n    float X0 = i - t;\n    float Y0 = j - t;\n    float Z0 = k - t;\n    float W0 = l - t;\n\n    float x0 = x - X0;\n    float y0 = y - Y0;\n    float z0 = z - Z0;\n    float w0 = w - W0;\n    int c1 = (x0 > y0) ? 32 : 0;\n    int c2 = (x0 > z0) ? 16 : 0;\n    int c3 = (y0 > z0) ? 8 : 0;\n    int c4 = (x0 > w0) ? 4 : 0;\n    int c5 = (y0 > w0) ? 2 : 0;\n    int c6 = (z0 > w0) ? 1 : 0;\n    int c = c1 + c2 + c3 + c4 + c5 + c6;\n\n    int i1, j1, k1, l1;\n    int i2, j2, k2, l2;\n    int i3, j3, k3, l3;\n    i1 = simplex\[c]\[0]>=3 ? 1 : 0;\n    j1 = simplex\[c]\[1]>=3 ? 1 : 0;\n    k1 = simplex\[c]\[2]>=3 ? 1 : 0;\n    l1 = simplex\[c]\[3]>=3 ? 1 : 0;\n    i2 = simplex\[c]\[0]>=2 ? 1 : 0;\n    j2 = simplex\[c]\[1]>=2 ? 1 : 0;\n    k2 = simplex\[c]\[2]>=2 ? 1 : 0;\n    l2 = simplex\[c]\[3]>=2 ? 1 : 0;\n    i3 = simplex\[c]\[0]>=1 ? 1 : 0;\n    j3 = simplex\[c]\[1]>=1 ? 1 : 0;\n    k3 = simplex\[c]\[2]>=1 ? 1 : 0;\n    l3 = simplex\[c]\[3]>=1 ? 1 : 0;\n    float x1 = x0 - i1 + G4;\n    float y1 = y0 - j1 + G4;\n    float z1 = z0 - k1 + G4;\n    float w1 = w0 - l1 + G4;\n    float x2 = x0 - i2 + 2.0*G4;\n    float y2 = y0 - j2 + 2.0*G4;\n    float z2 = z0 - k2 + 2.0*G4;\n    float w2 = w0 - l2 + 2.0*G4;\n    float x3 = x0 - i3 + 3.0*G4;\n    float y3 = y0 - j3 + 3.0*G4;\n    float z3 = z0 - k3 + 3.0*G4;\n    float w3 = w0 - l3 + 3.0*G4;\n    float x4 = x0 - 1.0 + 4.0*G4;\n    float y4 = y0 - 1.0 + 4.0*G4;\n    float z4 = z0 - 1.0 + 4.0*G4;\n    float w4 = w0 - 1.0 + 4.0*G4;\n    int ii = i & 255;\n    int jj = j & 255;\n    int kk = k & 255;\n    int ll = l & 255;\n    int gi0 = perm\[ii+perm\[jj+perm\[kk+perm\[ll]]]] % 32;\n    int gi1 = perm\[ii+i1+perm\[jj+j1+perm\[kk+k1+perm\[ll+l1]]]] % 32;\n    int gi2 = perm\[ii+i2+perm\[jj+j2+perm\[kk+k2+perm\[ll+l2]]]] % 32;\n    int gi3 = perm\[ii+i3+perm\[jj+j3+perm\[kk+k3+perm\[ll+l3]]]] % 32;\n    int gi4 = perm\[ii+1+perm\[jj+1+perm\[kk+1+perm\[ll+1]]]] % 32;\n    float t0 = 0.6 - x0*x0 - y0*y0 - z0*z0 - w0*w0;\n    if(t0<0) n0 = 0.0;\n    else \{\n        t0 *= t0;\n        n0 = t0 * t0 * dot(float4(grad4\[gi0]\[0],grad4\[gi0]\[2],grad4\[gi0]\[3],grad4\[gi0]\[3]), float4(x0, y0, z0, w0));\n    \}\n    float t1 = 0.6 - x1*x1 - y1*y1 - z1*z1 - w1*w1;\n    if(t1<0) n1 = 0.0;\n    else \{\n        t1 *= t1;\n        n1 = t1 * t1 * dot(float4(grad4\[gi1]\[0],grad4\[gi1]\[2],grad4\[gi1]\[3],grad4\[gi1]\[3]), float4(x1, y1, z1, w1));\n    \}\n    float t2 = 0.6 - x2*x2 - y2*y2 - z2*z2 - w2*w2;\n    if(t2<0) n2 = 0.0;\n    else \{\n        t2 *= t2;\n        n2 = t2 * t2 * dot(float4(grad4\[gi2]\[0],grad4\[gi2]\[2],grad4\[gi2]\[3],grad4\[gi2]\[3]), float4(x2, y2, z2, w2));\n    \}\n    float t3 = 0.6 - x3*x3 - y3*y3 - z3*z3 - w3*w3;\n    if(t3<0) n3 = 0.0;\n    else \{\n        t3 *= t3;\n        n3 = t3 * t3 * dot(float4(grad4\[gi3]\[0],grad4\[gi3]\[2],grad4\[gi3]\[3],grad4\[gi3]\[3]), float4(x3, y3, z3, w3));\n    \}\n    float t4 = 0.6 - x4*x4 - y4*y4 - z4*z4 - w4*w4;\n    if(t4<0) n4 = 0.0;\n    else \{\n        t4 *= t4;\n        n4 = t4 * t4 * dot(float4(grad4\[gi4]\[0],grad4\[gi4]\[2],grad4\[gi4]\[3],grad4\[gi4]\[3]), float4(x4, y4, z4, w4));\n    \}\n    return 27.0 * (n0 + n1 + n2 + n3 + n4);\n\}\n\n\n\n\nkernel Noise4D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessPoint, eEdgeClamped> src;\n  Image<eRead, eAccessPoint, eEdgeClamped> vel_mult;\n  Image<eWrite, eAccessPoint> dst;\nparam:\n    float evolution;\n    float particleDrag;\n    bool absNoise;\n    bool curlNoise;\n    bool curveNoise;\n    bool curveInvert;\n    float curveGain;\n    float curveOffset;\n    int octaves;\n    float gain;\n    float lacunarity;\n    float gamma;\n    float amplitude;\n    float4 offset;\n    float4 scale;\n    float4 suboffset;\n    float4 topoffset;\n    float4 subscale;\n    float4 topscale;\n    float3 gravity;\n    float3 initialVelocity;\n    float3 forceDirection;\n    float3 flow;\n    float entryAmplitude;\n    float exitAmplitude;\n    int ampEntryFrame;\n    int ampExitFrame;\n    bool enableFloor;\n    float floorHeight,floorDragMultiplier,floorBounce;\n    float3 grav_center;\n    bool sphericalGravity;\n    int a_mode;\n\n\n  void define() \{\n        defineParam (evolution, \"evolution\", 1.0f);  \n        defineParam (absNoise, \"absNoise\", false);    \n        defineParam (curlNoise, \"curlNoise\", false);  \n        defineParam (curveNoise, \"curveNoise\", false);    \n        defineParam (curveInvert, \"curveInvert\", false);   \n        defineParam (curveGain, \"curveGain\", 1.0f);\n        defineParam (curveOffset, \"curveOffset\", 1.0f);\n        defineParam (octaves, \"Octaves\", 10);\n        defineParam (gain, \"Gain\", 0.5f);\n        defineParam (lacunarity, \"Lacunarity\", 2.0f);\n        defineParam (gamma, \"Gamma\", 0.5f);\n        defineParam (amplitude, \"amplitude\", 0.5f);\n        defineParam(offset, \"Offset\", float4(0.0f, 0.0f, 0.0f,0.0f));\n        defineParam(scale, \"Scale\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(suboffset, \"suboffset\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(topoffset, \"topoffset\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(subscale, \"subscale\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(topscale, \"topscale\", float4(1.0f, 1.0f, 1.0f,1.0f));   \n        defineParam (gravity, \"gravity\", float3(0.0f, -0.3f, 0.0f));\n        defineParam (initialVelocity, \"initialVelocity\", float3(0.0f, -0.3f, 0.0f));\n        defineParam (forceDirection, \"forceDirection\", float3(0.0f, 0.0f, 0.0f));\n        defineParam (flow, \"flow\", float3(0.0f, 0.0f, 0.0f));\n        defineParam (ampEntryFrame, \"ampEntryFrame\", 0);\n        defineParam (ampExitFrame, \"ampExitFrame\", 8);\n        defineParam (entryAmplitude, \"entryAmplitude\", 1.0f);\n        defineParam (exitAmplitude, \"exitAmplitude\", 1.0f);          \n        defineParam (enableFloor, \"enableFloor\", false);\n        defineParam (floorHeight, \"floorHeight\", -0.5f);   \n        defineParam (floorDragMultiplier, \"floorDragMultiplier\", 0.0f);   \n        defineParam (floorBounce, \"floorBounce\", 0.0f); \n        defineParam (grav_center, \"grav_center\", float3(0.0f, -0.3f, 0.0f));         \n        defineParam (sphericalGravity, \"sphericalGravity\", false);    \n        defineParam (a_mode, \"alpha_mode\", 0);  \n  \}\n\n\n\n//=========================\n//Normal Noise\n//=========================\nfloat octave_noise_4d( const float octaves, const float persistence, const float scale, const float x, const float y, const float z, const float w ) \n\{\n    float total = 0.0f;\n    float current;\n    float last = 1.0f;\n    float frequency = scale;\n    float amplitude = 1.0f;\n    float maxAmplitude = 0.0f;\n    float4 Tempoffset;\n    float4 Tempscale;\n\n\n    for( int i=0; i < octaves; i++ ) \{\n        Tempscale = (topscale * (i/(octaves-1.0f)))+(subscale * (1-(i/(octaves-1.0f))));       \n        Tempoffset = (topoffset * (i/(octaves-1.0f)))+(suboffset * (1-(i/(octaves-1.0f))));\n        current = (float)raw_noise_4d(   ((x*Tempscale.x)+Tempoffset.x) * frequency, \n                                        ((y*Tempscale.y)+Tempoffset.y) * frequency, \n                                        ((z*Tempscale.z)+Tempoffset.z) * frequency, \n                                        ((w*Tempscale.w)+Tempoffset.w) * frequency \n                                        ) * amplitude;\n        if (i == 0 && curveNoise)\{\n            if (curveInvert)\{\n                last = 0.5f-current;  \n            \}\n            else\{\n                last = current;  \n            \}\n               \n        \}\n        current = curveNoise?current*((last+curveOffset)*curveGain):current;\n        total += absNoise?fabs(current):current;\n        frequency *= 2.0f;\n        maxAmplitude += amplitude;\n        amplitude *= persistence;\n\n    \}\n    return float(total / maxAmplitude);\n\}\n\n\n\n//=========================\n//CurlNoiseFull\n//=========================\nfloat3 CurlNoiseFull( const float octaves, const float persistence, const float scale, const float x, const float y, const float z) \n\{\n    float3 total = float3(0.0f);\n    float3 current;\n    float3 last = float3(1.0f);\n    float frequency = scale;\n    float amplitude = 1.0f;\n    float maxAmplitude = 0.0f;\n    float4 Tempoffset;\n    float4 Tempscale;\n\n\n    for( int i=0; i < octaves; i++ ) \{\n        Tempscale = (topscale * (i/(octaves-1.0f)))+(subscale * (1-(i/(octaves-1.0f))));       \n        Tempoffset = (topoffset * (i/(octaves-1.0f)))+(suboffset * (1-(i/(octaves-1.0f))));\n        current = ComputeCurlFast(   ((x*Tempscale.x)+Tempoffset.x) * frequency, \n                                        ((y*Tempscale.y)+Tempoffset.y) * frequency, \n                                        ((z*Tempscale.z)+Tempoffset.z) * frequency) * amplitude;\n        if (i == 0 && curveNoise)\{\n            if (curveInvert)\{\n                last = 0.5f-current;  \n            \}\n            else\{\n                last = current;  \n            \}\n               \n        \}\n        current = curveNoise?current*((last+curveOffset)*curveGain):current;\n        total += absNoise?fabs(current):current;\n        frequency *= 2.0f;\n        maxAmplitude += amplitude;\n        amplitude *= persistence;\n\n    \}\n    return total / maxAmplitude;\n\}\n\n//=========================\n//ComputeCurlFast\n//=========================\nfloat3 ComputeCurlFast(float   x,  float   y,  float   z)  \n\{   \n                float   eps =   1.0f;    \n                float   n1, n2, a,  b;  \n                float3 curl;   \n                n1  =   cheap_noise(x,    y   +   eps,    z); \n                n2  =   cheap_noise(x,    y   -   eps,    z); \n                a   =   (n1 -   n2)/(2.0f   *   eps);   \n                    \n                n1  =   cheap_noise(x,    y,  z   +   eps);   \n                n2  =   cheap_noise(x,    y,  z   -   eps);   \n                b   =   (n1 -   n2)/(2.0f   *   eps);   \n                    \n                curl.x  =   a   -   b;  \n                    \n                n1  =   cheap_noise(x,    y,  z   +   eps);   \n                n2  =   cheap_noise(x,    y,  z   -   eps);   \n                a   =   (n1 -   n2)/(2.0f   *   eps);   \n                    \n                n1  =   cheap_noise(x +   eps,    y,  z); \n                n2  =   cheap_noise(x +   eps,    y,  z); \n                b   =   (n1 -   n2)/(2.0f   *   eps);   \n                    \n                curl.y  =   a   -   b;  \n                n1  =   cheap_noise(x +   eps,    y,  z); \n                n2  =   cheap_noise(x -   eps,    y,  z); \n                a   =   (n1 -   n2)/(2.0f   *   eps);   \n        \n                n1  =   cheap_noise(x,    y   +   eps,    z); \n                n2  =   cheap_noise(x,    y   -   eps,    z); \n                b   =   (n1 -   n2)/(2.0f  *   eps);   \n                    \n                curl.z  =   a   -   b;    \n                return  curl;   \n\}    \n\n\n//=========================\n//noise\n//=========================\n//Noise Only Code\nfloat noise( float3 x )\n\{\n    float3 p = floor(x);\n    float3 f = float3(Frac(x.x),Frac(x.y),Frac(x.z));\n    f = f*f*(3.0f-2.0f*f);\n    \n    float n = p.x + p.y*157.0f + 113.0f*p.z;\n    return _fc_lerp(_fc_lerp(_fc_lerp( hash(n+  0.0f), hash(n+  1.0f),f.x),\n                   _fc_lerp( hash(n+157.0f), hash(n+158.0f),f.x),f.y),\n               _fc_lerp(_fc_lerp( hash(n+113.0f), hash(n+114.0f),f.x),\n                   _fc_lerp( hash(n+270.0f), hash(n+271.0f),f.x),f.y),f.z);\n\}\n//=========================\n//complexNoise\n//=========================\nfloat complexNoise(float3 x)\n\{\n    //Noise Only Code\n    float3 q = 8.0f*x;\n    float f = 0.5000f*noise( q ); \n    q = q*2.01f;\n    f += 0.2500f*noise( q ); \n    q = q*2.02f;\n    f += 0.1250f*noise( q ); \n    q = q*2.03f;\n    f = f + 0.0625f*noise( q ); \n    q = q*2.01f;        \n    return f;       \n    //End Of Noise Only Code\n\}\n\n\n//This function is used to calculate the screenspace coordinates.\nvoid applyForceb( float3 &p_position, float3 &p_velocity, const float3 _force,const float3 _lastforce, const float spawntime) \{\n\n    float3 l_gravity;\n    \n    if (sphericalGravity)\{ //For spherical gravity we apply a gravity towards the grav center\n        l_gravity = (grav_center-p_position)*gravity.x;\n        //l_gravity = gravity;\n    \}\n    else\{\n        l_gravity = gravity;\n\n    \}\n\n    p_velocity += mix(_lastforce,_force,spawntime);\n    p_velocity += l_gravity;\n    p_velocity *= (1.0f-(particleDrag));\n    //p_velocity *= spawntime;\n    if (enableFloor)\{ //If we have a ground floor, make sure that the points don't go below\n\n        if (sphericalGravity)\{\n            if (length((p_position + (p_velocity*spawntime)) - grav_center) <=floorHeight)\{\n                p_velocity = p_velocity*(1.0f-(floorDragMultiplier));\n                p_velocity += float3(0.0f,-p_velocity.y,0.0f)*floorBounce;     \n                p_position += (p_velocity*spawntime);\n                p_position = (normalize(p_position-grav_center)*floorHeight)+grav_center;\n            \}\n            else \{\n                p_position += (p_velocity*spawntime);\n            \}\n        \}\n        else \{\n            if (p_position.y + p_velocity.y<=floorHeight)\{\n                p_velocity = p_velocity*(1.0f-(floorDragMultiplier));\n                p_velocity += float3(0.0f,-p_velocity.y,0.0f)*floorBounce;\n            \}\n            p_position += (p_velocity*spawntime);\n            p_position.y = max(p_position.y,floorHeight);\n        \}\n    \}\n    else\n    \{\n        p_position += (p_velocity*spawntime);\n    \}\n    \n\}\n\n//This function is used to calculate the screenspace coordinates.\nvoid applyForce( float3 &p_position,float3 &p_oldPosition,  float3 &p_velocity, const float3 _force,const float3 _lastforce, const float spawntime) \{\n\n    p_velocity = mix(_lastforce,_force,spawntime);\n    p_velocity += gravity;\n    //p_velocity *= (1.0f-(particleDrag));\n    float3 _temp = p_position;\n    p_position += (p_position-p_oldPosition)*(1.0f-particleDrag)+(p_velocity*spawntime);\n    p_oldPosition = _temp;\n\}\n\n//This function is used to calculate the screenspace coordinates.\nvoid applyForcec( float3 &p_position,float3 &p_oldPosition,  float3 &p_velocity, const float3 _force,const float3 _lastforce, const float spawntime) \{\n    p_velocity = _force;\n    p_velocity += gravity;\n    //p_velocity *= (1.0f-(particleDrag));\n    float3 _temp = p_position;\n    p_position += ((p_position-p_oldPosition)*(1.0f-particleDrag))+p_velocity*spawntime;\n    p_oldPosition = _temp;\n\}\n\n\n\n  void process() \{\n    float4 input = src();\n    float3 p_position = float3(input.x,input.y,input.z);\n    float3 p_oldPosition = p_position;\n\n    float3 output;\n    float3 lastSmaple = float3(0.0f);\n\n    float3 p_velocity = float3(vel_mult(0),vel_mult(1),vel_mult(2))+initialVelocity;\n    //p_position += p_velocity;\n    float3 _force;\n    float3 _lastforce = float3(0.0f);\n    float step; //used to find the substep for amplitude multiplication\n    float ceiling;\n\n\n    float _evolution = evolution;\n    if (a_mode == 1)\{ //Offset the evolution based on the vel_mult maps alpha chan\n        _evolution -= vel_mult(3);\n    \}\n\n\n    for( int i=0; i < int(floor(_evolution)); i++ ) \{\n\n        //Here we calculate how far we are between the ampEntry and ampExit frame.\n        //This is going to be used to add a smooth fadeout \n        step = (max((float)i,(float)ampEntryFrame)-(float)ampEntryFrame)/((float)ampExitFrame-(float)ampEntryFrame);\n        step = max(min(step,1.0f),0.0f);\n        if (i<ampExitFrame)\n        \{\n\n            if (curlNoise)\{\n                _force.x = complexNoise(float3(( p_position.x * scale.x ) + (offset.x+(i*flow.x)),( p_position.y * scale.y ) + (offset.y+(i*flow.y)),( p_position.z * scale.z ) + (offset.z+(i*flow.z)) ))-0.48f;\n                _force.y = complexNoise(float3(( p_position.x * scale.x ) + (offset.x+(i*flow.x)),( p_position.y * scale.y ) + (offset.y+(i*flow.y)),( p_position.z * scale.z ) + (offset.z+(i*flow.z))+100.0f ))-0.48f;\n                _force.z = complexNoise(float3(( p_position.x * scale.x ) + (offset.x+(i*flow.x)),( p_position.y * scale.y ) + (offset.y+(i*flow.y)),( p_position.z * scale.z ) + (offset.z+(i*flow.z))+200.0f ))-0.48f;\n                _force *= amplitude;\n                //_force = CurlNoiseFull(float(octaves), gain, lacunarity, ( p_position.x * scale.x ) + offset.x, ( p_position.y  * scale.y ) + offset.y,  ( p_position.z * scale.z ) + offset.z) * amplitude;\n            \}\n            else \{\n                _force.x = (float)octave_noise_4d(float(octaves), gain, lacunarity, ( p_position.x * scale.x ) + (offset.x+(i*flow.x)), ( p_position.y * scale.y ) + (offset.y+(i*flow.y)),  ( p_position.z * scale.z ) + (offset.z+(i*flow.z)), ( input.w * scale.w ) + (offset.w)) * amplitude;\n                _force.y = (float)octave_noise_4d(float(octaves), gain, lacunarity, ( p_position.x * scale.x ) + (offset.x+(i*flow.x)), ( p_position.y  * scale.y ) + (offset.y+(i*flow.y)),  ( p_position.z * scale.z ) + (offset.z+(i*flow.z)), ( input.w * scale.w ) + (offset.w) + 10000.0f) * amplitude;\n                _force.z = (float)octave_noise_4d(float(octaves), gain, lacunarity, ( p_position.x * scale.x ) + (offset.x+(i*flow.x)), ( p_position.y  * scale.y ) + (offset.y+(i*flow.y)),  ( p_position.z * scale.z ) + (offset.z+(i*flow.z)), ( input.w * scale.w ) + (offset.w) + 20000.0f) * amplitude;\n            \}\n            _force += forceDirection;\n            _force *= 1.0f-step;\n        \}\n        else\n        \{\n            _force *= 0.0f;\n            /* code */\n        \}\n        if (float(i+2)>_evolution)\{\n            ceiling = (_evolution)-floor(_evolution);\n        \}\n        else \{\n            ceiling = 1.0f;\n        \}\n\n        if (a_mode == 0)\{\n            _force = _force * vel_mult(3);\n        \}\n\n        //applyForcec(p_position,p_oldPosition,p_velocity,_force,_lastforce,ceiling); \n        applyForceb(p_position,p_velocity,_force,_lastforce,ceiling); \n\n        _lastforce = _force;\n        \n    \}\n\n    dst() = float4(p_position.x,p_position.y,p_position.z,input.w);\n\}\n\};"
+  useGPUIfAvailable {{parent.useGpu}}
+  rebuild ""
+  Noise4D_evolution {{parent.Evolution}}
+  Noise4D_particleDrag {{parent.Drag}}
+  Noise4D_curlNoise {{parent.NoiseType}}
+  Noise4D_curveNoise {{parent.CurveNoise_Enable}}
+  Noise4D_curveInvert {{parent.CurveNoise_Invert}}
+  Noise4D_curveGain {{parent.CurveGain}}
+  Noise4D_curveOffset {{parent.CurveOffset}}
+  Noise4D_Octaves {{parent.Noise_Octaves}}
+  Noise4D_Gain {{parent.Noise_Gain x-2 0.684}}
+  Noise4D_Lacunarity {{parent.Noise_Lacunarity}}
+  Noise4D_Gamma 0
+  Noise4D_amplitude {{parent.Noise_Amplitude}}
+  Noise4D_Offset {{parent.Freq_Offset} {parent.Freq_Offset} {parent.Freq_Offset} {parent.Freq_Offset}}
+  Noise4D_Scale {{parent.Freq_GeneralScale} {parent.Freq_GeneralScale} {parent.Freq_GeneralScale} {parent.Freq_GeneralScale}}
+  Noise4D_suboffset {{(frame*parent.Freq_EvolveLow.r)/50} {(frame*parent.Freq_EvolveLow.g)/50} {(frame*parent.Freq_EvolveLow.b)/50} {(frame*parent.Freq_EvolveLow.a)/50}}
+  Noise4D_topoffset {{(frame*parent.Freq_EvolveHigh.r)/10} {(frame*parent.Freq_EvolveHigh.g)/10} {(frame*parent.Freq_EvolveHigh.b)/10} {(frame*parent.Freq_EvolveHigh.a)/10}}
+  Noise4D_subscale {{parent.Freq_ScaleLow} {parent.Freq_ScaleLow} {parent.Freq_ScaleLow} {parent.Freq_ScaleLow}}
+  Noise4D_topscale {{parent.Freq_ScaleHigh} {parent.Freq_ScaleHigh} {parent.Freq_ScaleHigh} {parent.Freq_ScaleHigh}}
+  Noise4D_gravity {{parent.GravityType==1?parent.gravity_spherical/100:parent.Gravity/100} {parent.Gravity/100} {parent.Gravity/100}}
+  Noise4D_initialVelocity {{parent.InitialVelocity} {parent.InitialVelocity} {parent.InitialVelocity}}
+  Noise4D_forceDirection {{parent.force_direction} {parent.force_direction} {parent.force_direction}}
+  Noise4D_flow {{parent.Flow/100} {parent.Flow/100} {parent.Flow/100}}
+  Noise4D_ampEntryFrame {{parent.FadeIn}}
+  Noise4D_ampExitFrame {{parent.FadeOut}}
+  Noise4D_enableFloor {{parent.enable_floor}}
+  Noise4D_floorHeight {{parent.floor_height}}
+  Noise4D_floorDragMultiplier {{parent.floor_drag}}
+  Noise4D_grav_center {{parent.gravity_center.x} {parent.gravity_center.y} {parent.gravity_center.z}}
+  Noise4D_sphericalGravity {{parent.GravityType}}
+  Noise4D_alpha_mode 1
+  rebuild_finalise ""
+  name Noise4D3
+  xpos -317
+  ypos 164
+ }
+ Expression {
+  expr0 abs(r)
+  expr1 abs(g)
+  expr2 abs(b)
+  name Expression2
+  xpos -317
+  ypos 228
+  disable {{!parent.Noise_Absolute}}
+ }
+ Shuffle {
+  out pos
+  name Shuffle2
+  xpos -317
+  ypos 330
+ }
+ Reformat {
+  type scale
+  scale {{1/parent.Reformat1.scale}}
+  center false
+  pbb true
+  name Reformat2
+  xpos -456
+  ypos 331
+ }
+push $N6198e800
+ Merge2 {
+  inputs 2
+  operation copy
+  bbox B
+  Achannels pos
+  Bchannels pos
+  output pos
+  name Merge1
+  xpos -582
+  ypos 326
+ }
+ Output {
+  name Output1
+  xpos -582
+  ypos 497
+ }
+end_group

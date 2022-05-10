@@ -1,0 +1,246 @@
+Group {
+ name PointFractal
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User t test}
+ addUserKnob {26 info l "" +STARTLINE T "Point Fractal 1.12\n"}
+ addUserKnob {6 boolean l "Use GPU if available" t "Un-Check to avoid using the gpu for rendering of this node." +STARTLINE}
+ boolean true
+ addUserKnob {26 devider_noise l "<b><font color=#7DADF9>Noise Settings</font><b>"}
+ addUserKnob {6 EnableOffset l "Enable Offset Input" t "Put a map into the \"Offset\" input of this node to modulate the noise based on the luminance of the map.\n\nThe red channal controls the low frequencies while the green channel controls the high frequencies.\n\nYou can for example use this to create a radially shaped noise." +STARTLINE}
+ addUserKnob {6 Noise_Absolute l "Absolute Noise" t "Negative values in the noise offset is made positive." -STARTLINE}
+ addUserKnob {3 Noise_Octaves l Octaves}
+ Noise_Octaves 8
+ addUserKnob {7 Noise_Gain l Gain}
+ Noise_Gain 0.5
+ addUserKnob {7 Noise_Lacunarity l Lacunarity R 0 4}
+ Noise_Lacunarity 0.5
+ addUserKnob {18 Amplitude}
+ Amplitude 0.5
+ addUserKnob {6 Amplitude_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {3 Itterations l Iterations}
+ Itterations 1
+ addUserKnob {26 invis_devider_noise l "" +STARTLINE T " "}
+ addUserKnob {26 Devider_Frequency l "<b><font color=#7DADF9>Freq Control</font><b>"}
+ addUserKnob {19 Freq_Offset l "General Offset" t "This is like a 3D translation, letting you move the current noise pattern in the X, Y, Z and W (4th dimention)" R 0 10}
+ Freq_Offset {0 0 0 0}
+ addUserKnob {6 Freq_Offset_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 Freq_GeneralScale l "Genral Scale" t "This lets you control the scale of each individual noise axis."}
+ Freq_GeneralScale 1
+ addUserKnob {6 Freq_GeneralScale_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {26 invis_devider_freq l "" +STARTLINE T " "}
+ addUserKnob {19 Freq_EvolveLow l "Evolve Low" t "This lets you evolve (auto animate) the noise in a particular direction. The \"Low\" part means that this only affects the low frequencies.\n\nTo avoid a \"scrolling\" effect you can use the 4th dimention to break up the spatial cohearence." R 0 10}
+ Freq_EvolveLow {0.5 0 0 0.5}
+ addUserKnob {6 Freq_EvolveLow_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {6 Freq_ScaleLow_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 Freq_EvolveHigh l "Evolve High" t "This lets you evolve (auto animate) the noise in a particular direction. The \"High\" part means that this only affects the high frequencies.\n\nTo avoid a \"scrolling\" effect you can use the 4th dimention to break up the spatial cohearence."}
+ Freq_EvolveHigh {0 0 0 0}
+ addUserKnob {6 Freq_EvolveHigh_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {26 invis_devider_freq2 l "" +STARTLINE T " "}
+ addUserKnob {19 Freq_ScaleLow l "Scale Low" t "This lets you scale the noise in a particular axis. The \"Low\" part means that this only affects the low frequencies."}
+ Freq_ScaleLow {1 1 1 1}
+ addUserKnob {6 Freq_ScaleLow_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 Freq_ScaleHigh l "Scale High" t "This lets you scale the noise in a particular axis. The \"High\" part means that this only affects the high frequencies."}
+ Freq_ScaleHigh {1 1 1 1}
+ addUserKnob {6 Freq_ScaleHigh_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {26 invis_devider_freq3 l "" +STARTLINE T " "}
+ addUserKnob {26 Curve l "<b><font color=#7DADF9>Curve Noise</font><b>"}
+ addUserKnob {6 CurveNoise_Enable l Enable t "Adds a gamma curve to the noise intensity making noise near the \"Offset\" value more flat. This is a experimental feature." +STARTLINE}
+ addUserKnob {6 CurveNoise_Invert l Invert t "Inverts the effect of the curved noise." -STARTLINE}
+ addUserKnob {7 CurveGain l "Curve Gain" R -10 10}
+ CurveGain 3
+ addUserKnob {7 CurveOffset l "Curve Offset" R -2 2}
+ addUserKnob {26 gabgen l "" +STARTLINE T "\n"}
+ addUserKnob {26 info_mask l "<b><font color=#7DADF9>Mask</font><b>"}
+ addUserKnob {41 maskChannelMask l "" t "If a node is connected to the mask input, this will let you mask off the effect of the noise.\nIts recommended that you use the Point_Texture node to ensure a correct aspect and size." -STARTLINE T Merge1.maskChannelMask}
+ addUserKnob {41 inject -STARTLINE T Merge1.inject}
+ addUserKnob {41 invert_mask l invert -STARTLINE T Merge1.invert_mask}
+ addUserKnob {41 fringe -STARTLINE T Merge1.fringe}
+ addUserKnob {41 mix T Merge1.mix}
+}
+ Input {
+  inputs 0
+  name InputMask
+  xpos -714
+  ypos 297
+  number 1
+ }
+ Reformat {
+  type "to box"
+  box_width {{parent.InputFormat.box.r}}
+  box_height {{parent.InputFormat.box.t}}
+  box_fixed true
+  resize distort
+  name Reformat2
+  xpos -714
+  ypos 396
+ }
+ Shuffle {
+  name Shuffle3
+  xpos -714
+  ypos 420
+ }
+ Input {
+  inputs 0
+  name InputOffset
+  xpos -208
+  ypos 61
+  number 2
+ }
+ Dot {
+  name Dot2
+  xpos -174
+  ypos 153
+ }
+ Input {
+  inputs 0
+  name InputData
+  xpos -582
+  ypos 73
+ }
+ Dot {
+  name Dot1
+  xpos -548
+  ypos 114
+ }
+set N62023000 [stack 0]
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle1
+  xpos -470
+  ypos 110
+ }
+set N62022800 [stack 0]
+ Multiply {
+  value 0
+  name Multiply1
+  xpos -338
+  ypos 106
+ }
+ Merge2 {
+  inputs 2
+  operation copy
+  name Merge2
+  xpos -338
+  ypos 150
+ }
+push $N62022800
+ BlinkScript {
+  inputs 2
+  kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Modify/Fractal_v08.cpp
+  recompileCount 64
+  ProgramGroup 1
+  KernelDescription "2 \"Noise4D\" iterate pixelWise be1f493003df1b115acb2d181bf4caa997e214937eb46d4cd65a56edf3425cad 3 \"src\" Read Point \"modix\" Read Point \"dst\" Write Point 19 \"absNoise\" Bool 1 AA== \"curveNoise\" Bool 1 AA== \"curveInvert\" Bool 1 AA== \"radialNoise\" Bool 1 AA== \"curveGain\" Float 1 AACAPw== \"curveOffset\" Float 1 AACAPw== \"Octaves\" Int 1 CgAAAA== \"Gain\" Float 1 AAAAPw== \"Lacunarity\" Float 1 AAAAQA== \"Gamma\" Float 1 AAAAPw== \"amplitude\" Float 3 AAAAPwAAAD8AAAA/AAAAAA== \"itterations\" Int 1 AQAAAA== \"Offset\" Float 4 AAAAAAAAAAAAAAAAAAAAAA== \"Scale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"suboffset\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"topoffset\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"subscale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"topscale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"center\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== 19 \"absNoise\" 1 1 \"curveNoise\" 1 1 \"curveInvert\" 1 1 \"radialNoise\" 1 1 \"curveGain\" 1 1 \"curveOffset\" 1 1 \"octaves\" 1 1 \"gain\" 1 1 \"lacunarity\" 1 1 \"gamma\" 1 1 \"amplitude\" 3 1 \"itterations\" 1 1 \"offset\" 4 1 \"scale\" 4 1 \"suboffset\" 4 1 \"topoffset\" 4 1 \"subscale\" 4 1 \"topscale\" 4 1 \"center\" 3 1 0"
+  kernelSource "//Based on https://github.com/Draradech/csworldgen/blob/master/simplexnoise.cpp\n//Ported by Mads Hagbarth Lund 2014\n\n/* Copyright (c) 2007-2012 Eliot Eshelman\n *\n * This program is free software: you can redistribute it and/or modify\n * it under the terms of the GNU General Public License as published by\n * the Free Software Foundation, either version 3 of the License, or\n * (at your option) any later version.\n *\n * This program is distributed in the hope that it will be useful,\n * but WITHOUT ANY WARRANTY; without even the implied warranty of\n * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n * GNU General Public License for more details.\n *\n * You should have received a copy of the GNU General Public License\n * along with this program. If not, see <http://www.gnu.org/licenses/>.\n *\n */\n\n\nint fastfloor( const float x ) \{ return x > 0 ? (int) x : (int) x - 1; \}\ninline float raw_noise_4d( const float x, const float y, const float z, const float w ) \n\{\nint simplex\[64]\[4] = \{\n    \{0,1,2,3\},\{0,1,3,2\},\{0,0,0,0\},\{0,2,3,1\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{1,2,3,0\},\n    \{0,2,1,3\},\{0,0,0,0\},\{0,3,1,2\},\{0,3,2,1\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{1,3,2,0\},\n    \{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\n    \{1,2,0,3\},\{0,0,0,0\},\{1,3,0,2\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{2,3,0,1\},\{2,3,1,0\},\n    \{1,0,2,3\},\{1,0,3,2\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{2,0,3,1\},\{0,0,0,0\},\{2,1,3,0\},\n    \{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\n    \{2,0,1,3\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{3,0,1,2\},\{3,0,2,1\},\{0,0,0,0\},\{3,1,2,0\},\n    \{2,1,0,3\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{3,1,0,2\},\{0,0,0,0\},\{3,2,0,1\},\{3,2,1,0\}\n\};\n    int perm\[512] = \{\n        151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,\n        8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,\n        35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,\n        134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,\n        55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208, 89,\n        18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,\n        250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,\n        189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,\n        172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,\n        228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,\n        107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,\n        138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180,\n\n        151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,\n        8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,\n        35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,\n        134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,\n        55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208, 89,\n        18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,\n        250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,\n        189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,\n        172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,\n        228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,\n        107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,\n        138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180\n    \};\n   int grad4\[32]\[4]= \{\n    \{0,1,1,1\},  \{0,1,1,-1\},  \{0,1,-1,1\},  \{0,1,-1,-1\},\n    \{0,-1,1,1\}, \{0,-1,1,-1\}, \{0,-1,-1,1\}, \{0,-1,-1,-1\},\n    \{1,0,1,1\},  \{1,0,1,-1\},  \{1,0,-1,1\},  \{1,0,-1,-1\},\n    \{-1,0,1,1\}, \{-1,0,1,-1\}, \{-1,0,-1,1\}, \{-1,0,-1,-1\},\n    \{1,1,0,1\},  \{1,1,0,-1\},  \{1,-1,0,1\},  \{1,-1,0,-1\},\n    \{-1,1,0,1\}, \{-1,1,0,-1\}, \{-1,-1,0,1\}, \{-1,-1,0,-1\},\n    \{1,1,1,0\},  \{1,1,-1,0\},  \{1,-1,1,0\},  \{1,-1,-1,0\},\n    \{-1,1,1,0\}, \{-1,1,-1,0\}, \{-1,-1,1,0\}, \{-1,-1,-1,0\}\n   \};\n    float F4 = (sqrt(5.0f)-1.0f)/4.0f;\n    float G4 = (5.0f-sqrt(5.0f))/20.0f;\n    float n0, n1, n2, n3, n4;\n    float s = (x + y + z + w) * F4;\n    int i = fastfloor(x + s);\n    int j = fastfloor(y + s);\n    int k = fastfloor(z + s);\n    int l = fastfloor(w + s);\n    float t = (i + j + k + l) * G4;\n    float X0 = i - t;\n    float Y0 = j - t;\n    float Z0 = k - t;\n    float W0 = l - t;\n\n    float x0 = x - X0;\n    float y0 = y - Y0;\n    float z0 = z - Z0;\n    float w0 = w - W0;\n    int c1 = (x0 > y0) ? 32 : 0;\n    int c2 = (x0 > z0) ? 16 : 0;\n    int c3 = (y0 > z0) ? 8 : 0;\n    int c4 = (x0 > w0) ? 4 : 0;\n    int c5 = (y0 > w0) ? 2 : 0;\n    int c6 = (z0 > w0) ? 1 : 0;\n    int c = c1 + c2 + c3 + c4 + c5 + c6;\n\n    int i1, j1, k1, l1;\n    int i2, j2, k2, l2;\n    int i3, j3, k3, l3;\n    i1 = simplex\[c]\[0]>=3 ? 1 : 0;\n    j1 = simplex\[c]\[1]>=3 ? 1 : 0;\n    k1 = simplex\[c]\[2]>=3 ? 1 : 0;\n    l1 = simplex\[c]\[3]>=3 ? 1 : 0;\n    i2 = simplex\[c]\[0]>=2 ? 1 : 0;\n    j2 = simplex\[c]\[1]>=2 ? 1 : 0;\n    k2 = simplex\[c]\[2]>=2 ? 1 : 0;\n    l2 = simplex\[c]\[3]>=2 ? 1 : 0;\n    i3 = simplex\[c]\[0]>=1 ? 1 : 0;\n    j3 = simplex\[c]\[1]>=1 ? 1 : 0;\n    k3 = simplex\[c]\[2]>=1 ? 1 : 0;\n    l3 = simplex\[c]\[3]>=1 ? 1 : 0;\n    float x1 = x0 - i1 + G4;\n    float y1 = y0 - j1 + G4;\n    float z1 = z0 - k1 + G4;\n    float w1 = w0 - l1 + G4;\n    float x2 = x0 - i2 + 2.0*G4;\n    float y2 = y0 - j2 + 2.0*G4;\n    float z2 = z0 - k2 + 2.0*G4;\n    float w2 = w0 - l2 + 2.0*G4;\n    float x3 = x0 - i3 + 3.0*G4;\n    float y3 = y0 - j3 + 3.0*G4;\n    float z3 = z0 - k3 + 3.0*G4;\n    float w3 = w0 - l3 + 3.0*G4;\n    float x4 = x0 - 1.0 + 4.0*G4;\n    float y4 = y0 - 1.0 + 4.0*G4;\n    float z4 = z0 - 1.0 + 4.0*G4;\n    float w4 = w0 - 1.0 + 4.0*G4;\n    int ii = i & 255;\n    int jj = j & 255;\n    int kk = k & 255;\n    int ll = l & 255;\n    int gi0 = perm\[ii+perm\[jj+perm\[kk+perm\[ll]]]] % 32;\n    int gi1 = perm\[ii+i1+perm\[jj+j1+perm\[kk+k1+perm\[ll+l1]]]] % 32;\n    int gi2 = perm\[ii+i2+perm\[jj+j2+perm\[kk+k2+perm\[ll+l2]]]] % 32;\n    int gi3 = perm\[ii+i3+perm\[jj+j3+perm\[kk+k3+perm\[ll+l3]]]] % 32;\n    int gi4 = perm\[ii+1+perm\[jj+1+perm\[kk+1+perm\[ll+1]]]] % 32;\n    float t0 = 0.6 - x0*x0 - y0*y0 - z0*z0 - w0*w0;\n    if(t0<0) n0 = 0.0;\n    else \{\n        t0 *= t0;\n        n0 = t0 * t0 * dot(float4(grad4\[gi0]\[0],grad4\[gi0]\[2],grad4\[gi0]\[3],grad4\[gi0]\[3]), float4(x0, y0, z0, w0));\n    \}\n    float t1 = 0.6 - x1*x1 - y1*y1 - z1*z1 - w1*w1;\n    if(t1<0) n1 = 0.0;\n    else \{\n        t1 *= t1;\n        n1 = t1 * t1 * dot(float4(grad4\[gi1]\[0],grad4\[gi1]\[2],grad4\[gi1]\[3],grad4\[gi1]\[3]), float4(x1, y1, z1, w1));\n    \}\n    float t2 = 0.6 - x2*x2 - y2*y2 - z2*z2 - w2*w2;\n    if(t2<0) n2 = 0.0;\n    else \{\n        t2 *= t2;\n        n2 = t2 * t2 * dot(float4(grad4\[gi2]\[0],grad4\[gi2]\[2],grad4\[gi2]\[3],grad4\[gi2]\[3]), float4(x2, y2, z2, w2));\n    \}\n    float t3 = 0.6 - x3*x3 - y3*y3 - z3*z3 - w3*w3;\n    if(t3<0) n3 = 0.0;\n    else \{\n        t3 *= t3;\n        n3 = t3 * t3 * dot(float4(grad4\[gi3]\[0],grad4\[gi3]\[2],grad4\[gi3]\[3],grad4\[gi3]\[3]), float4(x3, y3, z3, w3));\n    \}\n    float t4 = 0.6 - x4*x4 - y4*y4 - z4*z4 - w4*w4;\n    if(t4<0) n4 = 0.0;\n    else \{\n        t4 *= t4;\n        n4 = t4 * t4 * dot(float4(grad4\[gi4]\[0],grad4\[gi4]\[2],grad4\[gi4]\[3],grad4\[gi4]\[3]), float4(x4, y4, z4, w4));\n    \}\n    return 27.0 * (n0 + n1 + n2 + n3 + n4);\n\}\n\n\n\n\nkernel Noise4D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessPoint, eEdgeClamped> src;\n    Image<eRead, eAccessPoint, eEdgeClamped> modix;\n  Image<eWrite, eAccessPoint> dst;\nparam:\n    bool absNoise;\n    bool curveNoise;\n    bool curveInvert;\n    bool radialNoise;\n    float curveGain;\n    float curveOffset;\n    int octaves;\n    float gain;\n    float lacunarity;\n    float gamma;\n    float3 amplitude;\n    int itterations;\n    float4 offset;\n    float4 scale;\n    float4 suboffset;\n    float4 topoffset;\n    float4 subscale;\n    float4 topscale;\n    float3 center;\n\n\n  void define() \{\n        defineParam (absNoise, \"absNoise\", false);    \n        defineParam (curveNoise, \"curveNoise\", false);    \n        defineParam (curveInvert, \"curveInvert\", false);   \n        defineParam (radialNoise, \"radialNoise\", false);   //Used for radial noise\n        defineParam (curveGain, \"curveGain\", 1.0f);\n        defineParam (curveOffset, \"curveOffset\", 1.0f);\n        defineParam (octaves, \"Octaves\", 10);\n        defineParam (gain, \"Gain\", 0.5f);\n        defineParam (lacunarity, \"Lacunarity\", 2.0f);\n        defineParam (gamma, \"Gamma\", 0.5f);\n        defineParam (amplitude, \"amplitude\", float3(0.5f));\n        defineParam (itterations, \"itterations\", 1);\n        defineParam(offset, \"Offset\", float4(0.0f, 0.0f, 0.0f,0.0f));\n        defineParam(scale, \"Scale\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(suboffset, \"suboffset\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(topoffset, \"topoffset\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(subscale, \"subscale\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(topscale, \"topscale\", float4(1.0f, 1.0f, 1.0f,1.0f));   \n        defineParam(center, \"center\", float3(0.0f,0.0f,0.0f));   //Center for the radial noise      \n  \}\n\nfloat4 sphericalTransform( const float4 cartesian) \n\{\n    return float4(\n(atan2(cartesian.x-center.x,cartesian.y-center.y)+ PI)/+ (PI*2.0f),\n(atan2(cartesian.x-center.x,cartesian.z-center.z)+ PI)/+ (PI*2.0f),\n(atan2(cartesian.z-center.z,cartesian.y-center.y)+ PI)/+ (PI*2.0f),\ncartesian.w\n);\n\}\n\nfloat octave_noise_4d( float4 modulix, const float octaves, const float persistence, const float scale, const float x, const float y, const float z, const float w ) \n\{\n    float total = 0.0f;\n    float current;\n    float last = 1.0f;\n    float frequency = scale;\n    float amplitude = 1.0f;\n    float maxAmplitude = 0.0f;\n    float4 Tempoffset;\n    float4 Tempscale;\n\n\n    for( int i=0; i < octaves; i++ ) \{\n\n        /*\n        if (i == 0) \{\n            total += (float)raw_noise_4d( (x+suboffset.x) * frequency, (y+suboffset.y) * frequency, (z+suboffset.z) * frequency, (w+suboffset.w) * frequency ) * amplitude;\n        \}\n        else if (i == octaves-1) \{\n            total += (float)raw_noise_4d( (x+topoffset.x) * frequency, (y+topoffset.y) * frequency, (z+topoffset.z) * frequency, (w+topoffset.w) * frequency ) * amplitude;\n        \}\n        else \{\n            total += (float)raw_noise_4d( x * frequency, y * frequency, z * frequency, w * frequency ) * amplitude;\n        \}\n        */\n\n\n        Tempscale = (topscale * (i/(octaves-1.0f)))+(subscale * (1-(i/(octaves-1.0f))));       \n        Tempoffset = ((topoffset+modulix.y) * (i/(octaves-1.0f)))+((suboffset+modulix.x) * (1-(i/(octaves-1.0f))));\n        current = (float)raw_noise_4d(   ((x*Tempscale.x)+Tempoffset.x) * frequency, \n                                        ((y*Tempscale.y)+Tempoffset.y) * frequency, \n                                        ((z*Tempscale.z)+Tempoffset.z) * frequency, \n                                        ((w*Tempscale.w)+Tempoffset.w) * frequency \n                                        ) * amplitude;\n        if (i == 0 && curveNoise)\{\n            if (curveInvert)\{\n                last = 0.5f-current;  \n            \}\n            else\{\n                last = current;  \n            \}\n               \n        \}\n        current = curveNoise?current*((last+curveOffset)*curveGain):current;\n        total += absNoise?fabs(current):current;\n        frequency *= 2.0f;\n        maxAmplitude += amplitude;\n        amplitude *= persistence;\n\n    \}\n    return float(total / maxAmplitude);\n\}\n\n\n\n\n  void process() \{\n    float4 srcSample = float4(src(0),src(1),src(2),src(3));\n    float4 srcSampleModix = modix();\n    float sampleR,sampleG,sampleB;\n    if (radialNoise)\{\n        srcSample = sphericalTransform(srcSample);\n    \}\n\n    for( int i=0; i < itterations; i++ ) \{\n        sampleR = (float)octave_noise_4d(srcSampleModix,float(octaves), gain, lacunarity, ( srcSample.x * scale.x ) + offset.x, ( srcSample.y * scale.y ) + offset.y,  ( srcSample.z * scale.z ) + offset.z, ( srcSample.w * scale.w ) + offset.w) * amplitude.x;\n        sampleG = (float)octave_noise_4d(srcSampleModix,float(octaves), gain, lacunarity, ( srcSample.x * scale.x ) + offset.x, ( srcSample.y * scale.y ) + offset.y,  ( srcSample.z * scale.z ) + offset.z, ( srcSample.w * scale.w ) + offset.w - 100.0f) * amplitude.y;\n        sampleB = (float)octave_noise_4d(srcSampleModix,float(octaves), gain, lacunarity, ( srcSample.x * scale.x ) + offset.x, ( srcSample.y * scale.y ) + offset.y,  ( srcSample.z * scale.z ) + offset.z, ( srcSample.w * scale.w ) + offset.w + 200.0f) * amplitude.z;\n        srcSample = float4(srcSample.x+sampleR,srcSample.y+sampleG,srcSample.z+sampleB,srcSample.w);\n    \}\n    dst() = float4(srcSample.x,srcSample.y,srcSample.z,1.0f);\n\}\n\};"
+  useGPUIfAvailable {{parent.boolean}}
+  rebuild ""
+  Noise4D_curveNoise {{parent.CurveNoise_Enable}}
+  Noise4D_curveInvert {{parent.CurveNoise_Invert}}
+  Noise4D_curveGain {{parent.CurveGain}}
+  Noise4D_curveOffset {{parent.CurveOffset}}
+  Noise4D_Octaves {{parent.Noise_Octaves}}
+  Noise4D_Gain {{parent.Noise_Gain}}
+  Noise4D_Lacunarity {{parent.Noise_Lacunarity}}
+  Noise4D_Gamma 0.79
+  Noise4D_amplitude {{parent.Amplitude.r} {parent.Amplitude.g} {parent.Amplitude.b}}
+  Noise4D_itterations {{parent.Itterations}}
+  Noise4D_Offset {{parent.Freq_Offset} {parent.Freq_Offset} {parent.Freq_Offset} {parent.Freq_Offset}}
+  Noise4D_Scale {{parent.Freq_GeneralScale} {parent.Freq_GeneralScale} {parent.Freq_GeneralScale} {parent.Freq_GeneralScale}}
+  Noise4D_suboffset {{(frame*parent.Freq_EvolveLow.r)/50} {(frame*parent.Freq_EvolveLow.g)/50} {(frame*parent.Freq_EvolveLow.b)/50} {(frame*parent.Freq_EvolveLow.a)/50}}
+  Noise4D_topoffset {{(frame*parent.Freq_EvolveHigh.r)/10} {(frame*parent.Freq_EvolveHigh.g)/10} {(frame*parent.Freq_EvolveHigh.b)/10} {(frame*parent.Freq_EvolveHigh.a)/10}}
+  Noise4D_subscale {{parent.Freq_ScaleLow} {parent.Freq_ScaleLow} {parent.Freq_ScaleLow} {parent.Freq_ScaleLow}}
+  Noise4D_topscale {{parent.Freq_ScaleHigh} {parent.Freq_ScaleHigh} {parent.Freq_ScaleHigh} {parent.Freq_ScaleHigh}}
+  rebuild_finalise ""
+  name Noise4D2
+  selected true
+  xpos -338
+  ypos 319
+ }
+push $N62022800
+ BlinkScript {
+  kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Modify/Fractal_v06.cpp
+  recompileCount 60
+  ProgramGroup 1
+  KernelDescription "2 \"Noise4D\" iterate pixelWise d54284af3e5573ad197bef9032773e8653de2cad590694fcc9fd5af993e97da3 2 \"src\" Read Point \"dst\" Write Point 17 \"absNoise\" Bool 1 AA== \"curveNoise\" Bool 1 AA== \"curveInvert\" Bool 1 AA== \"curveGain\" Float 1 AACAPw== \"curveOffset\" Float 1 AACAPw== \"Octaves\" Int 1 CgAAAA== \"Gain\" Float 1 AAAAPw== \"Lacunarity\" Float 1 AAAAQA== \"Gamma\" Float 1 AAAAPw== \"amplitude\" Float 3 AAAAPwAAAD8AAAA/AAAAAA== \"itterations\" Int 1 AQAAAA== \"Offset\" Float 4 AAAAAAAAAAAAAAAAAAAAAA== \"Scale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"suboffset\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"topoffset\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"subscale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"topscale\" Float 4 AACAPwAAgD8AAIA/AACAPw== 17 \"absNoise\" 1 1 \"curveNoise\" 1 1 \"curveInvert\" 1 1 \"curveGain\" 1 1 \"curveOffset\" 1 1 \"octaves\" 1 1 \"gain\" 1 1 \"lacunarity\" 1 1 \"gamma\" 1 1 \"amplitude\" 3 1 \"itterations\" 1 1 \"offset\" 4 1 \"scale\" 4 1 \"suboffset\" 4 1 \"topoffset\" 4 1 \"subscale\" 4 1 \"topscale\" 4 1 0"
+  kernelSource "//Based on https://github.com/Draradech/csworldgen/blob/master/simplexnoise.cpp\n//Ported by Mads Hagbarth Lund 2014\n\n/* Copyright (c) 2007-2012 Eliot Eshelman\n *\n * This program is free software: you can redistribute it and/or modify\n * it under the terms of the GNU General Public License as published by\n * the Free Software Foundation, either version 3 of the License, or\n * (at your option) any later version.\n *\n * This program is distributed in the hope that it will be useful,\n * but WITHOUT ANY WARRANTY; without even the implied warranty of\n * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n * GNU General Public License for more details.\n *\n * You should have received a copy of the GNU General Public License\n * along with this program. If not, see <http://www.gnu.org/licenses/>.\n *\n */\n\n\nint fastfloor( const float x ) \{ return x > 0 ? (int) x : (int) x - 1; \}\ninline float raw_noise_4d( const float x, const float y, const float z, const float w ) \n\{\nint simplex\[64]\[4] = \{\n    \{0,1,2,3\},\{0,1,3,2\},\{0,0,0,0\},\{0,2,3,1\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{1,2,3,0\},\n    \{0,2,1,3\},\{0,0,0,0\},\{0,3,1,2\},\{0,3,2,1\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{1,3,2,0\},\n    \{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\n    \{1,2,0,3\},\{0,0,0,0\},\{1,3,0,2\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{2,3,0,1\},\{2,3,1,0\},\n    \{1,0,2,3\},\{1,0,3,2\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{2,0,3,1\},\{0,0,0,0\},\{2,1,3,0\},\n    \{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\n    \{2,0,1,3\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{3,0,1,2\},\{3,0,2,1\},\{0,0,0,0\},\{3,1,2,0\},\n    \{2,1,0,3\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{3,1,0,2\},\{0,0,0,0\},\{3,2,0,1\},\{3,2,1,0\}\n\};\n    int perm\[512] = \{\n        151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,\n        8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,\n        35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,\n        134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,\n        55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208, 89,\n        18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,\n        250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,\n        189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,\n        172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,\n        228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,\n        107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,\n        138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180,\n\n        151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,\n        8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,\n        35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,\n        134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,\n        55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208, 89,\n        18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,\n        250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,\n        189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,\n        172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,\n        228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,\n        107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,\n        138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180\n    \};\n   int grad4\[32]\[4]= \{\n    \{0,1,1,1\},  \{0,1,1,-1\},  \{0,1,-1,1\},  \{0,1,-1,-1\},\n    \{0,-1,1,1\}, \{0,-1,1,-1\}, \{0,-1,-1,1\}, \{0,-1,-1,-1\},\n    \{1,0,1,1\},  \{1,0,1,-1\},  \{1,0,-1,1\},  \{1,0,-1,-1\},\n    \{-1,0,1,1\}, \{-1,0,1,-1\}, \{-1,0,-1,1\}, \{-1,0,-1,-1\},\n    \{1,1,0,1\},  \{1,1,0,-1\},  \{1,-1,0,1\},  \{1,-1,0,-1\},\n    \{-1,1,0,1\}, \{-1,1,0,-1\}, \{-1,-1,0,1\}, \{-1,-1,0,-1\},\n    \{1,1,1,0\},  \{1,1,-1,0\},  \{1,-1,1,0\},  \{1,-1,-1,0\},\n    \{-1,1,1,0\}, \{-1,1,-1,0\}, \{-1,-1,1,0\}, \{-1,-1,-1,0\}\n   \};\n    float F4 = (sqrt(5.0f)-1.0f)/4.0f;\n    float G4 = (5.0f-sqrt(5.0f))/20.0f;\n    float n0, n1, n2, n3, n4;\n    float s = (x + y + z + w) * F4;\n    int i = fastfloor(x + s);\n    int j = fastfloor(y + s);\n    int k = fastfloor(z + s);\n    int l = fastfloor(w + s);\n    float t = (i + j + k + l) * G4;\n    float X0 = i - t;\n    float Y0 = j - t;\n    float Z0 = k - t;\n    float W0 = l - t;\n\n    float x0 = x - X0;\n    float y0 = y - Y0;\n    float z0 = z - Z0;\n    float w0 = w - W0;\n    int c1 = (x0 > y0) ? 32 : 0;\n    int c2 = (x0 > z0) ? 16 : 0;\n    int c3 = (y0 > z0) ? 8 : 0;\n    int c4 = (x0 > w0) ? 4 : 0;\n    int c5 = (y0 > w0) ? 2 : 0;\n    int c6 = (z0 > w0) ? 1 : 0;\n    int c = c1 + c2 + c3 + c4 + c5 + c6;\n\n    int i1, j1, k1, l1;\n    int i2, j2, k2, l2;\n    int i3, j3, k3, l3;\n    i1 = simplex\[c]\[0]>=3 ? 1 : 0;\n    j1 = simplex\[c]\[1]>=3 ? 1 : 0;\n    k1 = simplex\[c]\[2]>=3 ? 1 : 0;\n    l1 = simplex\[c]\[3]>=3 ? 1 : 0;\n    i2 = simplex\[c]\[0]>=2 ? 1 : 0;\n    j2 = simplex\[c]\[1]>=2 ? 1 : 0;\n    k2 = simplex\[c]\[2]>=2 ? 1 : 0;\n    l2 = simplex\[c]\[3]>=2 ? 1 : 0;\n    i3 = simplex\[c]\[0]>=1 ? 1 : 0;\n    j3 = simplex\[c]\[1]>=1 ? 1 : 0;\n    k3 = simplex\[c]\[2]>=1 ? 1 : 0;\n    l3 = simplex\[c]\[3]>=1 ? 1 : 0;\n    float x1 = x0 - i1 + G4;\n    float y1 = y0 - j1 + G4;\n    float z1 = z0 - k1 + G4;\n    float w1 = w0 - l1 + G4;\n    float x2 = x0 - i2 + 2.0*G4;\n    float y2 = y0 - j2 + 2.0*G4;\n    float z2 = z0 - k2 + 2.0*G4;\n    float w2 = w0 - l2 + 2.0*G4;\n    float x3 = x0 - i3 + 3.0*G4;\n    float y3 = y0 - j3 + 3.0*G4;\n    float z3 = z0 - k3 + 3.0*G4;\n    float w3 = w0 - l3 + 3.0*G4;\n    float x4 = x0 - 1.0 + 4.0*G4;\n    float y4 = y0 - 1.0 + 4.0*G4;\n    float z4 = z0 - 1.0 + 4.0*G4;\n    float w4 = w0 - 1.0 + 4.0*G4;\n    int ii = i & 255;\n    int jj = j & 255;\n    int kk = k & 255;\n    int ll = l & 255;\n    int gi0 = perm\[ii+perm\[jj+perm\[kk+perm\[ll]]]] % 32;\n    int gi1 = perm\[ii+i1+perm\[jj+j1+perm\[kk+k1+perm\[ll+l1]]]] % 32;\n    int gi2 = perm\[ii+i2+perm\[jj+j2+perm\[kk+k2+perm\[ll+l2]]]] % 32;\n    int gi3 = perm\[ii+i3+perm\[jj+j3+perm\[kk+k3+perm\[ll+l3]]]] % 32;\n    int gi4 = perm\[ii+1+perm\[jj+1+perm\[kk+1+perm\[ll+1]]]] % 32;\n    float t0 = 0.6 - x0*x0 - y0*y0 - z0*z0 - w0*w0;\n    if(t0<0) n0 = 0.0;\n    else \{\n        t0 *= t0;\n        n0 = t0 * t0 * dot(float4(grad4\[gi0]\[0],grad4\[gi0]\[2],grad4\[gi0]\[3],grad4\[gi0]\[3]), float4(x0, y0, z0, w0));\n    \}\n    float t1 = 0.6 - x1*x1 - y1*y1 - z1*z1 - w1*w1;\n    if(t1<0) n1 = 0.0;\n    else \{\n        t1 *= t1;\n        n1 = t1 * t1 * dot(float4(grad4\[gi1]\[0],grad4\[gi1]\[2],grad4\[gi1]\[3],grad4\[gi1]\[3]), float4(x1, y1, z1, w1));\n    \}\n    float t2 = 0.6 - x2*x2 - y2*y2 - z2*z2 - w2*w2;\n    if(t2<0) n2 = 0.0;\n    else \{\n        t2 *= t2;\n        n2 = t2 * t2 * dot(float4(grad4\[gi2]\[0],grad4\[gi2]\[2],grad4\[gi2]\[3],grad4\[gi2]\[3]), float4(x2, y2, z2, w2));\n    \}\n    float t3 = 0.6 - x3*x3 - y3*y3 - z3*z3 - w3*w3;\n    if(t3<0) n3 = 0.0;\n    else \{\n        t3 *= t3;\n        n3 = t3 * t3 * dot(float4(grad4\[gi3]\[0],grad4\[gi3]\[2],grad4\[gi3]\[3],grad4\[gi3]\[3]), float4(x3, y3, z3, w3));\n    \}\n    float t4 = 0.6 - x4*x4 - y4*y4 - z4*z4 - w4*w4;\n    if(t4<0) n4 = 0.0;\n    else \{\n        t4 *= t4;\n        n4 = t4 * t4 * dot(float4(grad4\[gi4]\[0],grad4\[gi4]\[2],grad4\[gi4]\[3],grad4\[gi4]\[3]), float4(x4, y4, z4, w4));\n    \}\n    return 27.0 * (n0 + n1 + n2 + n3 + n4);\n\}\n\n\n\n\nkernel Noise4D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessPoint, eEdgeClamped> src;\n  Image<eWrite, eAccessPoint> dst;\nparam:\n    bool absNoise;\n    bool curveNoise;\n    bool curveInvert;\n    float curveGain;\n    float curveOffset;\n    int octaves;\n    float gain;\n    float lacunarity;\n    float gamma;\n    float3 amplitude;\n    int itterations;\n    float4 offset;\n    float4 scale;\n    float4 suboffset;\n    float4 topoffset;\n    float4 subscale;\n    float4 topscale;\n\n\n  void define() \{\n        defineParam (absNoise, \"absNoise\", false);    \n        defineParam (curveNoise, \"curveNoise\", false);    \n        defineParam (curveInvert, \"curveInvert\", false);   \n        defineParam (curveGain, \"curveGain\", 1.0f);\n        defineParam (curveOffset, \"curveOffset\", 1.0f);\n        defineParam (octaves, \"Octaves\", 10);\n        defineParam (gain, \"Gain\", 0.5f);\n        defineParam (lacunarity, \"Lacunarity\", 2.0f);\n        defineParam (gamma, \"Gamma\", 0.5f);\n        defineParam (amplitude, \"amplitude\", float3(0.5f));\n        defineParam (itterations, \"itterations\", 1);\n        defineParam(offset, \"Offset\", float4(0.0f, 0.0f, 0.0f,0.0f));\n        defineParam(scale, \"Scale\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(suboffset, \"suboffset\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(topoffset, \"topoffset\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(subscale, \"subscale\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(topscale, \"topscale\", float4(1.0f, 1.0f, 1.0f,1.0f));        \n  \}\n\nfloat octave_noise_4d( const float octaves, const float persistence, const float scale, const float x, const float y, const float z, const float w ) \n\{\n    float total = 0.0f;\n    float current;\n    float last = 1.0f;\n    float frequency = scale;\n    float amplitude = 1.0f;\n    float maxAmplitude = 0.0f;\n    float4 Tempoffset;\n    float4 Tempscale;\n\n\n    for( int i=0; i < octaves; i++ ) \{\n\n        /*\n        if (i == 0) \{\n            total += (float)raw_noise_4d( (x+suboffset.x) * frequency, (y+suboffset.y) * frequency, (z+suboffset.z) * frequency, (w+suboffset.w) * frequency ) * amplitude;\n        \}\n        else if (i == octaves-1) \{\n            total += (float)raw_noise_4d( (x+topoffset.x) * frequency, (y+topoffset.y) * frequency, (z+topoffset.z) * frequency, (w+topoffset.w) * frequency ) * amplitude;\n        \}\n        else \{\n            total += (float)raw_noise_4d( x * frequency, y * frequency, z * frequency, w * frequency ) * amplitude;\n        \}\n        */\n\n\n        Tempscale = (topscale * (i/(octaves-1.0f)))+(subscale * (1-(i/(octaves-1.0f))));       \n        Tempoffset = (topoffset * (i/(octaves-1.0f)))+(suboffset * (1-(i/(octaves-1.0f))));\n        current = (float)raw_noise_4d(   ((x*Tempscale.x)+Tempoffset.x) * frequency, \n                                        ((y*Tempscale.y)+Tempoffset.y) * frequency, \n                                        ((z*Tempscale.z)+Tempoffset.z) * frequency, \n                                        ((w*Tempscale.w)+Tempoffset.w) * frequency \n                                        ) * amplitude;\n        if (i == 0 && curveNoise)\{\n            if (curveInvert)\{\n                last = 0.5f-current;  \n            \}\n            else\{\n                last = current;  \n            \}\n               \n        \}\n        current = curveNoise?current*((last+curveOffset)*curveGain):current;\n        total += absNoise?fabs(current):current;\n        frequency *= 2.0f;\n        maxAmplitude += amplitude;\n        amplitude *= persistence;\n\n    \}\n    return float(total / maxAmplitude);\n\}\n\n\n\n\n  void process() \{\n    float4 srcSample = float4(src(0),src(1),src(2),src(3));\n    float sampleR,sampleG,sampleB;\n    for( int i=0; i < itterations; i++ ) \{\n        sampleR = (float)octave_noise_4d(float(octaves), gain, lacunarity, ( srcSample.x * scale.x ) + offset.x, ( srcSample.y * scale.y ) + offset.y,  ( srcSample.z * scale.z ) + offset.z, ( srcSample.w * scale.w ) + offset.w) * amplitude.x;\n        sampleG = (float)octave_noise_4d(float(octaves), gain, lacunarity, ( srcSample.x * scale.x ) + offset.x, ( srcSample.y * scale.y ) + offset.y,  ( srcSample.z * scale.z ) + offset.z, ( srcSample.w * scale.w ) + offset.w - 100.0f) * amplitude.y;\n        sampleB = (float)octave_noise_4d(float(octaves), gain, lacunarity, ( srcSample.x * scale.x ) + offset.x, ( srcSample.y * scale.y ) + offset.y,  ( srcSample.z * scale.z ) + offset.z, ( srcSample.w * scale.w ) + offset.w + 200.0f) * amplitude.z;\n        srcSample = float4(srcSample.x+sampleR,srcSample.y+sampleG,srcSample.z+sampleB,srcSample.w);\n    \}\n    dst() = float4(srcSample.x,srcSample.y,srcSample.z,1.0f);\n\}\n\};"
+  useGPUIfAvailable {{parent.boolean}}
+  rebuild ""
+  Noise4D_curveNoise {{parent.CurveNoise_Enable}}
+  Noise4D_curveInvert {{parent.CurveNoise_Invert}}
+  Noise4D_curveGain {{parent.CurveGain}}
+  Noise4D_curveOffset {{parent.CurveOffset}}
+  Noise4D_Octaves {{parent.Noise_Octaves}}
+  Noise4D_Gain {{parent.Noise_Gain}}
+  Noise4D_Lacunarity {{parent.Noise_Lacunarity}}
+  Noise4D_Gamma 0.79
+  Noise4D_amplitude {{parent.Amplitude.r} {parent.Amplitude.g} {parent.Amplitude.b}}
+  Noise4D_itterations {{parent.Itterations}}
+  Noise4D_Offset {{parent.Freq_Offset} {parent.Freq_Offset} {parent.Freq_Offset} {parent.Freq_Offset}}
+  Noise4D_Scale {{parent.Freq_GeneralScale} {parent.Freq_GeneralScale} {parent.Freq_GeneralScale} {parent.Freq_GeneralScale}}
+  Noise4D_suboffset {{(frame*parent.Freq_EvolveLow.r)/50} {(frame*parent.Freq_EvolveLow.g)/50} {(frame*parent.Freq_EvolveLow.b)/50} {(frame*parent.Freq_EvolveLow.a)/50}}
+  Noise4D_topoffset {{(frame*parent.Freq_EvolveHigh.r)/10} {(frame*parent.Freq_EvolveHigh.g)/10} {(frame*parent.Freq_EvolveHigh.b)/10} {(frame*parent.Freq_EvolveHigh.a)/10}}
+  Noise4D_subscale {{parent.Freq_ScaleLow} {parent.Freq_ScaleLow} {parent.Freq_ScaleLow} {parent.Freq_ScaleLow}}
+  Noise4D_topscale {{parent.Freq_ScaleHigh} {parent.Freq_ScaleHigh} {parent.Freq_ScaleHigh} {parent.Freq_ScaleHigh}}
+  rebuild_finalise ""
+  name Noise4D1
+  xpos -470
+  ypos 267
+ }
+ Switch {
+  inputs 2
+  which {{parent.EnableOffset}}
+  name Switch1
+  xpos -470
+  ypos 325
+ }
+ Expression {
+  expr0 abs(r)
+  expr1 abs(g)
+  expr2 abs(b)
+  name Expression2
+  xpos -470
+  ypos 349
+  disable {{!parent.Noise_Absolute}}
+ }
+ Shuffle {
+  out pos
+  name Shuffle2
+  xpos -470
+  ypos 420
+ }
+push $N62023000
+ Merge2 {
+  inputs 2+1
+  operation copy
+  bbox B
+  Achannels {pos.red pos.green pos.blue -pos.alpha}
+  Bchannels {pos.red pos.green pos.blue -pos.alpha}
+  output {pos.red pos.green pos.blue -pos.alpha}
+  maskChannelMask -rgba.alpha
+  name Merge1
+  xpos -582
+  ypos 416
+ }
+ Output {
+  name Output1
+  xpos -582
+  ypos 587
+ }
+push $N62023000
+ Crop {
+  box {0 0 {width} {height}}
+  reformat true
+  crop false
+  name InputFormat
+  xpos -713
+  ypos 111
+ }
+ StickyNote {
+  inputs 0
+  name StickyNote1
+  label "These two noise scripts are alsmost identical.\nThe problem is that adding 1 extra input does eat up a lot of performence,\nso when we don't need the input we should avoid using it."
+  xpos -239
+  ypos 269
+ }
+end_group

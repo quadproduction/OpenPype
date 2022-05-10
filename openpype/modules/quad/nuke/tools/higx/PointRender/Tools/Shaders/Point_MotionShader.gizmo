@@ -1,0 +1,109 @@
+Group {
+ name Point_MotionShader
+ tile_color 0x434343ff
+ note_font_color 0x7DADF9FF
+ selected true
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Motion Shader v1.0"}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {4 Output M {"Motion Velocity" "Motion Vector"}}
+ addUserKnob {7 Multiplier R 0 1000}
+ Multiplier 10
+}
+ BackdropNode {
+  inputs 0
+  name BackdropNode4
+  tile_color 0x388e8e00
+  label Motion
+  note_font_size 42
+  xpos -566
+  ypos 152
+  bdwidth 376
+  bdheight 209
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos -444
+  ypos 86
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle1
+  xpos -444
+  ypos 142
+ }
+ Dot {
+  name Dot1
+  xpos -410
+  ypos 179
+ }
+set N29561870 [stack 0]
+ TimeOffset {
+  time_offset 1
+  time ""
+  name TimeOffset1
+  xpos -444
+  ypos 210
+ }
+set N26744000 [stack 0]
+push $N29561870
+ Dot {
+  name Dot2
+  xpos -264
+  ypos 179
+ }
+ Dot {
+  name Dot10
+  xpos -264
+  ypos 246
+ }
+set N2956a4c0 [stack 0]
+ Merge2 {
+  inputs 2
+  operation minus
+  name Vector
+  xpos -546
+  ypos 318
+ }
+push $N26744000
+push $N2956a4c0
+ MergeExpression {
+  inputs 2
+  temp_name0 xd
+  temp_expr0 A.red-B.red
+  temp_name1 yd
+  temp_expr1 A.green-B.green
+  temp_name2 zd
+  temp_expr2 A.blue-B.blue
+  temp_name3 Distance
+  temp_expr3 "sqrt(xd*xd + yd*yd + zd*zd)"
+  expr0 Distance
+  expr1 Distance
+  expr2 Distance
+  name Magnitude
+  xpos -444
+  ypos 319
+ }
+ Switch {
+  inputs 2
+  which {{parent.Output}}
+  name Switch1
+  xpos -444
+  ypos 426
+ }
+ Grade {
+  white {{parent.Multiplier}}
+  black_clamp false
+  name Grade11
+  selected true
+  xpos -444
+  ypos 450
+ }
+ Output {
+  name Output1
+  xpos -444
+  ypos 479
+ }
+end_group

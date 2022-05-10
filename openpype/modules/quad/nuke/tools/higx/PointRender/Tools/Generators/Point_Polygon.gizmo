@@ -1,0 +1,179 @@
+Group {
+ inputs 0
+ name Point_Polygon
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Point Polygon v1.01\n"}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {3 subdivisions l Sides}
+ subdivisions 6
+ addUserKnob {3 pointCount l Subdivisions}
+ pointCount 200
+ addUserKnob {26 divider_translate l "<b><font color=#7DADF9>Transform</font><b>"}
+ addUserKnob {41 translate T Axis1.translate}
+ addUserKnob {41 rotate T Axis1.rotate}
+ addUserKnob {41 scaling l scale T Axis1.scaling}
+ addUserKnob {41 uniform_scale l "uniform scale" T Axis1.uniform_scale}
+ addUserKnob {3 FormatX l "Number of Points x" +INVISIBLE}
+ FormatX {{subdivisions*pointCount}}
+ addUserKnob {3 FormatY l Y -STARTLINE +INVISIBLE}
+ FormatY 2
+ addUserKnob {26 divider_creative l "<b><font color=#7DADF9>Creative</font><b>"}
+ addUserKnob {4 CreativeMode l "Creative Mode" t "Some creative additions to the polygon.\n\nSpiral will offset the points slowly from the start of a segment to the end of a segment\n\nCogwheel will offset every other segment (defined by number of branches. If you use this in conjunction with \"wire render mode\" you will get a cogwheel looking object." M {None Spiral Cogwheel ""}}
+ addUserKnob {3 Spiral_Branches l Branches}
+ Spiral_Branches 4
+ addUserKnob {7 offset l Offset}
+ offset 1
+}
+ Crop {
+  inputs 0
+  box {0 0 {parent.FormatX} {parent.FormatY}}
+  reformat true
+  crop false
+  name Format
+  xpos 384
+  ypos -281
+ }
+ Expression {
+  temp_name1 lon
+  temp_expr1 (x/width)*pi*2
+  expr0 "cos (lon)"
+  expr1 0
+  expr2 "sin( lon)"
+  name Expression9
+  xpos 384
+  ypos -220
+ }
+ BlinkScript {
+  kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Generator/point_line.cpp
+  recompileCount 94
+  ProgramGroup 1
+  KernelDescription "2 \"SaturationKernel\" iterate pixelWise 60c57c63fd597988df9a21d713a4a86069787859027f9c990f064d6b2acfae92 2 \"src\" Read Point \"dst\" Write Point 2 \"pointCount\" Int 1 AgAAAA== \"subdivisions\" Float 1 AAAAQA== 2 \"pointCount\" 1 1 \"subdivisions\" 1 1 0"
+  kernelSource "kernel SaturationKernel : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessPoint, eEdgeClamped> src; // the input image\n  Image<eWrite> dst; // the output image\n\n  param:\n    int pointCount; // This parameter is made available to the user.\n    float subdivisions; // This parameter is made available to the user.\n\n\n\n\n\nfloat3 genVertex(float _step,float _index)\{\n\n  //float offset = fmod(_index,2.0f)>1.0f; //Gear\n\n  //float offset = fmod(subdivisions/_step,2.0f)>1.0f;\n\n\n  //offset = offset *0.15+0.75;\n  return float3(cos (_step*PI*2.0f),0.0f,sin(_step*PI*2.0f));\n\}   \n\n  // In define(), parameters can be given labels and default values.\n  void define() \{\n    defineParam(pointCount, \"pointCount\", 2);\n    defineParam(subdivisions, \"subdivisions\", 2.0f);\n  \}\n\n\n  void process(int2 pos) \{\n    float4 output;\n    float step = (float)pos.x / (float)(src.bounds.width());\n    float curStep = floor(step * subdivisions)/subdivisions;\n    float nextStep = curStep + (1.0f/subdivisions);\n    float index = pos.x / (src.bounds.width()/subdivisions);\n\n    float substep = (step - curStep) / max(nextStep-curStep,0.00000001f);\n\n    float3 curPosition = genVertex(curStep,index);\n    float3 nextPosition = genVertex(nextStep,index);\n    float3 position = (curPosition * (1.0f-substep)) + (nextPosition * (substep)); //Lerp\n\n    dst() = float4(position.x,position.y,position.z,1.0f);\n  \}\n\};\n"
+  useGPUIfAvailable false
+  rebuild ""
+  SaturationKernel_subdivisions {{parent.subdivisions}}
+  rebuild_finalise ""
+  name BlinkScript1
+  selected true
+  xpos 384
+  ypos -167
+ }
+set N61625400 [stack 0]
+ Expression {
+  temp_name0 premult
+  temp_expr0 sin(((x/width)*(pi*2))*(parent.Spiral_Branches/2))
+  temp_name1 mult
+  temp_expr1 (sign(premult+0.0000001)*parent.offset)+1
+  expr0 r*mult
+  expr1 g*mult
+  expr2 b*mult
+  name Expression2
+  xpos 496
+  ypos -138
+ }
+push $N61625400
+ Expression {
+  temp_name0 premult
+  temp_expr0 (((x/width)*parent.Spiral_Branches)%1)
+  temp_name1 mult
+  temp_expr1 premult
+  expr0 r*mult
+  expr1 g*mult
+  expr2 b*mult
+  mix {{parent.offset}}
+  name Expression4
+  xpos 277
+  ypos -132
+ }
+push $N61625400
+ Switch {
+  inputs 3
+  which {{parent.CreativeMode}}
+  name Switch1
+  xpos 384
+  ypos -101
+ }
+ ColorMatrix {
+  matrix {
+      {{parent.Axis1.world_matrix.0} {parent.Axis1.world_matrix.1} {parent.Axis1.world_matrix.2}}
+      {{parent.Axis1.world_matrix.4} {parent.Axis1.world_matrix.5} {parent.Axis1.world_matrix.6}}
+      {{parent.Axis1.world_matrix.8} {parent.Axis1.world_matrix.9} {parent.Axis1.world_matrix.10}}
+    }
+  name ColorMatrix1
+  xpos 384
+  ypos -63
+ }
+ Grade {
+  add {{parent.Axis1.translate.x} {parent.Axis1.translate.y} {parent.Axis1.translate.z} 0}
+  add_panelDropped true
+  black_clamp false
+  name Grade1
+  xpos 384
+  ypos -35
+ }
+ Shuffle {
+  alpha white
+  name Shuffle4
+  xpos 384
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  black white
+  white white
+  red2 white
+  green2 white
+  out pos
+  out2 rgba
+  name Shuffle5
+  xpos 384
+  ypos 47
+ }
+ Expression {
+  expr0 smoothstep(0,1,1-abs(cy*(width/height)))
+  channel1 {-rgba.red rgba.green -rgba.blue none}
+  expr1 smoothstep(0,1,1-abs(cy*(width/height)))
+  channel2 {-rgba.red -rgba.green rgba.blue none}
+  expr2 smoothstep(0,1,1-abs(cy*(width/height)))
+  channel3 {none none none -rgba.alpha}
+  name Expression1
+  xpos 384
+  ypos 71
+  disable {{!parent.poleLight}}
+ }
+ ModifyMetaData {
+  metadata {
+   {set pointrender/n_points "\[expr \[value parent.FormatX]*\[value parent.FormatY]]"}
+   {set pointrender/gen_type 2}
+  }
+  name SetMetaData
+  xpos 384
+  ypos 105
+ }
+ Grade {
+  white {{1/((parent.FormatX*parent.FormatY)/40000)}}
+  black_clamp false
+  name Grade9
+  xpos 384
+  ypos 129
+ }
+ Crop {
+  box {0 0 {parent.FormatX} {parent.FormatY}}
+  crop false
+  name Format1
+  xpos 384
+  ypos 153
+ }
+ Output {
+  name Output1
+  xpos 384
+  ypos 262
+ }
+ Axis2 {
+  inputs 0
+  name Axis1
+  xpos 555
+  ypos -90
+ }
+end_group

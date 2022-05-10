@@ -1,0 +1,218 @@
+Group {
+ inputs 0
+ name Point_Plane
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info_header l "" +STARTLINE T "Card Generator v1.2\n"}
+ addUserKnob {26 info_basic l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {14 whx l "Point Density" t "The number of points in each axis.\nNote: Nuke can't handle images that are 1 in height or width, and as such you can't set this to 1. \nA workaround is that you can set the count to 2 and set the scale to 0 opposite axis." R 0 100}
+ whx {400 400}
+ addUserKnob {6 lockAspect l "Maintain Aspect" +STARTLINE}
+ addUserKnob {26 _1 l "<b><font color=#7DADF9>Transform</font><b>"}
+ addUserKnob {4 orientation l Orientation t "The orientation that the plane should face." M {XY XZ YZ ""}}
+ orientation XZ
+ addUserKnob {41 translate l Translate T Axis1.translate}
+ addUserKnob {41 rotate l Rotate T Axis1.rotate}
+ addUserKnob {14 scale l Scale R 0 100}
+ scale {1 1}
+ addUserKnob {41 uniform_scale l "Uniform scale" T Axis1.uniform_scale}
+ addUserKnob {26 info_offsets l "<b><font color=#7DADF9>Offset Settings</font><b>"}
+ addUserKnob {6 bool_enableOffset l "Enable Offset" t "Offset every other point, to create some variation in the look of the points.\nThis can look quite interesting when combined with the wire rendering mode." +STARTLINE}
+ addUserKnob {7 float_offsetX l "Offset X"}
+ float_offsetX 0.65
+ addUserKnob {7 float_offsetY l "Offset Y"}
+ float_offsetY 0.34
+ addUserKnob {26 info_gab l "Gab Settings"}
+ addUserKnob {6 bool_enableGab l "Enable Gab" t "Add gabs between rows of points." +STARTLINE}
+ addUserKnob {7 float_gabSize l "Gab Size"}
+ float_gabSize 0.075
+ addUserKnob {7 float_gabFrequency l "Gab Frequency"}
+ float_gabFrequency 0.06
+}
+ Reformat {
+  inputs 0
+  type "to box"
+  format "256 256 0 0 256 256 1 square_256"
+  box_width {{parent.whx.w}}
+  box_height {{parent.whx.h}}
+  box_fixed true
+  scale 0.08
+  black_outside true
+  name Reformat8
+  xpos -586
+  ypos 17
+ }
+ Expression {
+  expr0 x
+  expr1 y
+  name Expression2
+  xpos -586
+  ypos 61
+ }
+ Expression {
+  expr0 r+fmod(g,2)/multR
+  expr1 g+fmod(r,2)/multG
+  expr2 b
+  name Expression4
+  xpos -586
+  ypos 107
+  disable {{!parent.bool_enableOffset}}
+  addUserKnob {20 User}
+  addUserKnob {7 multR R 0 5}
+  multR {{(pow(10,parent.float_offsetX))-0.99999999}}
+  addUserKnob {7 multG R 0 5}
+  multG {{(pow(10,parent.float_offsetY))-0.9999999}}
+ }
+ Expression {
+  temp_name0 _size
+  temp_expr0 size
+  temp_name1 _delta
+  temp_expr1 delta
+  channel0 {-rgba.red -rgba.green -rgba.blue none}
+  expr0 ((r+(_size-fmod(r,_size))/_delta)-(_size/_delta))*1.048
+  expr1 ((g+(_size-fmod(g,_size))/_delta)-(_size/_delta))*1.048
+  expr2 ((b+(_size-fmod(b,_size))/_delta)-(_size/_delta))*1.048
+  name Expression3
+  xpos -586
+  ypos 144
+  disable {{!parent.bool_enableGab}}
+  addUserKnob {20 User}
+  addUserKnob {7 size R 0 10}
+  size {{parent.float_gabFrequency*100}}
+  addUserKnob {7 delta R 0 10}
+  delta {{pow(40,parent.float_gabSize)}}
+ }
+ Expression {
+  expr0 ((r/width)-.5)*2
+  expr1 ((g/height)-.5)*2
+  expr2 ((b/height)-.5)*2
+  expr3 1
+  name Expression1
+  xpos -586
+  ypos 194
+ }
+ Grade {
+  white {{parent.scale.w*mix(min(1,(1920/1080)),1,!parent.lockAspect)} {parent.scale.h*mix(min(1,(1080/1920)),1,!parent.lockAspect)} 1 1}
+  black_clamp false
+  name Grade1
+  selected true
+  xpos -586
+  ypos 262
+ }
+set N22b23c00 [stack 0]
+ Shuffle {
+  red blue
+  blue red
+  name Shuffle1
+  xpos -480
+  ypos 262
+ }
+ Grade {
+  multiply {1 1 -1 1}
+  multiply_panelDropped true
+  add {1 0 0 0}
+  add_panelDropped true
+  black_clamp false
+  name Grade3
+  xpos -480
+  ypos 303
+ }
+push $N22b23c00
+ Shuffle {
+  green blue
+  blue green
+  name Shuffle5
+  xpos -703
+  ypos 262
+ }
+ Grade {
+  multiply {1 1 -1 1}
+  multiply_panelDropped true
+  add {0 1 0 0}
+  add_panelDropped true
+  black_clamp false
+  name Grade2
+  xpos -703
+  ypos 301
+ }
+push $N22b23c00
+ Grade {
+  add {0 0 1 0}
+  add_panelDropped true
+  black_clamp false
+  name Grade4
+  xpos -586
+  ypos 303
+ }
+ Switch {
+  inputs 3
+  which {{parent.orientation}}
+  name Switch1
+  xpos -586
+  ypos 339
+ }
+ ColorMatrix {
+  matrix {
+      {{parent.Axis1.world_matrix.0} {parent.Axis1.world_matrix.1} {parent.Axis1.world_matrix.2}}
+      {{parent.Axis1.world_matrix.4} {parent.Axis1.world_matrix.5} {parent.Axis1.world_matrix.6}}
+      {{parent.Axis1.world_matrix.8} {parent.Axis1.world_matrix.9} {parent.Axis1.world_matrix.10}}
+    }
+  name ColorMatrix1
+  xpos -586
+  ypos 363
+ }
+ Grade {
+  add {{parent.Axis1.world_matrix.3} {parent.Axis1.world_matrix.7} {parent.Axis1.world_matrix.11} 0}
+  black_clamp false
+  name Grade5
+  xpos -586
+  ypos 387
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  black white
+  white white
+  red2 white
+  green2 white
+  out pos
+  out2 rgba
+  name Shuffle2
+  xpos -586
+  ypos 424
+ }
+ ModifyMetaData {
+  metadata {
+   {set pointrender/n_points "\[expr \[value parent.whx.h]*\[value parent.whx.w]]"}
+   {set pointrender/gen_type 1}
+  }
+  name SetMetaData
+  xpos -586
+  ypos 448
+ }
+ Grade {
+  white {{1/((parent.whx.w*parent.whx.h)/40000)}}
+  black_clamp false
+  name Grade9
+  xpos -586
+  ypos 472
+ }
+ Crop {
+  box {0 0 {parent.whx.w} {parent.whx.h}}
+  crop false
+  name Crop1
+  xpos -586
+  ypos 509
+ }
+ Output {
+  name Output1
+  xpos -586
+  ypos 554
+ }
+ Axis2 {
+  inputs 0
+  name Axis1
+  xpos -323
+  ypos 341
+ }
+end_group

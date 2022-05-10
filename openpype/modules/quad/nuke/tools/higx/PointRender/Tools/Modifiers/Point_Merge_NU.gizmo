@@ -1,0 +1,60 @@
+Group {
+ name Point_Merge
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+}
+ Input {
+  inputs 0
+  name Input2
+  xpos 122
+  ypos -346
+  number 1
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  name Crop3
+  selected true
+  xpos 122
+  ypos -322
+ }
+ Transform {
+  translate {0 {Input1.bbox.height+1}}
+  center {200 200}
+  filter Impulse
+  name Transform1
+  xpos 122
+  ypos -273
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos 245
+  ypos -326
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  name Crop2
+  xpos 245
+  ypos -302
+ }
+ Crop {
+  box {0 0 {max(Input1.bbox.width,Input2.bbox.width)} {Input1.bbox.height+Input2.bbox.height+1}}
+  reformat true
+  crop false
+  name Crop1
+  xpos 245
+  ypos -236
+ }
+ Merge2 {
+  inputs 2
+  also_merge all
+  name Merge1
+  xpos 122
+  ypos -236
+ }
+ Output {
+  name Output1
+  xpos 122
+  ypos 43
+ }
+end_group

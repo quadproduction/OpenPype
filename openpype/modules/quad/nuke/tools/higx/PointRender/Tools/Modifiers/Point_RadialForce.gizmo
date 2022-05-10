@@ -1,0 +1,82 @@
+Group {
+ name Point_RadialForce
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Point Radial Force v1.1\n\nApply a radial force from the center."}
+ addUserKnob {26 _infoGeneral l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {4 Axis l "Force Axis" t "Define what axis to apply the force in." M {X Y Z Radial "" "" "" ""}}
+ Axis Radial
+ addUserKnob {4 LimitType l "  Limit Type" t "Regular - will clamp the points to the edge of the distance modifier\n\nPoint Force - will act as a \"mirror\" pushing points away from the edge of the distance modifier (soften will not work in this mode)" -STARTLINE M {Regular "Point Force" "" "" "" "" ""}}
+ addUserKnob {6 inverse l Inverse -STARTLINE}
+ inverse true
+ addUserKnob {7 Edge l Distance R 0 2}
+ Edge 0.5
+ addUserKnob {7 Soften R 0 2}
+ Soften 0.2
+ addUserKnob {13 Position l "Radial Center" t "This defines the center of the \"Radial\" force type."}
+}
+ Input {
+  inputs 0
+  name Input1
+  xpos 389
+  ypos -222
+ }
+ Dot {
+  name Dot1
+  xpos 423
+  ypos -182
+ }
+set N1502a800 [stack 0]
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle14
+  xpos 501
+  ypos -186
+ }
+ BlinkScript {
+  recompileCount 2
+  ProgramGroup 1
+  KernelDescription "2 \"SaturationKernel\" iterate pixelWise 19300d5c883d0b869ec939055d5220c5072151e83a11f9f7685ee892074552b0 2 \"src\" Read Point \"dst\" Write Point 7 \"pFrom\" Float 1 AACAPw== \"pTo\" Float 1 AAAAPw== \"pMirror\" Float 1 AACAvw== \"pSphereCenter\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"pLimitAxis\" Int 1 AAAAAA== \"LimitType\" Int 1 AAAAAA== \"pInverse\" Bool 1 AA== 7 \"pFrom\" 1 1 \"pTo\" 1 1 \"pMirror\" 1 1 \"pSphereCenter\" 3 1 \"pLimitAxis\" 1 1 \"pLimitType\" 1 1 \"pInverse\" 1 1 0"
+  kernelSource "kernel SaturationKernel : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessPoint, eEdgeClamped> src; // the input image\n  Image<eWrite> dst; // the output image\n\n  param:\n    float pFrom,pTo,pMirror;\n    float3 pSphereCenter;\n    int pLimitAxis;\n    int pLimitType;\n    bool pInverse;\n\n  void define() \{\n    defineParam(pFrom, \"pFrom\", 1.0f);\n    defineParam(pTo, \"pTo\", 0.5f);\n    defineParam(pMirror, \"pMirror\", -1.0f);   \n    defineParam(pSphereCenter, \"pSphereCenter\", float3(0.0f,0.0f,0.0f));        \n    defineParam(pLimitAxis, \"pLimitAxis\", 0); //0=x, 1=y, 2=z, 3=sphere.\n    defineParam(pLimitType, \"LimitType\", 0);\n    defineParam(pInverse, \"pInverse\", false);\n\n  \}\n\n  float Sigmond(float p_value,float p_from,float p_to) \{\n    float preSort,calc,postSort;\n    preSort = (p_value-p_from)*(1/(p_to));\n    calc = 2.0f / (1.0f + exp(-2.0f * preSort)) - 1.0f;\n    postSort = (calc * ((p_to)))+p_from;\n    return postSort;\n  \}\n\n  void process() \{\n    float4 input = src();\n    float inputValue = 0.0f;\n    float spherelen = 0.0f;\n\n    if (pLimitAxis == 0) \{\n        inputValue = input.x;\n    \}\n    else if (pLimitAxis == 1) \{\n        inputValue = input.y;\n    \}\n    else if (pLimitAxis == 2) \{\n        inputValue = input.z;\n    \}\n\n\n    else if (pLimitAxis == 3)\n    \{\n        inputValue = length(float3(float3(input.x,input.y,input.z) - pSphereCenter));\n        spherelen = inputValue;\n    \}\n\n    if (inputValue > pFrom && !pInverse)\{\n        if (pLimitType==0) \{\n           inputValue = pFrom;\n        \}\n        else if (pLimitType==1) \{\n            inputValue = Sigmond(inputValue,pFrom,pTo);\n        \}\n        else if (pLimitType==2) \{       \n            inputValue = pFrom-(inputValue-pFrom);\n        \}\n        else if (pLimitType==3 && pMirror<pFrom) \{     \n            while (inputValue > pFrom)\{\n                inputValue = pMirror+(inputValue-pFrom);\n            \}\n        \}\n        else \{\n            inputValue = inputValue;\n        \}\n    \}\n    else if (inputValue < pFrom && pInverse)\{\n        if (pLimitType==0) \{\n           inputValue = pFrom;\n        \}\n        else if (pLimitType==1) \{\n            inputValue = Sigmond(inputValue,pFrom,-pTo);\n        \}\n        else if (pLimitType==2) \{       \n            inputValue = pFrom-(inputValue-pFrom);\n        \}\n        else if (pLimitType==3 && -pMirror>pFrom) \{     \n            while (inputValue < pFrom)\{\n                inputValue = -pMirror+(inputValue-pFrom);\n            \}\n        \}\n        else \{\n            inputValue = inputValue;\n        \}\n    \}\n\n\n    if (pLimitAxis == 0) \{\n        input.x = inputValue;\n    \}\n    if (pLimitAxis == 1) \{\n        input.y = inputValue;\n    \}\n    if (pLimitAxis == 2) \{\n        input.z = inputValue;\n    \}\n    else if (pLimitAxis == 3 && spherelen!=0.0f)\n    \{\n        float3 tempoutput = float3(input.x,input.y,input.z)-pSphereCenter;\n        tempoutput = tempoutput * (inputValue/spherelen);\n        tempoutput += pSphereCenter;\n        input = float4(tempoutput.x,tempoutput.y,tempoutput.z,input.w);\n    \}\n\n\n    dst() = float4(input.x,input.y,input.z,input.w);\n  \}\n\};\n"
+  useGPUIfAvailable false
+  vectorize false
+  rebuild ""
+  SaturationKernel_pFrom {{parent.Edge}}
+  SaturationKernel_pTo {{parent.Soften}}
+  SaturationKernel_pMirror -1.04
+  SaturationKernel_pSphereCenter {{parent.Position} {parent.Position} {parent.Position}}
+  SaturationKernel_pLimitAxis {{parent.Axis}}
+  SaturationKernel_LimitType {{parent.LimitType+1}}
+  SaturationKernel_pInverse {{parent.inverse}}
+  rebuild_finalise ""
+  name BlinkScript1
+  selected true
+  xpos 501
+  ypos -77
+ }
+ Shuffle {
+  out pos
+  name Shuffle13
+  xpos 501
+  ypos 34
+ }
+push $N1502a800
+ Merge2 {
+  inputs 2
+  operation copy
+  bbox B
+  Achannels pos
+  Bchannels pos
+  output pos
+  name Merge1
+  xpos 389
+  ypos 30
+ }
+ Output {
+  name Output1
+  xpos 389
+  ypos 130
+ }
+end_group
