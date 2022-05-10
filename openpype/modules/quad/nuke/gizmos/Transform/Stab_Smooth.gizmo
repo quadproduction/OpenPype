@@ -1,0 +1,91 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+help "Stabilise d'après un Tracker, avec le pourcentage de stabilisation voulu.\n\nATTENTION:  Le tracker reférence doit etre\nen mode \"none\" ou \"matchmove\" uniquement.\n\nUtilisation :\n\n-Rentrer le nom du Tracker correspondant a la stabilisation.\n\n-Choisir le type de stabilisation a utiliser: translate, rotation et scale\n\n-Ajouter du mouvement original (Matchmove)\n\n-Et / ou ajouter des accoups tirés du mouvement original (Jitter)\n"
+tile_color 0x9775a3ff
+label "Match: \[value Stab]%"
+addUserKnob {20 StabSmooth}
+addUserKnob {1 TrackerName l "Tracker Name" t "Type tracker name for stabilize"}
+TrackerName Tracker1
+addUserKnob {26 exp l "" +STARTLINE T "ATTENTION: Le tracker reférence doit etre en mode \"none\"\n                  ou \"matchmove\" uniquement."}
+addUserKnob {26 ""}
+addUserKnob {41 matrix l INVISIBLE +INVISIBLE T Transform_Ctrl.matrix}
+addUserKnob {26 Stab_1 l "Stabilise with:" T ""}
+addUserKnob {6 TranslateOn l Translate +STARTLINE}
+TranslateOn true
+addUserKnob {6 RotateOn l Rotate +STARTLINE}
+addUserKnob {6 ScaleOn l Scale +STARTLINE}
+addUserKnob {26 ""}
+addUserKnob {26 mvt l "Add Original Move:" T ""}
+addUserKnob {7 Stab l Matchmove t "Ajouter du mouvement original" R 0 100}
+addUserKnob {7 AddJitter l "Jitter only" t "Ajouter les accoups tirés du mouvement original."}
+addUserKnob {3 RefFrame l INVISIBLE +INVISIBLE}
+addUserKnob {6 RefOn l INVISIBLE -STARTLINE +INVISIBLE}
+addUserKnob {26 ""}
+addUserKnob {41 filter T Transform_Ctrl.filter}
+addUserKnob {41 clamp -STARTLINE T Transform_Ctrl.clamp}
+addUserKnob {41 black_outside l "black outside" -STARTLINE T Transform_Ctrl.black_outside}
+addUserKnob {41 motionblur T Transform_Ctrl.motionblur}
+addUserKnob {41 shutter T Transform_Ctrl.shutter}
+addUserKnob {41 shutteroffset l "shutter offset" T Transform_Ctrl.shutteroffset}
+addUserKnob {41 shuttercustomoffset l "" -STARTLINE T Transform_Ctrl.shuttercustomoffset}
+addUserKnob {20 Transforme l Transform}
+addUserKnob {26 val l "" +STARTLINE T "Valeur de transformation en sortie de Node.\n"}
+addUserKnob {41 translateOut l translate T StabilizeMatchMove.translate}
+addUserKnob {41 rotateOut l rotate T StabilizeMatchMove.rotate}
+addUserKnob {41 scaleOut l scale T StabilizeMatchMove.scale}
+addUserKnob {20 Info}
+addUserKnob {26 Principe l "" +STARTLINE T "\nStabilise d'après un Tracker, avec le pourcentage de stabilisation voulu.\n\nATTENTION:  Le tracker reférence doit etre\nen mode \"none\" ou \"matchmove\" uniquement.\n"}
+addUserKnob {26 ""}
+addUserKnob {26 use l "" +STARTLINE T "\nUtilisation :\n\n-Rentrer le nom du Tracker correspondant a la stabilisation.\n\n-Choisir le type de stabilisation a utiliser: translate, rotation et scale\n\n-Ajouter du mouvement original (Matchmove)\n\n-Et / ou ajouter des accoups tirés du mouvement original (Jitter)\n"}
+addUserKnob {26 ""}
+}
+Input {
+inputs 0
+name Input
+xpos 550
+ypos 135
+}
+Dot {
+name Dot1
+xpos 585
+ypos 220
+}
+set N247bc620 [stack 0]
+Transform {
+translate {{"\[value TrackerName].translate.x"} {"\[value TrackerName].translate.y"}}
+rotate {{"\[value TrackerName].rotate"}}
+scale {{"\[value TrackerName].scale"}}
+center {{"\[value TrackerName].center.x"} {"\[value TrackerName].center.y"}}
+shutteroffset centred
+name Transform_Ctrl
+xpos 431
+ypos 290
+hide_input true
+}
+push $N247bc620
+Transform {
+translate {{"TranslateOn ? (RefOn ? (-(parent.Transform_Ctrl.translate-parent.Transform_Ctrl.translate(RefFrame)))+(((Transform_Ctrl.translate-Transform_Ctrl.translate(RefFrame))/100)*Stab)+(((Transform_Ctrl.translate.x)-(Transform_Ctrl.translate.x.integrate(frame-1,frame+1)/2))*AddJitter): (-Transform_Ctrl.translate)+((Transform_Ctrl.translate)/100*Stab)+(((Transform_Ctrl.translate.x)-(Transform_Ctrl.translate.x.integrate(frame-1,frame+1)/2))*AddJitter)):0"} {"TranslateOn ? (RefOn ? (-(parent.Transform_Ctrl.translate-parent.Transform_Ctrl.translate(RefFrame)))+(((Transform_Ctrl.translate-Transform_Ctrl.translate(RefFrame))/100)*Stab)+(((Transform_Ctrl.translate.y)-(Transform_Ctrl.translate.y.integrate(frame-1,frame+1)/2))*AddJitter): (-Transform_Ctrl.translate)+((Transform_Ctrl.translate)/100*Stab)+(((Transform_Ctrl.translate.y)-(Transform_Ctrl.translate.y.integrate(frame-1,frame+1)/2))*AddJitter)):0"}}
+rotate {{"RotateOn ? (RefOn ? (-(parent.Transform_Ctrl.rotate-parent.Transform_Ctrl.rotate(RefFrame)))+(((Transform_Ctrl.rotate-Transform_Ctrl.rotate(RefFrame))/100)*Stab)+(((Transform_Ctrl.rotate)-(Transform_Ctrl.rotate.integrate(frame-1,frame+1)/2))*AddJitter): (-Transform_Ctrl.rotate)+((Transform_Ctrl.rotate)/100*Stab)+(((Transform_Ctrl.rotate)-(Transform_Ctrl.rotate.integrate(frame-1,frame+1)/2))*AddJitter)):0"}}
+scale {{"ScaleOn ?  (RefOn  ? ((((Transform_Ctrl.scale(RefFrame)/(Transform_Ctrl.scale))-1)/1)/100)*(-Stab+100)+1 : 1/(((Transform_Ctrl.scale-1)/100)*(-Stab+100)+1)) : 1"}}
+center {{"RefOn ? parent.Transform_Ctrl.center+(((parent.Transform_Ctrl.translate)/100)*(-Stab+100)) : parent.Transform_Ctrl.center-translate"} {"RefOn ? parent.Transform_Ctrl.center+parent.Transform_Ctrl.translate : parent.Transform_Ctrl.center-translate"}}
+invert_matrix {{Transform_Ctrl.invert_matrix}}
+filter {{Transform_Ctrl.filter}}
+clamp {{Transform_Ctrl.clamp}}
+black_outside {{Transform_Ctrl.black_outside}}
+motionblur {{Transform_Ctrl.motionblur}}
+shutter {{Transform_Ctrl.shutter}}
+shutteroffset {{Transform_Ctrl.shutteroffset}}
+shuttercustomoffset {{Transform_Ctrl.shuttercustomoffset}}
+name StabilizeMatchMove
+tile_color 0x3fffff
+selected true
+xpos 550
+ypos 291
+}
+Output {
+name Output
+xpos 550
+ypos 367
+}
+end_group
