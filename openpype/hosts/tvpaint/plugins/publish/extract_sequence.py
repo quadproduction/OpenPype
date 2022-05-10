@@ -5,6 +5,7 @@ import tempfile
 from PIL import Image
 
 import pyblish.api
+
 from openpype.hosts.tvpaint.api import lib
 from openpype.hosts.tvpaint.lib import (
     calculate_layers_extraction_data,
@@ -13,7 +14,6 @@ from openpype.hosts.tvpaint.lib import (
     composite_rendered_layers,
     rename_filepaths_by_frame_start,
 )
-
 
 class ExtractSequence(pyblish.api.Extractor):
     label = "Extract Sequence"
@@ -209,10 +209,14 @@ class ExtractSequence(pyblish.api.Extractor):
     def _rename_output_files(
         self, filepaths_by_frame, mark_in, mark_out, output_frame_start
     ):
-        new_filepaths_by_frame = rename_filepaths_by_frame_start(
-            filepaths_by_frame, mark_in, mark_out, output_frame_start
-        )
-
+        if mark_in == output_frame_start:
+            new_filepaths_by_frame= filepaths_by_frame
+            self.log.debug("mark_in and output_frame_start are the same")
+        else:
+            new_filepaths_by_frame = rename_filepaths_by_frame_start(
+                filepaths_by_frame, mark_in, mark_out, output_frame_start
+            )
+        
         repre_filenames = []
         for filepath in new_filepaths_by_frame.values():
             repre_filenames.append(os.path.basename(filepath))
