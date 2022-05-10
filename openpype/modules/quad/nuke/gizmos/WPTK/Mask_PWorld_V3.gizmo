@@ -1,0 +1,278 @@
+#! /prod/softprod/apps/nuke/11.1v6/linux/libnuke-11.1.6.so -nx
+version 11.1 v6
+Gizmo {
+ addUserKnob {20 Options l "Mask PWorld"}
+ addUserKnob {41 LayerMask l LayerColor T SwitchLayer.LayerColor}
+ addUserKnob {41 Rotation l "Axe Rotation" T SwitchRotation.Rotation}
+ addUserKnob {41 Rotation_2 l "Axe Rotation 2" T SwitchRotation1.Rotation}
+ addUserKnob {26 ""}
+ addUserKnob {41 Angle T RotationX.Angle}
+ addUserKnob {41 Angle_2 l "Angle 2" T RotationX1.Angle}
+ addUserKnob {26 "" +STARTLINE}
+ addUserKnob {41 Offset T LineEdit.Offset}
+ addUserKnob {41 Max T LineEdit.Max}
+ addUserKnob {41 Min T LineEdit.Min}
+ addUserKnob {26 ""}
+ addUserKnob {41 size l "Size Blur" T Blur.size}
+}
+ Input {
+  inputs 0
+  name Input
+  xpos -316
+  ypos -635
+ }
+set N661d4d0 [stack 0]
+ Expression {
+  temp_name0 angle
+  temp_expr0 radians(Angle)
+  channel0 {rgba.red -rgba.green -rgba.blue none}
+  expr0 "r*cos(angle) - g*sin(angle)"
+  channel1 {-rgba.red rgba.green -rgba.blue -rgba.alpha}
+  expr1 "r*sin(angle) + g*cos(angle)"
+  channel2 {-rgba.red -rgba.green rgba.blue -rgba.alpha}
+  channel3 none
+  name RotationZ
+  xpos -167
+  ypos -568
+  addUserKnob {20 Options l User}
+  addUserKnob {7 Angle R -360 360}
+  Angle {{RotationY.Angle}}
+ }
+push $N661d4d0
+ Expression {
+  temp_name0 angle
+  temp_expr0 radians(Angle)
+  channel0 {rgba.red -rgba.green -rgba.blue none}
+  expr0 "r*cos(angle) - b*sin(angle)"
+  channel1 {-rgba.red rgba.green -rgba.blue -rgba.alpha}
+  channel2 {-rgba.red -rgba.green rgba.blue -rgba.alpha}
+  expr2 "r*sin(angle) + b*cos(angle)"
+  channel3 none
+  name RotationY
+  xpos -316
+  ypos -570
+  addUserKnob {20 Options l User}
+  addUserKnob {7 Angle R -360 360}
+  Angle {{RotationX.Angle}}
+ }
+push $N661d4d0
+ Expression {
+  temp_name0 angle
+  temp_expr0 radians(Angle)
+  channel0 {rgba.red -rgba.green -rgba.blue none}
+  channel1 {-rgba.red rgba.green -rgba.blue -rgba.alpha}
+  expr1 "g*cos(angle) - b*sin(angle)"
+  channel2 {-rgba.red -rgba.green rgba.blue -rgba.alpha}
+  expr2 "g*sin(angle) + b*cos(angle)"
+  channel3 none
+  name RotationX
+  xpos -476
+  ypos -570
+  addUserKnob {20 Options l User}
+  addUserKnob {7 Angle R -360 360}
+  Angle 10
+ }
+set N6a1c440 [stack 0]
+ Switch {
+  inputs 3
+  which {{Rotation}}
+  name SwitchRotation
+  xpos -316
+  ypos -511
+  addUserKnob {20 User}
+  addUserKnob {4 Rotation l "Axe Rotation" M {X Y Z "" ""}}
+ }
+set N7854880 [stack 0]
+ Expression {
+  temp_name0 angle
+  temp_expr0 radians(Angle)
+  channel0 {rgba.red -rgba.green -rgba.blue none}
+  expr0 "r*cos(angle) - g*sin(angle)"
+  channel1 {-rgba.red rgba.green -rgba.blue -rgba.alpha}
+  expr1 "r*sin(angle) + g*cos(angle)"
+  channel2 {-rgba.red -rgba.green rgba.blue -rgba.alpha}
+  channel3 none
+  name RotationZ1
+  xpos -167
+  ypos -429
+  addUserKnob {20 Options l User}
+  addUserKnob {7 Angle R -360 360}
+  Angle {{RotationY1.Angle}}
+ }
+push $N7854880
+ Expression {
+  temp_name0 angle
+  temp_expr0 radians(Angle)
+  channel0 {rgba.red -rgba.green -rgba.blue none}
+  expr0 "r*cos(angle) - b*sin(angle)"
+  channel1 {-rgba.red rgba.green -rgba.blue -rgba.alpha}
+  channel2 {-rgba.red -rgba.green rgba.blue -rgba.alpha}
+  expr2 "r*sin(angle) + b*cos(angle)"
+  channel3 none
+  name RotationY1
+  xpos -316
+  ypos -431
+  addUserKnob {20 Options l User}
+  addUserKnob {7 Angle R -360 360}
+  Angle {{RotationX1.Angle}}
+ }
+push $N7854880
+ Expression {
+  temp_name0 angle
+  temp_expr0 radians(Angle)
+  channel0 {rgba.red -rgba.green -rgba.blue none}
+  channel1 {-rgba.red rgba.green -rgba.blue -rgba.alpha}
+  expr1 "g*cos(angle) - b*sin(angle)"
+  channel2 {-rgba.red -rgba.green rgba.blue -rgba.alpha}
+  expr2 "g*sin(angle) + b*cos(angle)"
+  channel3 none
+  name RotationX1
+  xpos -476
+  ypos -431
+  addUserKnob {20 Options l User}
+  addUserKnob {7 Angle R -360 360}
+  Angle -134
+ }
+ Switch {
+  inputs 3
+  which {{Rotation}}
+  name SwitchRotation1
+  xpos -316
+  ypos -353
+  addUserKnob {20 User}
+  addUserKnob {4 Rotation l "Axe Rotation" M {X Y Z "" ""}}
+  Rotation Z
+ }
+set Naa96970 [stack 0]
+ Expression {
+  temp_name1 offset
+  temp_expr1 Offset
+  temp_name2 min
+  temp_expr2 Min
+  temp_name3 max
+  temp_expr3 Max
+  channel0 {rgba.red -rgba.green -rgba.blue none}
+  expr0 "(((red < (min + offset )) + (red > (max + offset)) ) *-1 +1) * a"
+  channel1 {-rgba.red rgba.green -rgba.blue rgba.alpha}
+  expr1 "(((green < (min + offset )) + (green > (max + offset)) ) *-1 +1) * a"
+  channel2 {-rgba.red -rgba.green rgba.blue rgba.alpha}
+  expr2 "(((blue < (min + offset )) + (blue > (max + offset)) ) *-1 +1) * a"
+  channel3 none
+  name LineEdit
+  xpos -318
+  ypos -279
+  addUserKnob {20 Options l User}
+  addUserKnob {7 Offset R -50 50}
+  Offset -0.5
+  addUserKnob {7 Max R -50 50}
+  Max 7
+  addUserKnob {7 Min R -50 50}
+  Min -8
+ }
+set N68a79d0 [stack 0]
+ Shuffle {
+  red blue
+  green blue
+  alpha blue
+  name Layer_Blue
+  xpos -184
+  ypos -223
+ }
+push $N68a79d0
+ Shuffle {
+  red green
+  blue green
+  alpha green
+  name Layer_Green
+  xpos -318
+  ypos -221
+ }
+push $N68a79d0
+ Shuffle {
+  green red
+  blue red
+  alpha red
+  black red
+  white red
+  red2 red
+  green2 red
+  name Layer_Red
+  xpos -451
+  ypos -220
+ }
+ Switch {
+  inputs 3
+  which {{LayerColor}}
+  name SwitchLayer
+  xpos -318
+  ypos -157
+  addUserKnob {20 User}
+  addUserKnob {4 LayerColor M {Red Green Blue ""}}
+  LayerColor Blue
+ }
+set N58673d0 [stack 0]
+ EdgeDetectWrapper {
+  name EdgeDetect
+  xpos -452
+  ypos -94
+ }
+push $N58673d0
+ Blur {
+  inputs 1+1
+  channels rgb
+  size 2
+  filter box
+  name Blur
+  xpos -318
+  ypos -88
+ }
+ Output {
+  name Output
+  xpos -318
+  ypos -3
+ }
+ Expression {
+  inputs 0
+  temp_name0 sphere
+  temp_expr0 "sqrt((r - CenterBis.r)**2+(g - CenterBis.g)**2+(b - CenterBis.b)**2)"
+  temp_name1 offset
+  temp_expr1 Offset
+  temp_name2 min
+  temp_expr2 Min
+  temp_name3 max
+  temp_expr3 Max
+  channel0 none
+  expr0 "(((red < (min + offset )) + (red > (max + offset)) ) *-1 +1) * a"
+  channel1 none
+  expr1 "(((green < (min + offset )) + (green > (max + offset)) ) *-1 +1) * a"
+  channel2 none
+  expr2 "(((blue < (min + offset )) + (blue > (max + offset)) ) *-1 +1) * a"
+  channel3 rgba
+  expr3 "(offset - sphere) * a"
+  name point_mask
+  xpos -666
+  ypos -379
+  addUserKnob {20 Options l User}
+  addUserKnob {18 CenterBis}
+  CenterBis {3.533203125 -44.09375 24.65625}
+  addUserKnob {6 CenterBis_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+  addUserKnob {6 CenterBis_panelDropped_1 l "panel dropped state" -STARTLINE +HIDDEN}
+  addUserKnob {7 Offset R -50 50}
+  Offset 14
+  addUserKnob {7 Max R -50 50}
+  Max 1.5
+  addUserKnob {7 Min R -50 50}
+  Min -18
+ }
+push $N6a1c440
+push $Naa96970
+ Viewer {
+  inputs 2
+  frame_range 100-100
+  fps 25
+  colour_sample_bbox {0.1333333403 -0.06666667014 0.1343434304 -0.06565656513}
+  name Viewer1
+  xpos -118
+  ypos -24
+ }
+end_group
