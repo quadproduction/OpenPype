@@ -35,10 +35,10 @@ from openpype.lib import (
 from openpype.pipeline import legacy_io
 
 # this is needed until speedcopy for linux is fixed
-if sys.platform == "win32":
-    from speedcopy import copyfile
-else:
-    from shutil import copyfile
+#if sys.platform == "win32":
+#  from speedcopy import copyfile
+#else:
+from shutil import copyfile
 
 log = logging.getLogger(__name__)
 
@@ -767,8 +767,17 @@ class IntegrateAssetNew(pyblish.api.InstancePlugin):
 
         # copy file with speedcopy and check if size of files are simetrical
         while True:
+            self.log.debug(1)
             if not shutil._samefile(src, dst):
-                copyfile(src, dst)
+                self.log.debug(2)
+                self.log.debug(src)
+                src=src.replace("\\","/")
+                #dst  = r"C://Users//dev//Pictures//test.jpg"
+                self.log.debug(src)
+                dst=dst.replace("\\","/")
+                #self.log.debug(dst)
+                copyfile(src, dst) 
+                self.log.debug(3)
             else:
                 self.log.critical(
                     "files are the same {} to {}".format(src, dst)
