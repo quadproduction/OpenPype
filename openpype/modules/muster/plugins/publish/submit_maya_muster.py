@@ -42,6 +42,7 @@ def _get_script():
     try:
         from openpype.scripts import publish_filesequence
     except Exception:
+        return "JustForTest"
         raise RuntimeError("Expected module 'publish_deadline'"
                            "to be available")
 
@@ -331,14 +332,17 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
         # inherit environment from publisher including PATH, so there's
         # no problem finding PYPE, but there is now way (as far as I know)
         # to set environment dynamically for dispatcher. Therefore this hack.
-        # args = [muster_python,
-        #         _get_script().replace('\\', '\\\\'),
-        #         "--paths",
-        #         metadata_path.replace('\\', '\\\\'),
-        #         "--pype",
-        #         pype_root.replace('\\', '\\\\')]
+        args = [muster_python,
+                _get_script().replace('\\', '\\\\'),
+                "--paths",
+                metadata_path.replace('\\', '\\\\'),
+                "--pype",
+                pype_root.replace('\\', '\\\\')]
 
-        postjob_command = ""  # " ".join(args)
+        # print(100 * "Y")
+        # print(" ".join(args))
+
+        postjob_command = " ".join(args)
 
         try:
             # Ensure render folder exists
@@ -374,20 +378,15 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                     "project": os.environ.get('AVALON_PROJECT') or scene,
                     "shot": os.environ.get('AVALON_ASSET') or scene,
                     "camera": instance.data.get("cameras")[0],
-                    "dependMode": 0,
-                    "packetSize": 4,
-                    "packetType": 1,
-                    "priority": 1,
                     "maximumInstances": 0,
                     "assignedInstances": 0,
                     "attributes": {
                         "environmental_variables": {
                             "value": ", ".join("{!s}={!r}".format(k, v)
                                                for (k, v) in env.items()),
-
                             "state": True,
                             "subst": False
-                         },
+                        },
                         "memo": {
                             "value": comment,
                             "state": True,
@@ -397,6 +396,16 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                             "value": "{start}-{end}".format(
                                 start=int(instance.data["frameStart"]),
                                 end=int(instance.data["frameEnd"])),
+                            "state": True,
+                            "subst": False
+                        },
+                        "start_frame": {
+                            "value": int(instance.data["frameStart"]),
+                            "state": True,
+                            "subst": False
+                        },
+                        "end_frame": {
+                            "value": int(instance.data["frameEnd"]),
                             "state": True,
                             "subst": False
                         },
@@ -421,29 +430,29 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                             "subst": True
                         },
                         "MAYADIGITS": {
-                          "value": 1,
-                          "state": True,
-                          "subst": False
+                            "value": 4,
+                            "state": True,
+                            "subst": False
                         },
                         "ARNOLDMODE": {
-                          "value": "0",
-                          "state": True,
-                          "subst": False
+                            "value": "0",
+                            "state": True,
+                            "subst": False
                         },
                         "ABORTRENDER": {
-                          "value": "0",
-                          "state": True,
-                          "subst": True
+                            "value": "0",
+                            "state": True,
+                            "subst": True
                         },
                         "ARNOLDLICENSE": {
-                          "value": "0",
-                          "state": False,
-                          "subst": False
+                            "value": "0",
+                            "state": False,
+                            "subst": False
                         },
                         "ADD_FLAGS": {
-                          "value": "-rl {}".format(renderlayer),
-                          "state": True,
-                          "subst": True
+                            "value": "-rl {}".format(renderlayer),
+                            "state": True,
+                            "subst": True
                         }
                     }
                 }
@@ -481,7 +490,6 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
             # running Linux and the submitter is on Windows.
             "PYTHONPATH",
             "PATH",
-
             "MTOA_EXTENSIONS_PATH",
             "MTOA_EXTENSIONS",
             "DYLD_LIBRARY_PATH",
@@ -492,7 +500,6 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
             "FTRACK_API_USER",
             "FTRACK_SERVER",
             "PYBLISHPLUGINPATH",
-
             # todo: This is a temporary fix for yeti variables
             "PEREGRINEL_LICENSE",
             "SOLIDANGLE_LICENSE",
