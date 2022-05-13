@@ -1,0 +1,202 @@
+global proc float[] cGetPerspectivicViewAngles(string $cam)
+{
+	float $result[] = {};
+
+	int $filmFit = `getAttr ($cam + ".filmFit")`;
+	float $cameraScale = `getAttr ($cam + ".cameraScale")`;
+	float $aperture[] = {(float(`getAttr ($cam + ".hfa")`)),(float(`getAttr ($cam + ".vfa")`))};
+	if(`getAttr ($cam + ".shakeOverscanEnabled")`){
+		$aperture[0] = $aperture[0] * `getAttr ($cam + ".shakeOverscan")`;
+		$aperture[1] = $aperture[1] * `getAttr ($cam + ".shakeOverscan")`;
+	};
+	float $focalLength = `getAttr ($cam + ".fl")`;
+	float $filmAspect = $aperture[0] / $aperture[1];
+	float $filmOffset[] = {(float(`getAttr ($cam + ".horizontalFilmOffset")`)),(float(`getAttr ($cam + ".verticalFilmOffset")`))};
+	float $filmFitOffset = `getAttr ($cam + ".filmFitOffset")`;
+
+	float $resWidth = `getAttr defaultResolution.width`;
+	float $resHeight = `getAttr defaultResolution.height`;
+	float $resAspect = $resWidth / $resHeight;	
+
+	float $offset[] = {};
+	float $visAperture[] = {($aperture[0] * 25.4),($aperture[1] * 25.4)};
+	if($filmFit == 0){
+		if($filmAspect <= $resAspect)
+			$visAperture[1] = ($aperture[0] / $resAspect) * 25.4;
+		else
+			$visAperture[0] = $aperture[1] * $resAspect * 25.4;
+	};
+	if($filmFit == 1){
+		$visAperture[1] = ($aperture[0] / $resAspect) * 25.4;
+		if($filmAspect > $resAspect && $filmFitOffset != 0)
+			$offset[1] = ($aperture[0] / $resAspect - $aperture[1]) * $filmFitOffset * .5 * 2.54;
+	};
+	if($filmFit == 2){
+		$visAperture[0] = $aperture[1] * $resAspect * 25.4;
+		if($filmAspect < $resAspect && $filmFitOffset != 0)
+			$offset[0] = ($aperture[1] * $resAspect - $aperture[0]) * $filmFitOffset * .5 * 2.54;
+	};
+	if($filmFit == 3){
+		if($filmAspect <= $resAspect)
+			$visAperture[0] = $aperture[1] * $resAspect * 25.4;
+		else
+			$visAperture[1] = ($aperture[0] / $resAspect) * 25.4;
+	};
+
+	float $viewTranslate[] = {};
+	$viewTranslate[0] = $filmOffset[0] * 2.54 - $offset[0];
+	$viewTranslate[1] = $filmOffset[1] * 2.54 - $offset[1];
+	$viewTranslate[2] = ($focalLength * -.1) / $cameraScale;
+	if(`getAttr ($cam + ".shakeEnabled")`){
+		$viewTranslate[0] += `getAttr ($cam + ".horizontalShake")` * 2.54;
+		$viewTranslate[1] += `getAttr ($cam + ".verticalShake")` * 2.54;
+	};
+	float $viewScale[] = {};
+	$viewScale[0] = $visAperture[0] / 10 / `getAttr ($cam + ".preScale")`;
+	$viewScale[1] = $visAperture[1] / 10 / `getAttr ($cam + ".preScale")`;
+
+	float $hAngle = angle(<<($viewScale[0] / -2),0,$viewTranslate[2]>>,<<($viewScale[0] / 2),0,$viewTranslate[2]>>);
+	float $vAngle = angle(<<0,($viewScale[1] / -2),$viewTranslate[2]>>,<<0,($viewScale[1] / 2),$viewTranslate[2]>>);
+	return {(rad_to_deg($hAngle)),(rad_to_deg($vAngle))};
+};
+
+global proc makeFrustum()
+{
+if ( `window -exists makeFrustum` )
+  deleteUI -window makeFrustum;
+string $makeFrustumBoxWindow = `window -menuBar false -title "Make Frustum" -sizeable 0 makeFrustum`;
+columnLayout;
+	text -align left -label "Frustum depth:";
+	floatSliderGrp -field 1 -min 5 -max 1000 -v 1 makeFrustumslider;
+button -c "makeFrustumProc" -l "Make or Update Frustum" -width 250 -h 30;
+//button -c "deleteFrustumProc" -l "Delete Frustum" -width 250 -h 30;
+
+setParent ..;
+
+showWindow $makeFrustumBoxWindow;
+}
+
+
+global proc deleteFrustumProc()
+{
+string $sellout[] = `ls -sl`;
+string $camTrans[];
+string $selectedCam[];
+string $typeTest[] = `ls -sl -showType`;
+if ($typeTest[1] == "camera")
+{
+    $camTrans[0] = `listRelatives -p $sellout[0]`;
+	$selectedCam[0] = $sellout[0];
+}
+else if ($typeTest[1] == "transform")
+{
+    string $selectedCam[] = `listRelatives -s $sellout[0]`;
+}
+//delete frustum if one exists 
+string $relativesOfCam[] = `listRelatives -p $camTrans[0]`;
+for ($n=0 ; $n<size($relativesOfCam) ; $n++)
+	{
+	string $tempMatchTest;
+	$tempMatchTest = `match "_friendlyFrustum.*$" $relativesOfCam[$n]`;
+	if ($tempMatchTest != "") 
+		{
+		delete $relativesOfCam[$n];
+		}
+	}
+}
+
+global proc makeFrustumProc()
+{
+global float $frustumDepth;
+$frustumDepth = `floatSliderGrp -q -v makeFrustumslider`;
+string $camTrans[] = `ls -sl`;//object's transform or camera shape
+//if it's a shape, select parent
+string $typeTest[] = `ls -sl -showType`;
+if ($typeTest[1] == "camera")
+{
+   string $tmpy[] = `listRelatives -p -type "transform" $camTrans[0]`;
+    $camTrans[0] = $tmpy[0];
+    
+}
+
+string $selectedCam[] = `listRelatives -s $camTrans[0]`;
+//delete frustum if one exists 
+string $relativesOfCam[] = `listRelatives -children $camTrans[0]`;
+for ($n=0 ; $n<size($relativesOfCam) ; $n++)
+	{
+	string $tempMatchTest;
+	$tempMatchTest = `match "_friendlyFrustum.*$" $relativesOfCam[$n]`;
+	if ($tempMatchTest != "") 
+		{
+		delete $relativesOfCam[$n];
+		}
+	}
+
+setAttr ($selectedCam[1] + ".visibility") 1;
+setAttr ($selectedCam[0] + ".visibility") 1;
+float $anglesCam[] = `cGetPerspectivicViewAngles $camTrans[0]`;//0 is horzintal, 1 is vert
+string $cubey[] = `polyCube -w $frustumDepth -h $frustumDepth -d $frustumDepth -sx 1 -sy 1 -sz 1 -ax 0 1 0 -cuv 4 -ch 1`;
+toggle -template -state on $cubey[0];
+string $cubeyShape[] = `ls -sl -dag -lf`; 
+select -r ($cubey[0] + ".f[2]") ;
+MergeToCenter;
+move 0 0 (-1 * ($frustumDepth / 2)) ($cubey[0] + ".scalePivot") ($cubey[0] + ".rotatePivot");
+select -r $cubey[0];
+
+//do horizontal scale - HIGH SCHOOL TRIGONOMETRY STARTS HERE
+//Bee is half of our camera angle [0]
+float $BeeAngle = ($anglesCam[0] / 2);
+float $BeeRadians = `deg_to_rad($BeeAngle)`;
+float $CeeAngle = 90.0;
+float $AaaAngle = ((180.00 - $BeeAngle) - $CeeAngle);
+float $AaaRadians = `deg_to_rad($AaaAngle)`;
+//side b (half of far end of frustum) = ((a x sin(B))/sin(A))
+float $sinBee = sin($BeeRadians);
+float $sinAaa = sin($AaaRadians);
+float $sidebLength = (($frustumDepth * $sinBee) / ($sinAaa));
+//find scale of $sidebLength / 2.5
+float $cubeyScaleUpHorizontal = ($sidebLength / ($frustumDepth / 2)) ;
+//current angle of frustum is 26.565 and its width is 5 so find difference
+//do vert scale
+//Bee is half of our camera angle [1]
+float $BeeAngleVert = ($anglesCam[1] / 2);
+float $BeeRadiansVert = `deg_to_rad($BeeAngleVert)`;
+float $CeeAngleVert = 90.0;
+float $AaaAngleVert = ((180.00 - $BeeAngleVert) - $CeeAngleVert);
+float $AaaRadiansVert = `deg_to_rad($AaaAngleVert)`;
+//side b (half of far end of frustum) = ((a x sin(B))/sin(A))
+float $sinBeeVert = sin($BeeRadiansVert);//these are bad
+float $sinAaaVert = sin($AaaRadiansVert);//these are bad
+float $sidebLengthVert = (($frustumDepth * $sinBeeVert) / ($sinAaaVert));
+//find scale of $sidebLength / 2.5
+float $cubeyScaleUpVertical = ($sidebLengthVert / ($frustumDepth / 2)) ;
+
+select -r $cubey[0];
+move -rpr 0 0 0 ;
+rotate 0 180 0;
+FreezeTransformations;
+
+//final scale - to replace with expression
+scale $cubeyScaleUpHorizontal $cubeyScaleUpVertical 1;
+
+
+//attach to cam and toggle template state
+float $posX = `getAttr ($camTrans[0] + ".tx")`;
+float $posY = `getAttr ($camTrans[0] + ".ty")`;
+float $posZ = `getAttr ($camTrans[0] + ".tz")`;
+float $roX = `getAttr ($camTrans[0] + ".rx")`;
+float $roY = `getAttr ($camTrans[0] + ".ry")`;
+float $roZ = `getAttr ($camTrans[0] + ".rz")`;
+setAttr ($cubey[0] + ".tx") $posX;
+setAttr ($cubey[0] + ".ty") $posY;
+setAttr ($cubey[0] + ".tz") $posZ;
+setAttr ($cubey[0] + ".rx") $roX;
+setAttr ($cubey[0] + ".ry") $roY;
+setAttr ($cubey[0] + ".rz") $roZ;
+
+select -r $cubey[0] ;
+select -add $camTrans[0];
+parent;
+rename $cubey[0] ($camTrans[0] + "_friendlyFrustum");
+select -r $camTrans[0];
+}
