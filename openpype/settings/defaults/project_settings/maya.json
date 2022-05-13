@@ -350,6 +350,11 @@
             "optional": true,
             "active": true
         },
+        "ValidateNodeNoLocked": {
+            "enabled": false,
+            "optional": true,
+            "active": true
+        },
         "ValidateShapeDefaultNames": {
             "enabled": false,
             "optional": true,
