@@ -470,6 +470,10 @@
                             "label": "ValidateNodeNoGhosting"
                         },
                         {
+                            "key": "ValidateNodeNoLocked",
+                            "label": "ValidateNodeNoLocked"
+                        },
+                        {
                             "key": "ValidateShapeDefaultNames",
                             "label": "ValidateShapeDefaultNames"
                         },
