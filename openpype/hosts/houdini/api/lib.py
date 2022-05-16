@@ -468,7 +468,10 @@ def load_hdas(hda_path):
     loaded_files = hou.hda.loadedFiles()
 
     extensions = ['.otl', '.hda']
-    if os.path.isfile(hda_path) and os.path.splitext(hda_path)[-1] in extensions:
+    if os.path.isfile(hda_path):
+        if not os.path.splitext(hda_path)[-1] in extensions:
+            log.warning("This file is not a hda file: {}".format(os.path.basename(hda_path)))
+            return
         files = [hda_path]
     else:
         files = [f for f in os.listdir(hda_path) if os.path.splitext(f)[-1] in extensions]
