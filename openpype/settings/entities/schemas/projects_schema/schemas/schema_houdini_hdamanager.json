@@ -1,0 +1,22 @@
+{
+    "type": "list",
+    "key": "hdamanager",
+    "label": "HDA Manager",
+    "is_group": true,
+    "use_label_wrap": true,
+    "object_type": {
+        "type": "dict",
+        "children": [
+            {
+                "type": "label",
+                "label": "Absolut path to HDA folders"
+            },
+            {
+                "type": "path",
+                "key": "hda_path",
+                "label": "HDA Path",
+                "multipath": true
+            }
+        ]
+    }
+}
