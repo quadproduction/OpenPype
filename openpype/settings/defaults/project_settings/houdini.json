@@ -53,5 +53,11 @@
             "active": true
         }
     },
-    "hdamanager": []
+    "hdamanager": {
+        "hda_path": [
+            "path/to/your/hda/file.hda",
+            "path/to/your/otl/file.otl",
+            "paht/to/your/hda/folder"
+        ]
+    }
 }
