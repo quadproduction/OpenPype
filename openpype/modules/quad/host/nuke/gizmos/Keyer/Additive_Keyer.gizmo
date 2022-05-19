@@ -1,0 +1,156 @@
+#! C:/Program Files/Nuke8.0v1/nuke-8.0.v1.dll -nx
+version 8.0 v1
+Gizmo {
+ inputs 4
+ addUserKnob {20 User}
+ addUserKnob {41 kb_mix_l l "Light: add/mult mode" T mMultiply_l.mix}
+ addUserKnob {41 Kb_mix_d l "Dark: add/mult mode" T mMultiply_d.mix}
+ addUserKnob {41 kb_grade_l l "Lights: grade(mult)" T Grade_l.multiply}
+ addUserKnob {41 kb_grade_d l "Darks: grade(mult)" T Grade_d.multiply}
+ addUserKnob {41 kb_satrtn l Saturation T Saturation.saturation}
+ addUserKnob {26 "" l mask}
+ addUserKnob {41 maskChannelMask l "" -STARTLINE T Plus3.maskChannelMask}
+}
+ Input {
+  inputs 0
+  name mask
+  selected true
+  xpos 459
+  ypos 251
+  number 3
+ }
+ Input {
+  inputs 0
+  name BG
+  xpos 343
+  ypos -165
+  number 2
+ }
+set N28853f50 [stack 0]
+ Colorspace {
+  colorspace_out HSL
+  name Colorspace
+  label HSL
+  xpos 244
+ }
+ Shuffle {
+  red blue
+  green blue
+  name Shuffle
+  label "Luminace only"
+  xpos 244
+  ypos 50
+ }
+set N28854630 [stack 0]
+ Input {
+  inputs 0
+  name FG
+  xpos 4
+  ypos -151
+  number 1
+ }
+ Input {
+  inputs 0
+  name REF
+  xpos 122
+  ypos -153
+ }
+ Merge2 {
+  inputs 2
+  operation minus
+  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  Bchannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  output {rgba.red rgba.green rgba.blue -rgba.alpha}
+  name Merge1
+  xpos 50
+  ypos -102
+ }
+ Saturation {
+  saturation 0.8
+  name Saturation
+  xpos 50
+  ypos -52
+ }
+set N288553f0 [stack 0]
+ Clamp {
+  channels rgb
+  maximum 1000
+  name Clamp_l
+  label "more than zero\n"
+  xpos -34
+  ypos 1
+ }
+ Merge2 {
+  inputs 2
+  operation multiply
+  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  Bchannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  output {rgba.red rgba.green rgba.blue -rgba.alpha}
+  mix 0
+  name mMultiply_l
+  label light
+  xpos -34
+  ypos 50
+ }
+ Grade {
+  black_clamp false
+  name Grade_l
+  xpos -34
+  ypos 153
+ }
+push $N28854630
+push $N288553f0
+ Clamp {
+  channels rgb
+  minimum -10000
+  maximum 0
+  name Clamp_d
+  label "less than zero\n"
+  xpos 111
+  ypos -1
+ }
+ Merge2 {
+  inputs 2
+  operation multiply
+  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  Bchannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  output {rgba.red rgba.green rgba.blue -rgba.alpha}
+  mix 0
+  name mMultiply_d
+  label darks
+  xpos 111
+  ypos 50
+ }
+ Grade {
+  black_clamp false
+  name Grade_d
+  xpos 122
+  ypos 143
+ }
+ Merge2 {
+  inputs 2
+  operation plus
+  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  Bchannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  output {rgba.red rgba.green rgba.blue -rgba.alpha}
+  name Plus2
+  xpos 36
+  ypos 221
+ }
+push $N28853f50
+ Merge2 {
+  inputs 2+1
+  operation plus
+  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  Bchannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  output {rgba.red rgba.green rgba.blue -rgba.alpha}
+  name Plus3
+  xpos 290
+  ypos 251
+ }
+ Output {
+  name Output1
+  xpos 290
+  ypos 367
+ }
+end_group
