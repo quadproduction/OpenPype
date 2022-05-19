@@ -1,0 +1,26 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+ inputs 0
+ help "Disable Nodes\n\nLink with expression the disable knob of nodes you want. \n\nThe curent node become the master of each linked nodes.\nYou can have a different value on disable knob in user interface and in batch.\n"
+ tile_color 0xdfff00ff
+ note_font_color 0xff
+ addUserKnob {20 DisableNodes l "Disable Nodes"}
+ addUserKnob {26 T01 l "                      " T " "}
+ addUserKnob {22 LinkSelected l "<font color='#2EFE2E'>Link Selected Nodes" t "Link with expression the disable knob of all selected nodes.\nThe curent node become the master of each linked nodes." T "me = nuke.thisNode()\nmyName = nuke.thisNode().name()\nknobs = me.knobs()\n\nn = nuke.selectedNodes(\"NoOp\")\nd = nuke.selectedNodes(\"Dot\")\n\nfor s in nuke.root().begin().selectedNodes():\n    if n or d: \n      nuke.message(\"Disable Knob don't exist on this node!\")\n    else:\n         s\['disable'].setExpression( '\[if \{\$gui\}  \{return parent.' + myName +'.disable_1\} \{ return parent.'+ myName +'.Batch \}] '  )\n         if me\['selected'].value():\n            s\['icon'].setValue('')\n         else:\n            s\['icon'].setValue('F_ctrl.png')\n\n\nnuke.root().begin()\nnuke.toNode(myName)\['disable'].clearAnimated()" +STARTLINE}
+ addUserKnob {26 SP01 l "" -STARTLINE T "                 "}
+ addUserKnob {22 resetSel l "<font color='black'>Unlink Selected Nodes" t "Remove the expression in the disable knob of each selected nodes." -STARTLINE T "me = nuke.thisNode()\nmyName = nuke.thisNode().name()\n\nnuke.root().begin()\n\nnode = nuke.toNode(myName)\n\ndep = node.dependent(nuke.EXPRESSIONS)\nfor i in dep:\n    if i\['selected'].value():\n        i\['disable'].clearAnimated()\n        i\['disable'].setValue(False)\n        i\['icon'].setValue('')\n\nfor each in nuke.allNodes(): \n    each.knob(\"selected\").setValue(False)"}
+ addUserKnob {26 SP00 l " " T "                                                   "}
+ addUserKnob {22 Unlink l "<font color='black'>Unlink All Nodes" t "Remove the expression in the disable knob of all linked nodes." -STARTLINE T "me = nuke.thisNode()\nmyName = nuke.thisNode().name()\n\nnuke.root().begin()\n\nnode = nuke.toNode(myName)\n\ndep = node.dependent(nuke.EXPRESSIONS)\nfor i in dep:\n    i\['disable'].clearAnimated()\n    i\['disable'].setValue(False)\n    i\['icon'].setValue('')\n\nfor each in nuke.allNodes(): \n    each.knob(\"selected\").setValue(False)"}
+ addUserKnob {26 S02 l " " T " "}
+ addUserKnob {6 disable_1 l "< font color='white'>. Disable ( Local )" t "Disable all the linked nodes in user interface ONLY! They stay enable during a batch." +STARTLINE}
+ disable_1 true
+ addUserKnob {6 Batch l "  < font color='red'>. Disable ( Batch )" t "Disable all linked nodes during a batch." +STARTLINE}
+ addUserKnob {26 S03 l " " T " "}
+ addUserKnob {26 by2 l "                     " T "                                                                                               "}
+ addUserKnob {1 output l INVISIBLE +INVISIBLE}
+ output "\[if \{\[value Batch]==\"false\"\} \{return \"\[knob this.icon \"\"]\"\} \{return \"\[knob this.icon F_croixb.png]\"\}]\[if \{\[value disable_1]==\"false\"\} \{return \"\[knob this.name2 \"rgba\"]\"\} \{return \"\[knob this.name2 \"Local\"]\"\}]\[value name2]"
+ addUserKnob {1 name2 l INVISIBLE +INVISIBLE}
+ name2 Local
+}
+end_group

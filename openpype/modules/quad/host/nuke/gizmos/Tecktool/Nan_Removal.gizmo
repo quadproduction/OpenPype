@@ -1,0 +1,220 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+ help "Nan Remove\n\nTree ways to remove \"nan\" and \"inf\" pixels.\n\n- Selected Color: Fill all with a single color.\n- Nearest Pixel: Use the markerRemoval node.\n- Time Offset: For using a frame Before/After.\n"
+ knobChanged "node = nuke.thisNode()\nknob = nuke.thisKnob()\n\nif knob.name() in ('methode', 'showPanel'):\n    mode = node\['methode'].value()\n    if mode == 'Selected Color':\n        node\['color'].setVisible(True)\n        node\['mode'].setVisible(False)\n        node\['linearsearch'].setVisible(False)\n        node\['time_offset'].setVisible(False)\n    elif mode == 'Nearest Pixel':\n        node\['color'].setVisible(False)\n        node\['mode'].setVisible(True)\n        node\['linearsearch'].setVisible(True)\n        node\['time_offset'].setVisible(False)\n    elif mode == 'Time Offset':\n        node\['color'].setVisible(False)\n        node\['mode'].setVisible(False)\n        node\['linearsearch'].setVisible(False)\n        node\['time_offset'].setVisible(True)\n\nif knob.name() in ('mode', 'showPanel'):\n    mode = node\['mode'].value()\n    if mode == 'bilinear':\n        node\['linearsearch'].setVisible(True)\n    if mode == 'radial':\n        node\['linearsearch'].setVisible(False)"
+ tile_color 0xffffffff
+ addUserKnob {20 User l "Nan Remove"}
+ addUserKnob {41 channels l "     Channels" t "Remove nan on the selected channels." T Remove1.channels}
+ addUserKnob {4 methode l Methode t "- Selected Color: Fill all with a single color.\n- Nearest Pixel: Use the markerRemoval node.\n- Time Offset: For using a frame Before/After." M {"Selected Color" "Nearest Pixel" "Time Offset" ""}}
+ methode "Nearest Pixel"
+ addUserKnob {6 nanselect l "Nan Pixel to Alpha" -STARTLINE}
+ addUserKnob {26 S01 l " " T " "}
+ addUserKnob {26 ""}
+ addUserKnob {19 color l Color +HIDDEN}
+ color {0 0 0 0}
+ addUserKnob {6 color_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {4 mode l Type M {bilinear radial ""}}
+ mode radial
+ addUserKnob {3 linearsearch l Search +HIDDEN}
+ linearsearch 5
+ addUserKnob {3 time_offset l "Time Offset" +HIDDEN}
+ time_offset -1
+ addUserKnob {26 by1 l " " T " "}
+ addUserKnob {26 by2 l " " T "                                                                                               "}
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 484
+  ypos 222
+ }
+ Dot {
+  name Dot10
+  xpos 518
+  ypos 312
+ }
+set N5d4ce30 [stack 0]
+ Remove {
+  operation keep
+  name Remove1
+  xpos 484
+  ypos 361
+ }
+ Dot {
+  name Dot1
+  xpos 518
+  ypos 462
+ }
+set N5d130b0 [stack 0]
+ Dot {
+  name Dot8
+  xpos 806
+  ypos 462
+ }
+ Expression {
+  expr0 "isnan(r) || isinf(r) ?1:0"
+  expr1 "isnan(g) || isinf(g) ?1:0"
+  expr2 "isnan(b) || isinf(b) ?1:0"
+  expr3 "isnan(a) || isinf(a) ?1:0"
+  name ToAlpha
+  xpos 772
+  ypos 526
+ }
+ Expression {
+  channel0 rgba
+  expr0 clamp(r+g+b+a)
+  channel1 none
+  channel2 none
+  channel3 none
+  name RGBA
+  xpos 772
+  ypos 552
+ }
+set N5d3b2c0 [stack 0]
+ Dot {
+  name Dot2
+  xpos 806
+  ypos 716
+ }
+set N5d387a0 [stack 0]
+ Dot {
+  name Dot9
+  xpos 806
+  ypos 1018
+ }
+push $N5d4ce30
+ Dot {
+  name Dot4
+  xpos 262
+  ypos 312
+ }
+ Remove {
+  channels {{{parent.Remove1.channels}}}
+  name Remove2
+  xpos 228
+  ypos 361
+ }
+ Dot {
+  name Dot11
+  xpos 262
+  ypos 930
+ }
+push $N5d387a0
+push $N5d3b2c0
+push $N5d130b0
+ Expression {
+  expr0 "isnan(r) || isinf(r) ?0:r"
+  expr1 "isnan(g) || isinf(g) ?0:g"
+  expr2 "isnan(b) || isinf(b) ?0:b"
+  expr3 "isnan(a) || isinf(a) ?0:a"
+  name Black
+  xpos 484
+  ypos 526
+ }
+ ShuffleCopy {
+  inputs 2
+  alpha alpha2
+  black alpha
+  out2 mask
+  name ShuffleCopy1
+  xpos 484
+  ypos 552
+ }
+ Dot {
+  name Dot6
+  xpos 518
+  ypos 621
+ }
+set N5df4890 [stack 0]
+ TimeOffset {
+  time_offset {{parent.time_offset i}}
+  time ""
+  name TimeOffset1
+  label "\[value time_offset]"
+  xpos 644
+  ypos 612
+ }
+push $N5df4890
+ Keymix {
+  inputs 3
+  name Keymix1
+  xpos 644
+  ypos 707
+ }
+ Dot {
+  name Dot5
+  xpos 678
+  ypos 783
+ }
+push $N5df4890
+ MarkerRemoval {
+  mode {{parent.mode x18 1}}
+  linearsearch {{parent.linearsearch}}
+  ctrlMask mask.a
+  x_offset 1
+  name MarkerRemoval1
+  xpos 484
+  ypos 693
+ }
+push $N5d130b0
+ Dot {
+  name Dot7
+  xpos 351
+  ypos 462
+ }
+ Expression {
+  expr0 "isnan(r) || isinf(r) ?color.r:r"
+  expr1 "isnan(g) || isinf(g) ?color.g:g"
+  expr2 "isnan(b) || isinf(b) ?color.b:b"
+  expr3 "isnan(a) || isinf(a) ?color.a:a"
+  name ColorReplace
+  xpos 317
+  ypos 526
+  addUserKnob {20 User}
+  addUserKnob {19 color}
+  color {{parent.color.r} {parent.color.g} {parent.color.b} {parent.color.a}}
+  addUserKnob {6 color_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+ Dot {
+  name Dot3
+  xpos 351
+  ypos 783
+ }
+ Switch {
+  inputs 3
+  which {{parent.methode i}}
+  name Switch1
+  xpos 484
+  ypos 779
+ }
+ Remove {
+  operation keep
+  channels {{{parent.Remove1.channels}}}
+  name Remove3
+  xpos 484
+  ypos 830
+ }
+ Merge2 {
+  inputs 2
+  operation plus
+  also_merge all
+  name Merge1
+  xpos 484
+  ypos 927
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy1
+  xpos 484
+  ypos 1008
+  disable {{!nanselect}}
+ }
+ Output {
+  name Output1
+  xpos 484
+  ypos 1102
+ }
+end_group
