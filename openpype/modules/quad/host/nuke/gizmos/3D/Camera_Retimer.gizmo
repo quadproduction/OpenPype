@@ -1,0 +1,138 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+knobChanged "node = nuke.thisNode()\nknob = nuke.thisKnob()\nif knob.name() in ('SmoothMode', 'showPanel'):\n    mode = node\['SmoothMode'].value()\n    if mode == 'Global':\n        node\['SmtAll'].setVisible(True)\n        node\['Translate'].setVisible(False)\n        node\['TrX'].setVisible(False)\n        node\['SmtTrX'].setVisible(False)\n        node\['TrY'].setVisible(False)\n        node\['SmtTrY'].setVisible(False)\n        node\['TrZ'].setVisible(False)\n        node\['SmtTrZ'].setVisible(False)\n        node\['Smooth_rotate'].setVisible(False)\n        node\['RtX'].setVisible(False)\n        node\['SmtRtX'].setVisible(False)\n        node\['RtY'].setVisible(False)\n        node\['SmtRtY'].setVisible(False)\n        node\['RtZ'].setVisible(False)\n        node\['SmtRtZ'].setVisible(False)\n    elif mode == 'Fine tuning':\n        node\['SmtAll'].setVisible(False)\n        node\['Translate'].setVisible(True)\n        node\['TrY'].setVisible(True)\n        node\['SmtTrY'].setVisible(True)\n        node\['TrZ'].setVisible(True)\n        node\['SmtTrZ'].setVisible(True)\n        node\['TrX'].setVisible(True)\n        node\['Smooth_rotate'].setVisible(True)\n        node\['RtX'].setVisible(True)\n        node\['SmtRtX'].setVisible(True)\n        node\['RtY'].setVisible(True)\n        node\['SmtRtY'].setVisible(True)\n        node\['RtZ'].setVisible(True)\n        node\['SmtRtZ'].setVisible(True)\n        node\['SmtTrX'].setVisible(True)"
+tile_color 0x970f0fff
+addUserKnob {20 CameraRetimer l "Camera Retimer"}
+addUserKnob {26 Oflow l "                 Oflow"}
+addUserKnob {41 timing l Timing T OFlow_Retime.timing}
+addUserKnob {41 timingFrame l Frame T OFlow_Retime.timingFrame}
+addUserKnob {41 timingSpeed l Speed T OFlow_Retime.timingSpeed}
+addUserKnob {26 ""}
+addUserKnob {22 create_camera l "<font color = \"CornflowerBlue\"> Create Retime Camera (Linked) " -STARTLINE T "groupNode = nuke.thisNode()\nname = groupNode.name()\n\nif groupNode.input(0) != None :\n    C = nuke.createNode(\"Camera\", inpanel=False )\n\n    C\['tile_color'].setValue(0xb0a45dff)\n    C\['label'].setValue(\"(\" +name + \")\")\n\n    C\['display'].setExpression(name + \".display\")\n    C\['display'].clearAnimated()\n    C\['selectable'].setExpression(name + \".selectable\")\n    C\['selectable'].clearAnimated()\n    C\['xform_order'].setExpression(name + \".xform_order\")\n    C\['xform_order'].clearAnimated()\n    C\['rot_order'].setExpression(name + \".rot_order\")\n    C\['rot_order'].clearAnimated()\n\n    C\['translate'].setExpression(name + \".translate\")\n    C\['rotate'].setExpression(name + \".rotate\")\n    C\['scaling'].setExpression(name + \".scaling\")\n    C\['uniform_scale'].setExpression(name + \".uniform_scale\")\n    C\['skew'].setExpression(name + \".skew\")\n    C\['pivot'].setExpression(name + \".pivot\")\n\n    C\['projection_mode'].setExpression(name + \".projection_mode\")\n    C\['projection_mode'].clearAnimated()\n    C\['focal'].setExpression(name + \".focal\")\n    C\['haperture'].setExpression(name + \".haperture\")\n    C\['haperture'].clearAnimated()\n    C\['vaperture'].setExpression(name + \".vaperture\")\n    C\['vaperture'].clearAnimated()\n\n    C\['near'].setExpression(name + \".near\")\n    C\['near'].clearAnimated()\n    C\['far'].setExpression(name + \".far\")\n    C\['far'].clearAnimated()\n    C\['win_translate'].setExpression(name + \".win_translate\")\n    C\['win_translate'].clearAnimated()\n    C\['win_scale'].setExpression(name + \".win_scale\")\n    C\['win_scale'].clearAnimated()\n    C\['winroll'].setExpression(name + \".winroll\")\n    C\['winroll'].clearAnimated()\n    C\['focal_point'].setExpression(name + \".focal_point\")\n    C\['focal_point'].clearAnimated()\n    C\['fstop'].setExpression(name + \".fstop\")\n    C\['fstop'].clearAnimated()\n\n    C.setSelected(True)\n\n    nuke.nodeCopy('%clipboard%')\n\n    n = nuke.selectedNode()\n    nuke.delete(n)\n\n    nuke.selectAll() \n    nuke.invertSelection()\n\n    nodePos = ( nuke.thisNode().xpos(), nuke.thisNode().ypos()) \n\n    groupNode.end()\n\n    for node in nuke.allNodes():\n        node.setSelected(False)\n\n    nuke.nodePaste('%clipboard%')\n\n    groupNode.setSelected(False)\n\n    nodesToPlace = sorted( nuke.selectedNodes(), key=lambda node: node.ypos())\n\n    for index,node in enumerate(nodesToPlace):\n        node.setXYpos(nodePos\[0]+100, nodePos\[1])\n\t\t\nelse:\n    nuke.message(\" A Camera need to be link to the Camera Retime node! \")"}
+addUserKnob {26 ""}
+addUserKnob {20 camera_result l "Camera Retime (Result)" n 1}
+camera_result 0
+addUserKnob {26 S02 l " " T " "}
+addUserKnob {41 display T CameraRetime.display}
+addUserKnob {41 selectable -STARTLINE T CameraRetime.selectable}
+addUserKnob {41 xform_order l "transform order" T CameraRetime.xform_order}
+addUserKnob {41 rot_order l "rotation order" T CameraRetime.rot_order}
+addUserKnob {41 translate T CameraRetime.translate}
+addUserKnob {41 rotate T CameraRetime.rotate}
+addUserKnob {41 scaling l scale T CameraRetime.scaling}
+addUserKnob {41 uniform_scale l "uniform scale" T CameraRetime.uniform_scale}
+addUserKnob {41 skew T CameraRetime.skew}
+addUserKnob {41 pivot T CameraRetime.pivot}
+addUserKnob {20 "" l "Local matrix" n 2}
+addUserKnob {41 matrix l "" -STARTLINE T CameraRetime.matrix}
+addUserKnob {20 "" n -1}
+addUserKnob {20 "" l "World matrix" n 2}
+addUserKnob {41 world_matrix l "" -STARTLINE T CameraRetime.world_matrix}
+addUserKnob {20 endGroup n -1}
+addUserKnob {26 ""}
+addUserKnob {41 projection_mode l projection T CameraRetime.projection_mode}
+addUserKnob {41 focal l "focal length" T CameraRetime.focal}
+addUserKnob {41 haperture l "horiz aperture" T CameraRetime.haperture}
+addUserKnob {41 vaperture l "vert aperture" T CameraRetime.vaperture}
+addUserKnob {41 near T CameraRetime.near}
+addUserKnob {41 far T CameraRetime.far}
+addUserKnob {41 win_translate l "window translate" T CameraRetime.win_translate}
+addUserKnob {41 win_scale l "window scale" T CameraRetime.win_scale}
+addUserKnob {41 focal_point l "focal distance" T CameraRetime.focal_point}
+addUserKnob {41 winroll l "window roll" T CameraRetime.winroll}
+addUserKnob {41 fstop T CameraRetime.fstop}
+addUserKnob {26 by1 l " " T " "}
+addUserKnob {20 endGroup_1 l endGroup n -1}
+addUserKnob {1 name2 l INVISIBLE +INVISIBLE}
+addUserKnob {1 output l INVISIBLE +INVISIBLE}
+output "\[if \{\[value in]==\"false\"\} \{return \[knob this.name2 \"\"]\} \{return \[knob this.name2 \[value input0.name]]\}]\[value name2]"
+addUserKnob {6 in l INVISIBLE +INVISIBLE +STARTLINE}
+in {{"\[value inputs]"}}
+addUserKnob {26 by2 l " " T "                                                                                               "}
+}
+Input {
+inputs 0
+name Input
+label "\[value in_name]"
+xpos 523
+ypos 60
+addUserKnob {20 User}
+addUserKnob {1 in_name}
+in_name "\[value parent.input0.name]"
+}
+Camera2 {
+inputs 0
+read_from_file {{parent.input0.read_from_file_link}}
+display {{parent.input0.display}}
+selectable {{parent.input0.selectable}}
+xform_order {{parent.input0.xform_order}}
+rot_order {{parent.input0.rot_order}}
+translate {{parent.input0.translate.x(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.translate.y(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.translate.z(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+rotate {{parent.input0.rotate.x(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.rotate.y(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.rotate.z(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+scaling {{parent.input0.scaling(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.scaling(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.scaling(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+uniform_scale {{parent.input0.uniform_scale(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+skew {{parent.input0.skew(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.skew(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.skew(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+pivot {{parent.input0.pivot(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.pivot(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.pivot(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+useMatrix {{parent.input0.useMatrix}}
+matrix {
+    {{parent.input0.matrix i} {parent.input0.matrix i} {parent.input0.matrix i} {parent.input0.matrix i}}
+    {{parent.input0.matrix i} {parent.input0.matrix i} {parent.input0.matrix i} {parent.input0.matrix i}}
+    {{parent.input0.matrix i} {parent.input0.matrix i} {parent.input0.matrix i} {parent.input0.matrix i}}
+    {{parent.input0.matrix i} {parent.input0.matrix i} {parent.input0.matrix i} {parent.input0.matrix i}}
+  }
+projection_mode {{parent.input0.projection_mode}}
+focal {{parent.input0.focal(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+haperture {{parent.input0.haperture(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+vaperture {{parent.input0.vaperture(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+near {{parent.input0.near(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+far {{parent.input0.far(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+win_translate {{parent.input0.win_translate(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.win_translate(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+win_scale {{parent.input0.win_scale(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)} {parent.input0.win_scale(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+winroll {{parent.input0.winroll(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+focal_point {{parent.input0.focal_point(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+fstop {{parent.input0.fstop(OFlow_Retime.timing?OFlow_Retime.timingFrame:(frame-OFlow_Retime.first_frame)*OFlow_Retime.timingSpeed+OFlow_Retime.first_frame)}}
+version {{parent.input0.version}}
+fbx_take_name {{{"\"\"\"\"\"\"\"\"\"\"parent.input0.fbx_take_name i\"\"\" i\"\"\"\"\"\"\""}} "-------          "}
+fbx_node_name {{{"\"\"\"\"\"\"\"\"\"\"parent.input0.fbx_node_name i\"\"\" i\"\"\"\"\"\"\""}} "-------          "}
+fbx_load_take_node_names {{parent.input0.fbx_load_take_node_names x1 0 x16 0 x19 0 x54 0 x61 0 x63 0 x329 0 x398 0 x1001 0}}
+frame_rate {{parent.input0.frame_rate}}
+use_frame_rate {{parent.input0.use_frame_rate}}
+compute_rotation {{parent.input0.compute_rotation}}
+name CameraRetime
+xpos 387
+ypos 51
+}
+Output {
+name Output
+xpos 374
+ypos 151
+}
+OFXuk.co.thefoundry.time.oflow_v100 {
+inputs 0
+method Motion
+timing Speed
+timingFrame 0
+timingSpeed 1
+filtering Normal
+warpMode Normal
+correctLuminance false
+automaticShutterTime false
+shutterTime 0
+shutterSamples 1
+vectorDetail 0.2
+smoothness 0.5
+blockSize 6
+Tolerances 0
+weightRed 0.3
+weightGreen 0.6
+weightBlue 0.1
+showVectors false
+cacheBreaker false
+name OFlow_Retime
+label "\[value method]"
+selected true
+xpos 233
+ypos 63
+}
+end_group
