@@ -1,0 +1,1929 @@
+#! C:/Program Files/Nuke10.5v4/nuke-10.5.4.dll -nx
+version 10.5 v4
+Gizmo {
+ inputs 2
+ addUserKnob {20 ColorPicker}
+ addUserKnob {26 instruction_1 l "" +STARTLINE T "Pick colors and active relative check-box:"}
+ addUserKnob {26 ""}
+ addUserKnob {41 color_picker01 l "color picker01" T Constant_pick01.color}
+ addUserKnob {6 active_pick01 l active -STARTLINE}
+ active_pick01 true
+ addUserKnob {26 ""}
+ addUserKnob {41 color_picker02 l "color picker02" T Constant_pick02.color}
+ addUserKnob {6 active_pick02 l active -STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {41 color_picker03 l "color picker03" T Constant_pick03.color}
+ addUserKnob {6 active_pick03 l active -STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {41 color_picker04 l "color picker04" T Constant_pick04.color}
+ addUserKnob {6 active_pick04 l active -STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {41 color_picker05 l "color picker05" T Constant_pick05.color}
+ addUserKnob {6 active_pick05 l active -STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {41 color_picker06 l "color picker06" T Constant_pick06.color}
+ addUserKnob {6 active_pick06 l active -STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {41 color_picker07 l "color picker07" T Constant_pick07.color}
+ addUserKnob {6 active_pick07 l active -STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {41 color_picker08 l "color picker08" T Constant_pick08.color}
+ addUserKnob {6 active_pick08 l active -STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {41 color_picker09 l "color picker09" T Constant_pick09.color}
+ addUserKnob {6 active_pick09 l active -STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {22 btn_message01 l ? T "nuke.message('- Pick colors from the ID pass\\n- Active pickers with checkbox \"active\"\\n- Improve pickers with next tab \"Controls\"\\n- If Coverage Pass (rgba.alpha) is connected, use tab \"Coverage\" ')" +STARTLINE}
+ addUserKnob {20 controls l Controls}
+ addUserKnob {26 instruction l "" +STARTLINE T "Select pick and press the button to update controls:"}
+ addUserKnob {26 ""}
+ addUserKnob {4 name_pick l "select pick" M {"" pick01 pick02 pick03 pick04 pick05 pick06 pick07 pick08 pick09 "" "" "" "" "" ""}}
+ name_pick pick03
+ addUserKnob {22 button l UPDATE -STARTLINE T "import nuke\n\n#------------------------------------------------------------\ndef update(stringa, attribute, attribute_group, type):\n\n\tnode = nuke.toNode(stringa + str(index))\n\tvalue = node\[attribute].value()\n\t\n\t\n\tknob_group = nuke.toNode(groupName).knob(attribute_group)\n\tknob_group.setValue(value)\n\t\n\tknob = nuke.toNode(stringa + str(index))\[attribute]\n\n\tif (type == \"4col\"):\n\t\tcolor_picker = nuke.toNode(groupName).knob(\"color_pick\")\n\telif(type == \"int\"):\n\t\tknob.setExpression('parent.' + knob_group.name(), 0)\n\telif(type == \"boolean\"):\n\t\tknob.setExpression('parent.' + knob_group.name(), 0)\n\t\n\n\n'''\nprint \"old\" + str(index_old)\nprint \"ind\" + str(index)\nprint \"CONT\" + str(cont)\n'''\n#---------------------------------------------------------\n\ndef delete_expression(stringa, attribute):\n\tfor num in range(1, 10):\n\t\tnuke.toNode(stringa + str(num))\[attribute].clearAnimated()\n\n#----------------------------------------------\ngroup = nuke.thisNode()\ngroupName = group.name()\n\nname_pick= nuke.toNode(groupName).knob('name_pick')\n\n\nmatrix = \[ \[\"Constant_pick0\", \"color\"], \[\"Difference_pick0\", \"gain\"], \[\"EdgeDetect1_pick0\", \"threshold\"],  \[\"EdgeDetect1_pick0\", \"erodesize\"],  \[\"EdgeDetect1_pick0\", \"blursize\"], \[\"Blur1_pick0\", \"size\"], \[\"Grade1_pick0\", \"gamma\"],  \[\"Grade2_pick0\", \"gamma\"],  \[\"Grade1_pick0\", \"multiply\"], \[\"Blur2_pick0\", \"size\"], \[\"FilterErode2_pick0\", \"size\"],  \[\"FilterErode2_pick0\", \"filter\"], \[\"Premult_pick0\", \"disable\"], \[\"Shuffle_pick0\", \"disable\"]]\n\nfor i in range(len(matrix)):\n        delete_expression(groupName + \".\" + matrix\[i]\[0],  matrix\[i]\[1])\n\n\n\n#delete_expression(groupName + \".Constant_pick0\",\"color\")\n\n\nindex = int(name_pick.getValue())\n\n\n\n#------------------------------------------\n#UPDATE (gruppo.nodo, attributo dentro al nodo, attributo corrispondente del gruppo, tipo di attributo\n\n\nupdate(groupName + \".Constant_pick0\", \"color\", \"color_pick\", \"4col\")\n\nupdate(groupName + \".Difference_pick0\", \"gain\", \"range_picker\", \"int\")\n\n\n\nupdate(groupName + \".Blur2_pick0\", \"size\", \"blur_size2\", \"int\")\n\nupdate(groupName + \".FilterErode2_pick0\", \"size\", \"erode_size2\", \"int\")\nupdate(groupName + \".FilterErode2_pick0\", \"filter\", \"filter_type\", \"int\")\n\nupdate(groupName + \".Grade2_pick0\", \"gamma\", \"gamma02\", \"int\")\n#update(groupName + \".Grade2_pick0\", \"multiply\", \"multiply02\", \"int\")\n\nupdate(groupName + \".Premult_pick0\", \"disable\", \"unpremult_out\", \"boolean\")\n\nupdate(groupName + \".Shuffle_pick0\", \"disable\", \"rgba\", \"boolean\")\n\n\n#------------------------------------------------------\n#TESTO ACTIVE:\n\nnode = nuke.toNode(groupName + \".Switch_pick0\" + str(index))\nvalue = node\[\"which\"].value()\n\nknob_group = nuke.toNode(groupName).knob(\"out_active\")\n\nif(value == 1):\n\tknob_group.setValue(\"active\")\nelse:\n\tknob_group.setValue(\"NO active\")"}
+ addUserKnob {6 active l INVISIBLE +INVISIBLE +STARTLINE}
+ active true
+ addUserKnob {26 out_active l "This pick is:" T "NO active"}
+ addUserKnob {26 ""}
+ addUserKnob {19 color_pick +DISABLED}
+ color_pick {0 0 1 0}
+ addUserKnob {6 color_pick_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {26 ""}
+ addUserKnob {7 range_picker l tolerance R 0 10}
+ range_picker 1
+ addUserKnob {26 ""}
+ addUserKnob {20 endGroup n -1}
+ addUserKnob {20 TUNING l "ADVANCED TUNING" n 1}
+ TUNING 0
+ addUserKnob {7 blur_size2 l "blur size" R 0 100}
+ addUserKnob {7 erode_size2 l "erode size" R -100 100}
+ addUserKnob {4 filter_type l filter M {box triangle quadratic gaussian ""}}
+ addUserKnob {26 ""}
+ addUserKnob {7 gamma02 l gamma R 0.2 5}
+ gamma02 1
+ addUserKnob {26 ""}
+ addUserKnob {20 endGroup_1 l endGroup n -1}
+ addUserKnob {6 rgba l RGBA +STARTLINE}
+ addUserKnob {6 unpremult_out l unpremult +STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {22 btn_message02 l ? T "nuke.message('- Select picker from the list and press UPDATE button \\n- To change color use tab \"ColorPicker\" \\n- Use controls to improve your single pick\\n\\n- When you change something on tab \"ColorPicker\", click always UPDATE button')" +STARTLINE}
+ addUserKnob {20 Coverage}
+ addUserKnob {4 display_coverage l display M {"final matte" coverage "" ""}}
+ addUserKnob {41 disable_1 l "disable coverage" T Merge13.disable}
+ addUserKnob {26 ""}
+ addUserKnob {20 tuning_coverage l "TUNING COVERAGE" n 1}
+ tuning_coverage 0
+ addUserKnob {41 thinness T Merge12.mix}
+ addUserKnob {41 gamma T Grade11.gamma}
+ addUserKnob {41 multiply T Grade11.multiply}
+ addUserKnob {20 endGroup_3 l endGroup n -1}
+ addUserKnob {26 ""}
+ addUserKnob {22 btn_message03 l ? T "nuke.message('- In this Tab you can control Coverage Pass\\n- With \"display\", you can visualize Coverage Pass\\n\\n- Coverage Pass must be in channel \"rgba.alpha\" ')" +STARTLINE}
+ addUserKnob {20 final_matte_1 l "Final Matte"}
+ addUserKnob {26 text l "" +STARTLINE T "Use these knobs to modify the final matte, with all ID\n"}
+ addUserKnob {6 disable_final l "disable modifies" +STARTLINE}
+ addUserKnob {41 blur l "blur size" T Blur1.size}
+ addUserKnob {41 size l "erode size" T FilterErode1.size}
+ addUserKnob {41 filter T FilterErode1.filter}
+ addUserKnob {41 gamma_1 l gamma T Grade12.gamma}
+ addUserKnob {26 ""}
+ addUserKnob {22 btn_message04 l ? T "nuke.message('- In this Tab you can modify all ID together ')" +STARTLINE}
+}
+ BackdropNode {
+  inputs 0
+  name BackdropNode1
+  tile_color 0xe8322dff
+  label PICK01
+  note_font_size 42
+  xpos 1931
+  ypos -359
+  bdwidth 635
+  bdheight 1032
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode11
+  tile_color 0xffffffff
+  label ERODE
+  note_font_size 42
+  xpos 4279
+  ypos 1131
+  bdwidth 335
+  bdheight 557
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode2
+  tile_color 0xff7136ff
+  label PICK02
+  note_font_size 42
+  xpos 2778
+  ypos -355
+  bdwidth 632
+  bdheight 1040
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode3
+  tile_color 0xffbd0dff
+  label PICK03
+  note_font_size 42
+  xpos 3559
+  ypos -357
+  bdwidth 632
+  bdheight 1040
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode4
+  tile_color 0x8dd600ff
+  label PICK04
+  note_font_size 42
+  xpos 4312
+  ypos -361
+  bdwidth 632
+  bdheight 1040
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode5
+  tile_color 0xa205ff
+  label PICK05
+  note_font_size 42
+  xpos 5042
+  ypos -366
+  bdwidth 632
+  bdheight 1040
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode6
+  tile_color 0x38da83ff
+  label PICK06
+  note_font_size 42
+  xpos 5802
+  ypos -366
+  bdwidth 632
+  bdheight 1040
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode7
+  tile_color 0xd8b9fff
+  label PICK07
+  note_font_size 42
+  xpos 6586
+  ypos -372
+  bdwidth 632
+  bdheight 1040
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode8
+  tile_color 0x2954bbff
+  label PICK08
+  note_font_size 42
+  xpos 7337
+  ypos -367
+  bdwidth 632
+  bdheight 1040
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode9
+  tile_color 0x5b29bbff
+  label PICK09
+  note_font_size 42
+  xpos 8070
+  ypos -369
+  bdwidth 632
+  bdheight 1040
+ }
+ Input {
+  inputs 0
+  name coverage
+  xpos 3957
+  ypos 1664
+ }
+ Invert {
+  name Invert10
+  xpos 3957
+  ypos 1801
+ }
+ Input {
+  inputs 0
+  name ID
+  xpos 2597
+  ypos -798
+  number 1
+ }
+ Dot {
+  name Dot4
+  xpos 2631
+  ypos -501
+ }
+set N988b7400 [stack 0]
+ Dot {
+  name Dot8
+  xpos 2631
+  ypos -409
+ }
+set N988b7000 [stack 0]
+ Dot {
+  name Dot10
+  xpos 2982
+  ypos -409
+ }
+set N988b6c00 [stack 0]
+ Dot {
+  name Dot25
+  xpos 3763
+  ypos -409
+ }
+set N988b6800 [stack 0]
+ Dot {
+  name Dot32
+  xpos 4516
+  ypos -409
+ }
+set N988b6400 [stack 0]
+ Dot {
+  name Dot39
+  xpos 5246
+  ypos -409
+ }
+set N988b6000 [stack 0]
+ Dot {
+  name Dot46
+  xpos 6006
+  ypos -409
+ }
+set N7eb23c00 [stack 0]
+ Dot {
+  name Dot53
+  xpos 6790
+  ypos -409
+ }
+set N7eb23800 [stack 0]
+ Dot {
+  name Dot60
+  xpos 7541
+  ypos -409
+ }
+set N7eb23400 [stack 0]
+ Dot {
+  name Dot67
+  xpos 8274
+  ypos -409
+ }
+ Dot {
+  name Dot61
+  xpos 8274
+  ypos -289
+ }
+set N7eb22c00 [stack 0]
+ EdgeDetectWrapper {
+  threshold 0.5
+  blurquality 30
+  name EdgeDetect1_pick09
+  xpos 8240
+  ypos -117
+ }
+ Blur {
+  channels alpha
+  name Blur1_pick09
+  xpos 8240
+  ypos -31
+ }
+ Grade {
+  channels alpha
+  name Grade1_pick09
+  xpos 8240
+  ypos 59
+ }
+set N7eb22000 [stack 0]
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle9
+  xpos 8240
+  ypos 338
+ }
+push $N7eb22000
+ Constant {
+  inputs 0
+  channels rgb
+  color {0 0 0 0}
+  name Constant_pick09
+  xpos 8561
+  ypos -228
+ }
+push $N7eb22c00
+ Dot {
+  name Dot62
+  xpos 8423
+  ypos -289
+ }
+ Difference {
+  inputs 2
+  name Difference_pick09
+  xpos 8389
+  ypos -211
+ }
+ Invert {
+  channels alpha
+  name Invert9
+  note_font Verdana
+  xpos 8389
+  ypos -115
+ }
+ Grade {
+  channels alpha
+  gamma 0.435
+  name Grade9
+  xpos 8389
+  ypos -33
+ }
+ Blur {
+  inputs 1+1
+  name Blur2_pick09
+  xpos 8389
+  ypos 59
+ }
+ FilterErode {
+  channels all
+  size 0
+  name FilterErode2_pick09
+  xpos 8389
+  ypos 238
+ }
+ Grade {
+  channels rgba
+  name Grade2_pick09
+  xpos 8288
+  ypos 244
+ }
+push $N7eb22c00
+ Dot {
+  name Dot63
+  xpos 8114
+  ypos -289
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy9
+  xpos 8080
+  ypos 238
+ }
+ Premult {
+  name Premult_pick09
+  xpos 8080
+  ypos 357
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle_pick09
+  xpos 8080
+  ypos 453
+ }
+ Switch {
+  inputs 2
+  which {{parent.display x1 1}}
+  name Switch9
+  xpos 8240
+  ypos 453
+ }
+ Dot {
+  name Dot64
+  xpos 8274
+  ypos 494
+ }
+set N68438800 [stack 0]
+ Dot {
+  name Dot65
+  xpos 8164
+  ypos 494
+ }
+ Dot {
+  name Dot66
+  xpos 8164
+  ypos 611
+ }
+push $N68438800
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name active_pick09
+  xpos 8240
+  ypos 539
+ }
+ Switch {
+  inputs 2
+  which {{"\[python \{nuke.toNode('parent')\['active_pick09'].value()\}]"}}
+  name Switch_pick09
+  xpos 8240
+  ypos 607
+ }
+push $N7eb23400
+ Dot {
+  name Dot54
+  xpos 7541
+  ypos -287
+ }
+set N840db800 [stack 0]
+ EdgeDetectWrapper {
+  threshold 0.78
+  erodesize 1.2
+  blursize -1.6
+  blurquality 30
+  name EdgeDetect1_pick08
+  xpos 7507
+  ypos -115
+ }
+ Blur {
+  channels alpha
+  name Blur1_pick08
+  xpos 7507
+  ypos -29
+ }
+ Grade {
+  channels alpha
+  name Grade1_pick08
+  xpos 7507
+  ypos 61
+ }
+set N840dac00 [stack 0]
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle8
+  xpos 7507
+  ypos 340
+ }
+push $N840dac00
+ Constant {
+  inputs 0
+  channels rgb
+  color {0 0 0 0}
+  name Constant_pick08
+  xpos 7828
+  ypos -226
+ }
+push $N840db800
+ Dot {
+  name Dot55
+  xpos 7690
+  ypos -287
+ }
+ Difference {
+  inputs 2
+  name Difference_pick08
+  xpos 7656
+  ypos -209
+ }
+ Invert {
+  channels alpha
+  name Invert8
+  note_font Verdana
+  xpos 7656
+  ypos -113
+ }
+ Grade {
+  channels alpha
+  gamma 0.435
+  name Grade8
+  xpos 7656
+  ypos -31
+ }
+ Blur {
+  inputs 1+1
+  name Blur2_pick08
+  xpos 7656
+  ypos 61
+ }
+ FilterErode {
+  channels all
+  size 0
+  name FilterErode2_pick08
+  xpos 7656
+  ypos 240
+ }
+ Grade {
+  channels rgba
+  name Grade2_pick08
+  xpos 7555
+  ypos 246
+ }
+push $N840db800
+ Dot {
+  name Dot56
+  xpos 7381
+  ypos -287
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy8
+  xpos 7347
+  ypos 240
+ }
+ Premult {
+  name Premult_pick08
+  xpos 7347
+  ypos 359
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle_pick08
+  xpos 7347
+  ypos 455
+ }
+ Switch {
+  inputs 2
+  which {{parent.display x1 1}}
+  name Switch8
+  xpos 7507
+  ypos 455
+ }
+ Dot {
+  name Dot57
+  xpos 7541
+  ypos 496
+ }
+set N884df400 [stack 0]
+ Dot {
+  name Dot58
+  xpos 7431
+  ypos 496
+ }
+ Dot {
+  name Dot59
+  xpos 7431
+  ypos 613
+ }
+push $N884df400
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name active_pick08
+  xpos 7507
+  ypos 541
+ }
+ Switch {
+  inputs 2
+  which {{"\[python \{nuke.toNode('parent')\['active_pick08'].value()\}]"}}
+  name Switch_pick08
+  xpos 7507
+  ypos 609
+ }
+push $N7eb23800
+ Dot {
+  name Dot47
+  xpos 6790
+  ypos -292
+ }
+set N884de400 [stack 0]
+ EdgeDetectWrapper {
+  threshold 0.78
+  erodesize 1.2
+  blursize -1.6
+  blurquality 30
+  name EdgeDetect1_pick07
+  xpos 6756
+  ypos -133
+ }
+ Blur {
+  channels alpha
+  size 1.9
+  name Blur1_pick07
+  xpos 6756
+  ypos -34
+ }
+ Grade {
+  channels alpha
+  name Grade1_pick07
+  xpos 6756
+  ypos 56
+ }
+set N84155800 [stack 0]
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle7
+  xpos 6756
+  ypos 335
+ }
+push $N84155800
+ Constant {
+  inputs 0
+  channels rgb
+  color {0 0 0 0}
+  name Constant_pick07
+  xpos 7077
+  ypos -231
+ }
+push $N884de400
+ Dot {
+  name Dot48
+  xpos 6939
+  ypos -292
+ }
+ Difference {
+  inputs 2
+  name Difference_pick07
+  xpos 6905
+  ypos -214
+ }
+ Invert {
+  channels alpha
+  name Invert7
+  note_font Verdana
+  xpos 6905
+  ypos -118
+ }
+ Grade {
+  channels alpha
+  gamma 0.435
+  name Grade7
+  xpos 6905
+  ypos -36
+ }
+ Blur {
+  inputs 1+1
+  name Blur2_pick07
+  xpos 6905
+  ypos 56
+ }
+ FilterErode {
+  channels all
+  size 0
+  name FilterErode2_pick07
+  xpos 6905
+  ypos 235
+ }
+ Grade {
+  channels rgba
+  name Grade2_pick07
+  xpos 6802
+  ypos 241
+ }
+push $N884de400
+ Dot {
+  name Dot49
+  xpos 6630
+  ypos -292
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy7
+  xpos 6596
+  ypos 235
+ }
+ Premult {
+  name Premult_pick07
+  xpos 6596
+  ypos 354
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle_pick07
+  xpos 6596
+  ypos 450
+ }
+ Switch {
+  inputs 2
+  which {{parent.display x1 1}}
+  name Switch7
+  xpos 6756
+  ypos 450
+ }
+ Dot {
+  name Dot50
+  xpos 6790
+  ypos 491
+ }
+set N722b6000 [stack 0]
+ Dot {
+  name Dot51
+  xpos 6680
+  ypos 491
+ }
+ Dot {
+  name Dot52
+  xpos 6680
+  ypos 608
+ }
+push $N722b6000
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name active_pick07
+  xpos 6756
+  ypos 536
+ }
+ Switch {
+  inputs 2
+  which {{"\[python \{nuke.toNode('parent')\['active_pick07'].value()\}]"}}
+  name Switch_pick07
+  xpos 6756
+  ypos 604
+ }
+push $N7eb23c00
+ Dot {
+  name Dot40
+  xpos 6006
+  ypos -286
+ }
+set N7ec9b000 [stack 0]
+ EdgeDetectWrapper {
+  threshold 0.78
+  erodesize 1.2
+  blursize -1.6
+  blurquality 30
+  name EdgeDetect1_pick06
+  xpos 5972
+  ypos -114
+ }
+ Blur {
+  channels alpha
+  name Blur1_pick06
+  xpos 5972
+  ypos -28
+ }
+ Grade {
+  channels alpha
+  name Grade1_pick06
+  xpos 5972
+  ypos 62
+ }
+set N7ec9a400 [stack 0]
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle6
+  xpos 5972
+  ypos 341
+ }
+push $N7ec9a400
+ Constant {
+  inputs 0
+  channels rgb
+  color {0 1 1 0}
+  name Constant_pick06
+  xpos 6293
+  ypos -225
+ }
+push $N7ec9b000
+ Dot {
+  name Dot41
+  xpos 6155
+  ypos -286
+ }
+ Difference {
+  inputs 2
+  name Difference_pick06
+  xpos 6121
+  ypos -208
+ }
+ Invert {
+  channels alpha
+  name Invert6
+  note_font Verdana
+  xpos 6121
+  ypos -112
+ }
+ Grade {
+  channels alpha
+  gamma 0.435
+  name Grade6
+  xpos 6121
+  ypos -30
+ }
+ Blur {
+  inputs 1+1
+  name Blur2_pick06
+  xpos 6121
+  ypos 62
+ }
+ FilterErode {
+  channels all
+  size 0
+  name FilterErode2_pick06
+  xpos 6121
+  ypos 241
+ }
+ Grade {
+  channels rgba
+  name Grade2_pick06
+  xpos 6019
+  ypos 247
+ }
+push $N7ec9b000
+ Dot {
+  name Dot42
+  xpos 5846
+  ypos -286
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy6
+  xpos 5812
+  ypos 241
+ }
+ Premult {
+  name Premult_pick06
+  xpos 5812
+  ypos 360
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle_pick06
+  xpos 5812
+  ypos 456
+ }
+ Switch {
+  inputs 2
+  which {{parent.display x1 1}}
+  name Switch6
+  xpos 5972
+  ypos 456
+ }
+ Dot {
+  name Dot43
+  xpos 6006
+  ypos 497
+ }
+set N80530c00 [stack 0]
+ Dot {
+  name Dot44
+  xpos 5896
+  ypos 497
+ }
+ Dot {
+  name Dot45
+  xpos 5896
+  ypos 614
+ }
+push $N80530c00
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name active_pick06
+  xpos 5972
+  ypos 542
+ }
+ Switch {
+  inputs 2
+  which {{"\[python \{nuke.toNode('parent')\['active_pick06'].value()\}]"}}
+  name Switch_pick06
+  xpos 5972
+  ypos 610
+ }
+push $N988b6000
+ Dot {
+  name Dot33
+  xpos 5246
+  ypos -286
+ }
+set N67515c00 [stack 0]
+ EdgeDetectWrapper {
+  threshold 0.14
+  erodesize 0.8
+  blurquality 30
+  name EdgeDetect1_pick05
+  xpos 5212
+  ypos -161
+ }
+ Blur {
+  channels alpha
+  size 1.5
+  name Blur1_pick05
+  xpos 5212
+  ypos -28
+ }
+ Grade {
+  channels alpha
+  name Grade1_pick05
+  xpos 5212
+  ypos 62
+ }
+set N67515000 [stack 0]
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle5
+  xpos 5212
+  ypos 341
+ }
+push $N67515000
+ Constant {
+  inputs 0
+  channels rgb
+  color {1 0 1 0}
+  name Constant_pick05
+  xpos 5533
+  ypos -225
+ }
+push $N67515c00
+ Dot {
+  name Dot34
+  xpos 5395
+  ypos -286
+ }
+ Difference {
+  inputs 2
+  name Difference_pick05
+  xpos 5361
+  ypos -208
+ }
+ Invert {
+  channels alpha
+  name Invert5
+  note_font Verdana
+  xpos 5361
+  ypos -112
+ }
+ Grade {
+  channels alpha
+  gamma 0.435
+  name Grade5
+  xpos 5361
+  ypos -30
+ }
+ Blur {
+  inputs 1+1
+  name Blur2_pick05
+  xpos 5361
+  ypos 62
+ }
+ FilterErode {
+  channels all
+  size 0
+  name FilterErode2_pick05
+  xpos 5361
+  ypos 241
+ }
+ Grade {
+  channels rgba
+  name Grade2_pick05
+  xpos 5261
+  ypos 247
+ }
+push $N67515c00
+ Dot {
+  name Dot35
+  xpos 5086
+  ypos -286
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy5
+  xpos 5052
+  ypos 241
+ }
+ Premult {
+  name Premult_pick05
+  xpos 5052
+  ypos 360
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle_pick05
+  xpos 5052
+  ypos 456
+ }
+ Switch {
+  inputs 2
+  which {{parent.display x1 1}}
+  name Switch5
+  xpos 5212
+  ypos 456
+ }
+ Dot {
+  name Dot36
+  xpos 5246
+  ypos 497
+ }
+set N997fb800 [stack 0]
+ Dot {
+  name Dot37
+  xpos 5136
+  ypos 497
+ }
+ Dot {
+  name Dot38
+  xpos 5136
+  ypos 614
+ }
+push $N997fb800
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name active_pick05
+  xpos 5212
+  ypos 542
+ }
+ Switch {
+  inputs 2
+  which {{"\[python \{nuke.toNode('parent')\['active_pick05'].value()\}]"}}
+  name Switch_pick05
+  xpos 5212
+  ypos 610
+ }
+push $N988b6400
+ Dot {
+  name Dot26
+  xpos 4516
+  ypos -281
+ }
+set N997fa800 [stack 0]
+ EdgeDetectWrapper {
+  threshold 0.78
+  erodesize 1.2
+  blursize -1.6
+  blurquality 30
+  name EdgeDetect1_pick04
+  xpos 4482
+  ypos -130
+ }
+ Blur {
+  channels alpha
+  name Blur1_pick04
+  xpos 4482
+  ypos -23
+ }
+ Grade {
+  channels alpha
+  name Grade1_pick04
+  xpos 4482
+  ypos 67
+ }
+set N7a4a3c00 [stack 0]
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle3
+  xpos 4482
+  ypos 346
+ }
+push $N7a4a3c00
+ Constant {
+  inputs 0
+  channels rgb
+  color {1 1 0 0}
+  name Constant_pick04
+  xpos 4803
+  ypos -220
+ }
+push $N997fa800
+ Dot {
+  name Dot27
+  xpos 4665
+  ypos -281
+ }
+ Difference {
+  inputs 2
+  name Difference_pick04
+  xpos 4631
+  ypos -203
+ }
+ Invert {
+  channels alpha
+  name Invert4
+  note_font Verdana
+  xpos 4631
+  ypos -107
+ }
+ Grade {
+  channels alpha
+  gamma 0.435
+  name Grade4
+  xpos 4631
+  ypos -25
+ }
+ Blur {
+  inputs 1+1
+  name Blur2_pick04
+  xpos 4631
+  ypos 67
+ }
+ FilterErode {
+  channels all
+  size 0
+  name FilterErode2_pick04
+  xpos 4631
+  ypos 246
+ }
+ Grade {
+  channels rgba
+  name Grade2_pick04
+  xpos 4521
+  ypos 252
+ }
+push $N997fa800
+ Dot {
+  name Dot28
+  xpos 4356
+  ypos -281
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy4
+  xpos 4322
+  ypos 246
+ }
+ Premult {
+  name Premult_pick04
+  xpos 4322
+  ypos 365
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle_pick04
+  xpos 4322
+  ypos 461
+ }
+ Switch {
+  inputs 2
+  which {{parent.display x1 1}}
+  name Switch4
+  xpos 4482
+  ypos 461
+ }
+ Dot {
+  name Dot29
+  xpos 4516
+  ypos 502
+ }
+set N84262400 [stack 0]
+ Dot {
+  name Dot30
+  xpos 4406
+  ypos 502
+ }
+ Dot {
+  name Dot31
+  xpos 4406
+  ypos 619
+ }
+push $N84262400
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name active_pick04
+  xpos 4482
+  ypos 547
+ }
+ Switch {
+  inputs 2
+  which {{"\[python \{nuke.toNode('parent')\['active_pick04'].value()\}]"}}
+  name Switch_pick04
+  xpos 4482
+  ypos 615
+ }
+push $N988b6800
+ Dot {
+  name Dot16
+  xpos 3763
+  ypos -277
+ }
+set N69ca9400 [stack 0]
+ EdgeDetectWrapper {
+  blurquality 30
+  name EdgeDetect1_pick03
+  xpos 3729
+  ypos -105
+ }
+ Blur {
+  channels alpha
+  name Blur1_pick03
+  xpos 3729
+  ypos -19
+ }
+ Grade {
+  channels alpha
+  name Grade1_pick03
+  xpos 3729
+  ypos 79
+ }
+set N69ca8800 [stack 0]
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle2
+  xpos 3729
+  ypos 350
+ }
+push $N69ca8800
+ Constant {
+  inputs 0
+  channels rgb
+  color {0 0 1 0}
+  name Constant_pick03
+  xpos 4050
+  ypos -216
+ }
+push $N69ca9400
+ Dot {
+  name Dot17
+  xpos 3912
+  ypos -277
+ }
+ Difference {
+  inputs 2
+  gain {{parent.range_picker}}
+  name Difference_pick03
+  xpos 3878
+  ypos -199
+ }
+ Invert {
+  channels alpha
+  name Invert3
+  note_font Verdana
+  xpos 3878
+  ypos -103
+ }
+ Grade {
+  channels alpha
+  gamma 0.435
+  name Grade1
+  xpos 3878
+  ypos -21
+ }
+ Blur {
+  inputs 1+1
+  size {{parent.blur_size2}}
+  name Blur2_pick03
+  xpos 3878
+  ypos 79
+ }
+ FilterErode {
+  channels all
+  size {{parent.erode_size2}}
+  filter {{parent.filter_type}}
+  name FilterErode2_pick03
+  xpos 3878
+  ypos 250
+ }
+ Grade {
+  channels rgba
+  gamma {{parent.gamma02}}
+  name Grade2_pick03
+  xpos 3778
+  ypos 256
+ }
+push $N69ca9400
+ Dot {
+  name Dot18
+  xpos 3603
+  ypos -277
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy3
+  xpos 3569
+  ypos 250
+ }
+ Premult {
+  name Premult_pick03
+  xpos 3569
+  ypos 369
+  disable {{parent.unpremult_out}}
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle_pick03
+  xpos 3569
+  ypos 465
+  disable {{parent.rgba}}
+ }
+ Switch {
+  inputs 2
+  which {{parent.display x1 1}}
+  name Switch2
+  xpos 3729
+  ypos 465
+ }
+ Dot {
+  name Dot22
+  xpos 3763
+  ypos 506
+ }
+set N7c993000 [stack 0]
+ Dot {
+  name Dot23
+  xpos 3653
+  ypos 506
+ }
+ Dot {
+  name Dot24
+  xpos 3653
+  ypos 623
+ }
+push $N7c993000
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name active_pick03
+  xpos 3729
+  ypos 551
+ }
+ Switch {
+  inputs 2
+  which {{"\[python \{nuke.toNode('parent')\['active_pick03'].value()\}]"}}
+  name Switch_pick03
+  xpos 3729
+  ypos 619
+ }
+push $N988b6c00
+ Dot {
+  name Dot5
+  xpos 2982
+  ypos -275
+ }
+set N7c992000 [stack 0]
+ EdgeDetectWrapper {
+  threshold 0.14
+  erodesize 0.8
+  blurquality 30
+  name EdgeDetect1_pick02
+  xpos 2948
+  ypos -103
+ }
+ Blur {
+  channels alpha
+  name Blur1_pick02
+  xpos 2948
+  ypos -17
+ }
+ Grade {
+  channels alpha
+  name Grade1_pick02
+  xpos 2948
+  ypos 73
+ }
+set N8421d400 [stack 0]
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle4
+  xpos 2948
+  ypos 352
+ }
+push $N8421d400
+ Constant {
+  inputs 0
+  channels rgb
+  color {1 0 0 0}
+  name Constant_pick02
+  xpos 3269
+  ypos -214
+ }
+push $N7c992000
+ Dot {
+  name Dot6
+  xpos 3131
+  ypos -275
+ }
+ Difference {
+  inputs 2
+  name Difference_pick02
+  xpos 3097
+  ypos -197
+ }
+ Invert {
+  channels alpha
+  name Invert1
+  note_font Verdana
+  xpos 3097
+  ypos -101
+ }
+ Grade {
+  channels alpha
+  gamma 0.435
+  name Grade2
+  xpos 3097
+  ypos -19
+ }
+ Blur {
+  inputs 1+1
+  name Blur2_pick02
+  xpos 3097
+  ypos 73
+ }
+ FilterErode {
+  channels all
+  size 0
+  name FilterErode2_pick02
+  xpos 3097
+  ypos 252
+ }
+ Grade {
+  channels rgba
+  name Grade2_pick02
+  xpos 2987
+  ypos 258
+ }
+push $N7c992000
+ Dot {
+  name Dot7
+  xpos 2822
+  ypos -275
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy2
+  xpos 2788
+  ypos 252
+ }
+ Premult {
+  name Premult_pick02
+  xpos 2788
+  ypos 371
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle_pick02
+  xpos 2788
+  ypos 467
+ }
+ Switch {
+  inputs 2
+  which {{parent.display x1 1}}
+  name Switch3
+  xpos 2948
+  ypos 467
+ }
+ Dot {
+  name Dot19
+  xpos 2982
+  ypos 508
+ }
+set N684f1c00 [stack 0]
+ Dot {
+  name Dot20
+  xpos 2872
+  ypos 508
+ }
+ Dot {
+  name Dot21
+  xpos 2872
+  ypos 625
+ }
+push $N684f1c00
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name active_pick02
+  xpos 2948
+  ypos 553
+ }
+ Switch {
+  inputs 2
+  which {{"\[python \{nuke.toNode('parent')\['active_pick02'].value()\}]"}}
+  name Switch_pick02
+  xpos 2948
+  ypos 621
+ }
+push $N988b7000
+ Dot {
+  name Dot9
+  xpos 2135
+  ypos -409
+ }
+ Dot {
+  name Dot1
+  xpos 2135
+  ypos -279
+ }
+set N684f0800 [stack 0]
+ EdgeDetectWrapper {
+  blurquality 30
+  name EdgeDetect1_pick01
+  xpos 2101
+  ypos -106
+ }
+ Blur {
+  channels alpha
+  name Blur1_pick01
+  xpos 2101
+  ypos -21
+ }
+ Grade {
+  channels alpha
+  name Grade1_pick01
+  xpos 2101
+  ypos 69
+ }
+set N75aa9c00 [stack 0]
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle1
+  xpos 2101
+  ypos 344
+ }
+push $N75aa9c00
+ Constant {
+  inputs 0
+  channels rgb
+  color {0 1 0 0}
+  name Constant_pick01
+  xpos 2435
+  ypos -218
+ }
+push $N684f0800
+ Dot {
+  name Dot2
+  xpos 2284
+  ypos -279
+ }
+ Difference {
+  inputs 2
+  name Difference_pick01
+  xpos 2250
+  ypos -201
+ }
+ Invert {
+  channels alpha
+  name Invert2
+  note_font Verdana
+  xpos 2250
+  ypos -105
+ }
+ Grade {
+  channels alpha
+  gamma 0.46
+  name Grade3
+  xpos 2250
+  ypos -25
+ }
+ Blur {
+  inputs 1+1
+  name Blur2_pick01
+  xpos 2250
+  ypos 69
+ }
+ FilterErode {
+  channels all
+  size 0
+  name FilterErode2_pick01
+  xpos 2250
+  ypos 248
+ }
+ Grade {
+  channels rgba
+  name Grade2_pick01
+  xpos 2140
+  ypos 254
+ }
+push $N684f0800
+ Dot {
+  name Dot3
+  xpos 1975
+  ypos -279
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy1
+  xpos 1941
+  ypos 248
+ }
+ Premult {
+  name Premult_pick01
+  xpos 1941
+  ypos 358
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle_pick01
+  xpos 1941
+  ypos 421
+ }
+ Dot {
+  name Dot12
+  xpos 1975
+  ypos 467
+ }
+ Switch {
+  inputs 2
+  which {{parent.display x1 1}}
+  name Switch1
+  xpos 2101
+  ypos 463
+ }
+ Dot {
+  name Dot13
+  xpos 2135
+  ypos 516
+ }
+set N688f8000 [stack 0]
+ Dot {
+  name Dot14
+  xpos 2023
+  ypos 516
+ }
+ Dot {
+  name Dot15
+  xpos 2023
+  ypos 628
+ }
+push $N688f8000
+ Shuffle {
+  red black
+  green black
+  blue black
+  alpha black
+  name active_pick01
+  xpos 2101
+  ypos 557
+ }
+ Switch {
+  inputs 2
+  which {{"\[python \{nuke.toNode('parent')\['active_pick01'].value()\}]"}}
+  name Switch_pick01
+  knobChanged ciao()
+  xpos 2101
+  ypos 624
+ }
+push $N988b7400
+ Dot {
+  name Dot11
+  xpos 1419
+  ypos -501
+ }
+ Grade {
+  channels rgba
+  white 0
+  name Grade10
+  xpos 1385
+  ypos 548
+ }
+ Dot {
+  name Dot68
+  xpos 1419
+  ypos 949
+ }
+ Merge2 {
+  inputs 2
+  name Merge2
+  xpos 2101
+  ypos 946
+ }
+ Merge2 {
+  inputs 2
+  name Merge1
+  xpos 2948
+  ypos 946
+ }
+ Merge2 {
+  inputs 2
+  name Merge3
+  xpos 3729
+  ypos 946
+ }
+ Merge2 {
+  inputs 2
+  name Merge4
+  xpos 4482
+  ypos 946
+ }
+ Merge2 {
+  inputs 2
+  name Merge5
+  xpos 5212
+  ypos 946
+ }
+ Merge2 {
+  inputs 2
+  name Merge6
+  xpos 5972
+  ypos 946
+ }
+ Merge2 {
+  inputs 2
+  name Merge7
+  xpos 6756
+  ypos 946
+ }
+ Merge2 {
+  inputs 2
+  name Merge8
+  xpos 7507
+  ypos 946
+ }
+ Merge2 {
+  inputs 2
+  name Merge9
+  xpos 8240
+  ypos 946
+ }
+ Clamp {
+  name Clamp1
+  xpos 8240
+  ypos 1075
+ }
+ Dot {
+  name Dot71
+  xpos 8274
+  ypos 1211
+ }
+set N7f0b1c00 [stack 0]
+ Dot {
+  name Dot77
+  xpos 4543
+  ypos 1211
+ }
+set N7f0b1800 [stack 0]
+ Erode {
+  size 1
+  quality 30
+  name Erode5
+  xpos 4509
+  ypos 1449
+ }
+ Dot {
+  name Dot74
+  xpos 4543
+  ypos 1625
+ }
+push $N7f0b1800
+ Dot {
+  name Dot73
+  xpos 4323
+  ypos 1211
+ }
+ Erode {
+  size {{Erode5.size*-1}}
+  quality 30
+  name Erode3
+  xpos 4289
+  ypos 1449
+ }
+ Merge2 {
+  inputs 2
+  operation difference
+  name Merge11
+  xpos 4289
+  ypos 1621
+ }
+ Merge2 {
+  inputs 2
+  operation multiply
+  name Merge12
+  xpos 4289
+  ypos 1807
+ }
+ Shuffle {
+  red alpha
+  green alpha
+  blue alpha
+  name Shuffle11
+  xpos 4289
+  ypos 1908
+ }
+ Grade {
+  channels rgba
+  white_clamp true
+  name Grade11
+  xpos 4289
+  ypos 2012
+ }
+set N88301800 [stack 0]
+ Dot {
+  name Dot69
+  xpos 4323
+  ypos 2079
+ }
+set N88301400 [stack 0]
+ Dot {
+  name Dot72
+  xpos 4073
+  ypos 2079
+ }
+ Dot {
+  name Dot75
+  xpos 4073
+  ypos 2647
+ }
+push $N88301400
+push $N7f0b1c00
+ Dot {
+  name Dot78
+  xpos 8274
+  ypos 2279
+ }
+ Merge2 {
+  inputs 2
+  name Merge13
+  xpos 4289
+  ypos 2275
+ }
+ Blur {
+  name Blur1
+  xpos 4289
+  ypos 2349
+  disable {{parent.disable_final}}
+ }
+ FilterErode {
+  channels all
+  size 0
+  name FilterErode1
+  xpos 4289
+  ypos 2439
+  disable {{parent.disable_final}}
+ }
+ Grade {
+  channels rgba
+  name Grade12
+  xpos 4289
+  ypos 2540
+  disable {{parent.disable_final}}
+ }
+set N6845b800 [stack 0]
+ Switch {
+  inputs 2
+  which {{parent.display_coverage}}
+  name Switch_coverage
+  xpos 4289
+  ypos 2643
+ }
+ Clamp {
+  name Clamp2
+  xpos 4289
+  ypos 2791
+ }
+ Output {
+  name Output2
+  xpos 4289
+  ypos 2881
+ }
+push $N88301800
+push $N6845b800
+ Viewer {
+  inputs 2
+  frame_range 1-100
+  name Viewer1
+  xpos 4513
+  ypos 2548
+ }
+end_group
