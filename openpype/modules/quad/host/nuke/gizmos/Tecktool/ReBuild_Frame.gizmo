@@ -1,0 +1,190 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+inputs 2
+help "L'outil permet de recréer des frames (manquantes ou de mauvaises qualitées) .\n\nGénéralement on l'utilise après une stabilisation pour enlever sur certaines images le flou de mouvement d'origine.\n\n1- Pour commencer: appuyer sur le bouton \"Start/Reset\".\n\n2- Enlever les clefs d'animations sur toutes les frames a recréer. \nIl est également possible de rajouter une clef - s'il y avait eu une confusion ;)\n\n3- Puis appuyer sur \"Apply!\" pour activer la création des frames.\n"
+knobChanged "node = nuke.thisNode()\nknob = nuke.thisKnob()\ninputT = nuke.exists(\"Mask\")\nc = nuke.toNode('Copy2')\n\nif knob.name() in ('options', 'showPanel'):\n    mode = node\['options'].value()\n    if mode == 'Choose':\n        node\['shuttertime'].setVisible(False)\n        node\['shuttersamples'].setVisible(False)\n        node\['space'].setVisible(False)\n        node\['lin'].setVisible(False)\n        node\['optiongroup'].setVisible(False)\n        node\['S07'].setVisible(False)\n\n    elif mode == 'More Options':\n        node\['shuttertime'].setVisible(True)\n        node\['shuttersamples'].setVisible(True)\n        node\['space'].setVisible(True)\n        node\['lin'].setVisible(True)\n        node\['optiongroup'].setVisible(True)\n        node\['S07'].setVisible(True)\n\nif nuke.thisKnob().name() == 'inputChange':\n   if nuke.thisNode().input(1) != None:\n       c\['from0'].setValue('rgba.alpha')\n   else:\n       c\['from0'].setValue('none')"
+tile_color 0xb0a45dff
+addUserKnob {20 User}
+addUserKnob {26 S00 l " " T " "}
+addUserKnob {22 test l INVISIBLE +INVISIBLE T "node = nuke.thisNode()\nknob = nuke.thisKnob()\ninputT = nuke.exists(\"Mask\")\nc = nuke.toNode('Copy2')\n\nif knob.name() in ('options', 'showPanel'):\n    mode = node\['options'].value()\n    if mode == 'Choose':\n        node\['shuttertime'].setVisible(False)\n        node\['shuttersamples'].setVisible(False)\n        node\['space'].setVisible(False)\n        node\['lin'].setVisible(False)\n        node\['optiongroup'].setVisible(False)\n        node\['S07'].setVisible(False)\n\n    elif mode == 'More Options':\n        node\['shuttertime'].setVisible(True)\n        node\['shuttersamples'].setVisible(True)\n        node\['space'].setVisible(True)\n        node\['lin'].setVisible(True)\n        node\['optiongroup'].setVisible(True)\n        node\['S07'].setVisible(True)\n\nif nuke.thisKnob().name() == 'inputChange':\n   if nuke.thisNode().input(1) != None:\n       c\['from0'].setValue('rgba.alpha')\n   else:\n       c\['from0'].setValue('none')" +STARTLINE}
+addUserKnob {22 ResetKeyAll l "<font color=\"white\"> Start / Reset All " t "Before start: push this boutton." T "n = nuke.thisNode()\['inputframe']\nkt = nuke.thisNode()\['kt']\nko = nuke.thisNode()\['ko']\np = nuke.thisNode()\['passthrough']\nn.clearAnimated()\nkt.clearAnimated()\nko.clearAnimated()\nn.setAnimated()\nf = nuke.thisNode().firstFrame()\nl = nuke.thisNode().lastFrame() \nn.animation(0).setKey(f,f)\nn.animation(0).setKey(l,l)\np.setValue(0)\nn = nuke.thisNode()\['inputframe']\nn.setAnimated()\nf = nuke.thisNode().firstFrame()\nl = nuke.thisNode().lastFrame() \n\nn.animation(0).setKey(f,f)\nn.animation(0).setKey(l,l)\n\nfor i in xrange( f, l, 1 ):\n\tn.setValueAt(i, i)" +STARTLINE}
+addUserKnob {3 inputframe l "              " t "Frame.\nYou should remove all keyframes on every frames you want to ReBuild." -STARTLINE}
+inputframe 24
+addUserKnob {22 deletekey l "<font color = \"CornflowerBlue\">  Delete key on Bad Frames  " t "Enlever les clefs d'animations sur toutes les frames a recréer. " T "n = nuke.thisNode()\['inputframe']\nt = nuke.frame()\n#n.animation(0).removeKeyAt(t)\nn.removeKeyAt(t)" +STARTLINE}
+addUserKnob {22 addkey l "<font color = \"CornflowerBlue\">  Add Key " t "Il est également possible de rajouter une clef - s'il y avait eu une confusion ;)" -STARTLINE T "n = nuke.thisNode()\['inputframe']\nn.setAnimated()\nt = nuke.frame()\nn.animation(0).setKey(t,t)\n"}
+addUserKnob {26 S03 l " " T " "}
+addUserKnob {22 rebuild l "<font color=\"white\">  Re-Build Bad Frames!  " t "Appuyer pour activer la création des frames." T "k = nuke.thisNode()\['inputframe']\n\nif(k.isAnimated()):\n\t\t\t\n\ttOriginalCurve = k.animation(0)\n\t\t\t\t\n\ttKeys = tOriginalCurve.keys()\n\n\ti = 0\n\n\t\n\tkt = nuke.thisNode()\['kt']\n\n\tko  = nuke.thisNode()\['ko']\n\n\tkt.clearAnimated()\n\n\tko.clearAnimated()\n\n\tkt.setAnimated()\n\n\tko.setAnimated()\n\n\tfor tKey in tKeys:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\ttFrame = tKey.x \n\t\ttFrameY = tKey.y\n\n\t\tprint(\"key \" + str(i) + \" has x value \" + str(tFrame) + \", y value \" + str(tFrameY))\n\n\t\tko.setValueAt( i, tFrame )\n\n\t\tkt.setValueAt( tFrame, i )\n\n\t\ti = i+1\n\n\tkoKeys = ko.animation(0).keys()\n\n\tfor tKey in koKeys:\t\n\n\t\ttKey.interpolation = nuke.LINEAR\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\n\tktKeys = kt.animation(0).keys()\n\n\tfor tKey in ktKeys:\t\n\n\t\ttKey.interpolation = nuke.LINEAR\n\np = nuke.thisNode()\['passthrough']\np.setValue(1)" +STARTLINE}
+addUserKnob {26 S01 l " " T " "}
+addUserKnob {3 kt l INVISIBLE +INVISIBLE}
+kt 51
+addUserKnob {3 passthrough l INVISIBLE +INVISIBLE}
+addUserKnob {3 ko l INVISIBLE +INVISIBLE}
+ko 48
+addUserKnob {20 more l "Render Options" n 1}
+more 0
+addUserKnob {26 S02 l " " T " "}
+addUserKnob {4 algo l Methode M {OFlow Kronos}}
+addUserKnob {26 S04 l " " T " "}
+addUserKnob {7 shuttertime l Shutter R 0 5}
+shuttertime 0.5
+addUserKnob {7 shuttersamples l Samples R 0 30}
+shuttersamples 5
+addUserKnob {6 lin l "- RAW<font color=\"grey\"> (More Accurate in generally)" t "Change le colorspace en RAW pour plus de précision." +STARTLINE}
+lin true
+addUserKnob {20 endGroup n -1}
+addUserKnob {26 by2 l " " T "                                                                                                     "}
+addUserKnob {26 ""}
+addUserKnob {41 from0 l "               mask" t "Use this channel from the original input to mix the output with the original input." T Copy2.from0}
+addUserKnob {41 invertMask l invert -STARTLINE T Keymix2.invertMask}
+addUserKnob {1 output l INVISIBLE +INVISIBLE}
+output "\[value algo]"
+}
+Input {
+inputs 0
+name mask
+xpos 214
+ypos -12
+number 1
+addUserKnob {20 User}
+addUserKnob {6 in +STARTLINE}
+in {{"\[exists input1]"}}
+}
+AddChannels {
+channels rgba
+name AddChannels3
+xpos 214
+ypos 12
+}
+set Na83aea70 [stack 0]
+push $Na83aea70
+Copy {
+inputs 2
+to0 rgba.alpha
+name Copy2
+xpos 214
+ypos 36
+disable {{!parent.mask.in i}}
+}
+Invert {
+name Invert2
+xpos 214
+ypos 72
+}
+Input {
+inputs 0
+name Input
+xpos 475
+ypos -647
+}
+Dot {
+name Dot3
+xpos 509
+ypos -571
+}
+set N9ad24440 [stack 0]
+Dot {
+name Dot2
+xpos 647
+ypos -571
+}
+Dot {
+name Dot1
+xpos 647
+ypos -19
+}
+set N92b094b0 [stack 0]
+Dot {
+name Dot4
+xpos 647
+ypos 81
+}
+push $N9ad24440
+TimeWarp {
+lookup {{parent.kt i}}
+time ""
+name TimeWarp5
+xpos 475
+ypos -494
+}
+Log2Lin {
+operation lin2log
+name Log2Lin1
+label "\[if \{\[value operation]==\"lin2log\"\} \{return \"\[knob this.icon F_iconstart.png]\"\} \{return \"\[knob this.icon F_iconend.png]\"\}]"
+xpos 475
+ypos -413
+icon F_iconstart.png
+disable {{!parent.lin}}
+}
+set N2e9531d0 [stack 0]
+Kronos {
+retimedChannels all
+timing2 Frame
+timingFrame2 {{parent.ko}}
+showLegacyMode false
+motionEstimation Regularized
+Shutter 1
+shutterSamples {{parent.shuttersamples}}
+shutterTime {{parent.shuttertime}}
+legacyModeNuke9 false
+name Kronos1
+xpos 343
+ypos -309
+}
+push $N2e9531d0
+OFlow2 {
+timing2 Frame
+timingFrame2 {{parent.ko}}
+Shutter 1
+shutterSamples {{parent.shuttersamples}}
+shutterTime {{parent.shuttertime}}
+name OFlow1
+xpos 475
+ypos -301
+}
+Switch {
+inputs 2
+which {{parent.algo}}
+name Switch3
+selected true
+xpos 475
+ypos -201
+}
+Log2Lin {
+name Log2Lin2
+label "\[if \{\[value operation]==\"lin2log\"\} \{return \"\[knob this.icon F_iconstart.png]\"\} \{return \"\[knob this.icon F_iconend.png]\"\}]"
+xpos 475
+ypos -124
+icon F_iconend.png
+disable {{!parent.lin}}
+}
+push $N92b094b0
+Switch {
+inputs 2
+which {{parent.passthrough}}
+name Switch1
+xpos 475
+ypos -22
+}
+set Nae0eeb80 [stack 0]
+Keymix {
+inputs 3
+name Keymix2
+xpos 354
+ypos 72
+disable {{!parent.mask.in i}}
+}
+push $Nae0eeb80
+Switch {
+inputs 2
+which {{Copy2.from0 i}}
+name Switch2
+xpos 475
+ypos 186
+}
+Output {
+name Output1
+xpos 475
+ypos 252
+}
+end_group

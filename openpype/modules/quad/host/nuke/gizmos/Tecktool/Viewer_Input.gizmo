@@ -1,0 +1,362 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+ onCreate "\nnuke.thisNode().setInput(0, None)\n"
+ tile_color 0xe7319b
+ addUserKnob {20 firsTab l "VIEWER INPUT"}
+ addUserKnob {26 text_volet l "@b; Volet" T ""}
+ addUserKnob {6 volet l "" -STARTLINE}
+ volet true
+ addUserKnob {20 volet_group l "" +STARTLINE n 1}
+ addUserKnob {26 S01 l " " T " "}
+ addUserKnob {7 aspect l "Aspect Ratio" R 1 4}
+ aspect 2.39
+ addUserKnob {7 opacity_volet l Opacity}
+ opacity_volet 1
+ addUserKnob {26 S03 l " " T " "}
+ addUserKnob {3 edges_width l "Edges Width"}
+ edges_width 4
+ addUserKnob {7 opacity_edges l Opacity}
+ addUserKnob {26 S02 l " " T " "}
+ addUserKnob {20 endGroup_1 l endGroup n -1}
+ addUserKnob {26 ""}
+ addUserKnob {26 text_mirror l "@b; Mirror" T ""}
+ addUserKnob {6 mirror_solo l "" -STARTLINE}
+ addUserKnob {20 mirror_group l " " n 1}
+ mirror_group 0
+ addUserKnob {41 Horizontal T Mirror1.Horizontal}
+ addUserKnob {41 Vertical -STARTLINE T Mirror1.Vertical}
+ addUserKnob {26 S06 l " " T " "}
+ addUserKnob {20 endGroup_4 l endGroup n -1}
+ addUserKnob {26 ""}
+ addUserKnob {26 text_grade l "@b; Grade" T ""}
+ addUserKnob {6 grade_solo l " " -STARTLINE}
+ addUserKnob {20 color_group l " " n 1}
+ color_group 0
+ addUserKnob {19 saturation_1 l Saturation R 0 4}
+ saturation_1 2
+ addUserKnob {6 saturation_1_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 contrast_1 l contrast R 0 4}
+ contrast_1 1
+ addUserKnob {6 contrast_1_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 gamma_1 l Gamma R 0.2 5}
+ gamma_1 1
+ addUserKnob {6 gamma_1_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 gain_1 l Gain R 0 4}
+ gain_1 1
+ addUserKnob {6 gain_1_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {19 offset_1 l Offset R -1 1}
+ offset_1 {0 0 0 0}
+ addUserKnob {6 offset_1_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {26 S07 l " " T " "}
+ addUserKnob {20 endGroup n -1}
+ addUserKnob {1 output l INVISIBLE +INVISIBLE}
+ output "\[value aspect]"
+ addUserKnob {26 by2 l "                     " T "                                                                                               "}
+ addUserKnob {6 cgevviewerinput -STARTLINE +HIDDEN}
+}
+ BackdropNode {
+  inputs 0
+  name GRADE_Backdrop2
+  tile_color 0x5a3f3eff
+  label "<\[value position]>\[value text]\n\[if \{\[value text]==\"\"\} \{return \"\[knob this.name \[python \{nuke.thisNode().name().split('_')\[-1]\}]]\"\} \{return \"\[knob this.name \"\[value text]_\[python \{nuke.thisNode().name().split('_')\[-1]\}]\"]\"\}]"
+  note_font "Verdana Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold"
+  note_font_size 50
+  xpos 2094
+  ypos -14
+  bdwidth 309
+  bdheight 243
+  addUserKnob {20 mainTabTK l BackdropNode}
+  addUserKnob {1 text l Text}
+  text GRADE
+  addUserKnob {4 position l "   Align" M {left center "" "" "" "" "" "" "" "" "" "" "" ""}}
+  position center
+  addUserKnob {26 ""}
+  addUserKnob {22 rndColors l " <img src=\"F_ccolornode.png\">          " T "import colorsys, random\nn=nuke.thisNode()\nR,G,B= colorsys.hsv_to_rgb(random.random(),.1+random.random()*.15,.15+random.random()*.15)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ) )" +STARTLINE}
+  addUserKnob {26 SP03 l " " -STARTLINE T "       "}
+  addUserKnob {22 grow l " <img src=\"F_scalep.png\">" -STARTLINE T "n=nuke.thisNode()\nautoBackdrop.Grow(n,50)"}
+  addUserKnob {22 shrink l " <img src=\"F_scalem.png\">" -STARTLINE T "n=nuke.thisNode()\nautoBackdrop.Shrink(n,50)"}
+  addUserKnob {26 ""}
+  addUserKnob {26 S01 l " " T " "}
+  addUserKnob {22 rndClrs3 l KEY T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nR,G,B= \[0.33300000000000002, 0.24299999999999999, 0.28999999999999998]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('KEY')\n" +STARTLINE}
+  addUserKnob {22 rndClrs4 l CLEAN -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.70299999999999996, 0.28000000000000003, 0.32200000000000001]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('CLEAN')\n"}
+  addUserKnob {22 rndClrs5 l REF -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.13800000000000001, 0.40400000000000003, 0.47399999999999998]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('REF')\n"}
+  addUserKnob {22 rndClrs6 l PUBLISH -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.221, 0.36799999999999999, 0.46000000000000002]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('PUBLISH')\n"}
+  addUserKnob {26 SP02 l " " -STARTLINE T "       "}
+  addUserKnob {22 rndClrs2 l 3D -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.82199999999999995, 0.312, 0.188]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('3D')\n\n"}
+  addUserKnob {22 rndClrs0 l CG -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.001, 0.30099999999999999, 0.35299999999999998]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('CG')\n\n"}
+  addUserKnob {22 rndClrs1 l FX -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.079000000000000001, 0.34000000000000002, 0.24199999999999999]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('FX')"}
+  addUserKnob {22 rndClrs7 l INVISIBLE -STARTLINE +INVISIBLE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_important.png')\nR,G,B= \[0.77600000000000002, 0.53300000000000003, 0.80000000000000004]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('IMPORTANT')\n"}
+  addUserKnob {26 S03 l " " T " "}
+ }
+ BackdropNode {
+  inputs 0
+  name MIRROR_Backdrop1
+  tile_color 0x403b52ff
+  label "<\[value position]>\[value text]\n\[if \{\[value text]==\"\"\} \{return \"\[knob this.name \[python \{nuke.thisNode().name().split('_')\[-1]\}]]\"\} \{return \"\[knob this.name \"\[value text]_\[python \{nuke.thisNode().name().split('_')\[-1]\}]\"]\"\}]"
+  note_font "Verdana Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold"
+  note_font_size 50
+  xpos 2093
+  ypos 255
+  bdwidth 309
+  bdheight 243
+  addUserKnob {20 mainTabTK l BackdropNode}
+  addUserKnob {1 text l Text}
+  text MIRROR
+  addUserKnob {4 position l "   Align" M {left center "" "" "" "" "" "" "" "" "" "" "" ""}}
+  position center
+  addUserKnob {26 ""}
+  addUserKnob {22 rndColors l " <img src=\"F_ccolornode.png\">          " T "import colorsys, random\nn=nuke.thisNode()\nR,G,B= colorsys.hsv_to_rgb(random.random(),.1+random.random()*.15,.15+random.random()*.15)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ) )" +STARTLINE}
+  addUserKnob {26 SP03 l " " -STARTLINE T "       "}
+  addUserKnob {22 grow l " <img src=\"F_scalep.png\">" -STARTLINE T "n=nuke.thisNode()\nautoBackdrop.Grow(n,50)"}
+  addUserKnob {22 shrink l " <img src=\"F_scalem.png\">" -STARTLINE T "n=nuke.thisNode()\nautoBackdrop.Shrink(n,50)"}
+  addUserKnob {26 ""}
+  addUserKnob {26 S01 l " " T " "}
+  addUserKnob {22 rndClrs3 l KEY T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nR,G,B= \[0.33300000000000002, 0.24299999999999999, 0.28999999999999998]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('KEY')\n" +STARTLINE}
+  addUserKnob {22 rndClrs4 l CLEAN -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.70299999999999996, 0.28000000000000003, 0.32200000000000001]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('CLEAN')\n"}
+  addUserKnob {22 rndClrs5 l REF -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.13800000000000001, 0.40400000000000003, 0.47399999999999998]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('REF')\n"}
+  addUserKnob {22 rndClrs6 l PUBLISH -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.221, 0.36799999999999999, 0.46000000000000002]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('PUBLISH')\n"}
+  addUserKnob {26 SP02 l " " -STARTLINE T "       "}
+  addUserKnob {22 rndClrs2 l 3D -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.82199999999999995, 0.312, 0.188]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('3D')\n\n"}
+  addUserKnob {22 rndClrs0 l CG -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.001, 0.30099999999999999, 0.35299999999999998]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('CG')\n\n"}
+  addUserKnob {22 rndClrs1 l FX -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.079000000000000001, 0.34000000000000002, 0.24199999999999999]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('FX')"}
+  addUserKnob {22 rndClrs7 l INVISIBLE -STARTLINE +INVISIBLE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_important.png')\nR,G,B= \[0.77600000000000002, 0.53300000000000003, 0.80000000000000004]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('IMPORTANT')\n"}
+  addUserKnob {26 S03 l " " T " "}
+ }
+ BackdropNode {
+  inputs 0
+  name VOLET_Backdrop1
+  tile_color 0x3a3a41ff
+  label "<\[value position]>\[value text]\n\[if \{\[value text]==\"\"\} \{return \"\[knob this.name \[python \{nuke.thisNode().name().split('_')\[-1]\}]]\"\} \{return \"\[knob this.name \"\[value text]_\[python \{nuke.thisNode().name().split('_')\[-1]\}]\"]\"\}]"
+  note_font "Verdana Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold Bold"
+  note_font_size 50
+  xpos 2094
+  ypos 522
+  bdwidth 309
+  bdheight 243
+  addUserKnob {20 mainTabTK l BackdropNode}
+  addUserKnob {1 text l Text}
+  text VOLET
+  addUserKnob {4 position l "   Align" M {left center "" "" "" "" "" "" "" "" "" "" "" ""}}
+  position center
+  addUserKnob {26 ""}
+  addUserKnob {22 rndColors l " <img src=\"F_ccolornode.png\">          " T "import colorsys, random\nn=nuke.thisNode()\nR,G,B= colorsys.hsv_to_rgb(random.random(),.1+random.random()*.15,.15+random.random()*.15)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ) )" +STARTLINE}
+  addUserKnob {26 SP03 l " " -STARTLINE T "       "}
+  addUserKnob {22 grow l " <img src=\"F_scalep.png\">" -STARTLINE T "n=nuke.thisNode()\nautoBackdrop.Grow(n,50)"}
+  addUserKnob {22 shrink l " <img src=\"F_scalem.png\">" -STARTLINE T "n=nuke.thisNode()\nautoBackdrop.Shrink(n,50)"}
+  addUserKnob {26 ""}
+  addUserKnob {26 S01 l " " T " "}
+  addUserKnob {22 rndClrs3 l KEY T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nR,G,B= \[0.33300000000000002, 0.24299999999999999, 0.28999999999999998]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('KEY')\n" +STARTLINE}
+  addUserKnob {22 rndClrs4 l CLEAN -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.70299999999999996, 0.28000000000000003, 0.32200000000000001]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('CLEAN')\n"}
+  addUserKnob {22 rndClrs5 l REF -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.13800000000000001, 0.40400000000000003, 0.47399999999999998]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('REF')\n"}
+  addUserKnob {22 rndClrs6 l PUBLISH -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.221, 0.36799999999999999, 0.46000000000000002]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('PUBLISH')\n"}
+  addUserKnob {26 SP02 l " " -STARTLINE T "       "}
+  addUserKnob {22 rndClrs2 l 3D -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.82199999999999995, 0.312, 0.188]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('3D')\n\n"}
+  addUserKnob {22 rndClrs0 l CG -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.001, 0.30099999999999999, 0.35299999999999998]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('CG')\n\n"}
+  addUserKnob {22 rndClrs1 l FX -STARTLINE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_null.png')\nR,G,B= \[0.079000000000000001, 0.34000000000000002, 0.24199999999999999]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('FX')"}
+  addUserKnob {22 rndClrs7 l INVISIBLE -STARTLINE +INVISIBLE T "import colorsys\nn=nuke.thisNode()\nlist=\['CG', 'FX', '3D', 'KEY', 'CLEAN', 'REF', 'PUBLISH', 'IMPORTANT']\nn\[''].setValue('F_important.png')\nR,G,B= \[0.77600000000000002, 0.53300000000000003, 0.80000000000000004]\nR,G,B=colorsys.hsv_to_rgb(R,G,B)\nn\['tile_color'].setValue( int('%02x%02x%02x%02x' % (R*255,G*255,B*255,255), 16 ))\nif ((n\['text'].getValue()=='') or (n\['text'].getValue() in list)):\n   n\['text'].setValue('IMPORTANT')\n"}
+  addUserKnob {26 S03 l " " T " "}
+ }
+ Input {
+  inputs 0
+  name Input
+  xpos 2206
+  ypos 71
+ }
+ ColorCorrect {
+  channels rgba
+  saturation {{saturation_1}}
+  contrast {{contrast_1}}
+  gamma {{parent.gamma_1}}
+  gain {{gain_1}}
+  offset {{offset_1}}
+  name ColorCorrect2
+  xpos 2206
+  ypos 128
+  disable {{!grade_solo}}
+ }
+ Mirror {
+  Horizontal true
+  name Mirror1
+  xpos 2206
+  ypos 387
+  disable {{!parent.mirror_solo}}
+ }
+ Group {
+  name Volet
+  help "Volet\n\nAdd Letterbox Bar on the input image.\n"
+  knobChanged "node = nuke.thisNode()\nknob = nuke.thisKnob()\nif knob.name() in ('ar_selection', 'showPanel'):\n    mode = node\['ar_selection'].value()\n    if mode == 'Custom':\n        node\['ar_custom'].setVisible(True)\n    elif mode != 'Custom':\n        node\['ar_custom'].setVisible(False)"
+  xpos 2206
+  ypos 657
+  icon F_noicon.png
+  disable {{!volet}}
+  addUserKnob {20 User}
+  addUserKnob {26 S01 l "@b;  Letterbox Bar" T " "}
+  addUserKnob {4 ar_selection l "       Aspect Ratio" M {"Choose   " 1.00 1.19 1.25 1.33 1.35 1.37 1.43 1.50 1.56 1.60 1.66 1.75 1.778 1.85 2.00 2.20 2.35 2.40 2.55 2.59 2.76 4.00 Custom "" "" "" "" "" "" ""}}
+  ar_selection Custom
+  addUserKnob {7 ar_custom l "" -STARTLINE R 0 4}
+  ar_custom {{parent.aspect}}
+  addUserKnob {41 mix l Opacity t "Change the opacity of the Letterbox Bar." T Dissolve1.which}
+  addUserKnob {26 S03 l "@b; Edges"}
+  addUserKnob {3 line l Width t "Change the thickness (value in pixel) of the Letterbox Bar edges."}
+  line {{edges_width}}
+  addUserKnob {41 mix_2 l Opacity t "Change the opacity of the Letterbox Bar Edges." T Merge1.mix}
+  addUserKnob {1 name1 l INVISIBLE +INVISIBLE}
+  name1 "\[if \{\[value ar_selection]==\"Custom\"\} \{return \"\[value ar_custom]\"\} \{return \"\[value ar_selection]\"\}]"
+  addUserKnob {1 output l INVISIBLE +INVISIBLE}
+  output "\[regsub -all \"Choose\" \[value name1] \"\"] "
+  addUserKnob {26 by2 l " " T "                                                                                               "}
+ }
+  Input {
+   inputs 0
+   name Input
+   xpos 257
+   ypos 443
+  }
+  Dot {
+   name Dot2
+   xpos 291
+   ypos 582
+  }
+set N5320890 [stack 0]
+  Dot {
+   name Dot1
+   xpos 168
+   ypos 582
+  }
+  Dot {
+   name Dot3
+   xpos 168
+   ypos 918
+  }
+push $N5320890
+  Group {
+   name Crop_Plus2
+   help "@b; dCrop v2@n; for Nuke 6.0v3\n\nProvides options to crop a input by box, percentage, bbox or a aspect ratio relative to the input.\n\nCreated by Diogo Girondi\ndiogogirondi@gmail.com"
+   knobChanged "n = nuke.thisNode()\nk = nuke.thisKnob()\n\nif k.name() in ('mode', 'showPanel'):\n    mode = n\['mode'].value()\n    n\['text'].setVisible(False)\n    if mode == 'Custom Box':\n        n\['cbox'].setVisible(True)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n    elif mode == 'BBox':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(True)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n    elif mode == 'Percentage':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(True)\n        n\['right'].setVisible(True)\n        n\['bottom'].setVisible(True)\n        n\['top'].setVisible(True)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n    elif mode == 'Aspect Ratio':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(True)\n        if n\['ar_selection'].value() == 'Custom':\n            n\['ar_custom'].setVisible(True)\n        else:\n            n\['ar_custom'].setVisible(False)\n        if n\['ar_selection'].value() == 'Input       ':\n            n\['offset'].setEnabled(False)\n        else:\n            n\['offset'].setEnabled(True)\n        n\['offset'].setVisible(True)\n    elif mode == 'Input':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n        n\['text'].setVisible(True)\n\nif k.name() in ('ar_selection', 'showPanel'):\n    aspect = n\['ar_selection'].value()\n    if aspect == 'Custom':\n        n\['ar_custom'].setVisible(True)\n    else:\n        n\['ar_custom'].setVisible(False)\n    if aspect == 'Input       ':\n        n\['offset'].setEnabled(False)\n    else:\n        n\['offset'].setEnabled(True)\n\nif k.name() == 'reformat':\n    reformat = n\['reformat'].value()\n    if reformat == True:\n        n\['crop'].setValue(False)\n    else:\n        n\['crop'].setValue(True)"
+   tile_color 0xa57aaaff
+   xpos 381
+   ypos 579
+   addUserKnob {20 dcrop l Crop}
+   addUserKnob {4 ar_selection l Aspect M {"Input       " 1.00 1.19 1.25 1.33 1.35 1.37 1.43 1.50 1.56 1.60 1.66 1.75 1.778 1.85 2.00 2.20 2.35 2.40 2.55 2.59 2.76 4.00 Custom ""}}
+   ar_selection {{parent.ar_selection x1 1}}
+   addUserKnob {7 ar_custom l " " -STARTLINE +HIDDEN R 0 4}
+   ar_custom {{parent.ar_custom}}
+   addUserKnob {7 offset l Offset R -100 100}
+  }
+   Input {
+    inputs 0
+    name Input
+    xpos 81
+    ypos 139
+   }
+   NoOp {
+    name Aspect
+    tile_color 0xffffffff
+    gl_color 0xff005fff
+    label Math
+    xpos 81
+    ypos 189
+    addUserKnob {20 ar_math l "Aspect Ratio Math"}
+    addUserKnob {7 input_ar R 0 4}
+    input_ar {{(input.width*input.pixel_aspect)/input.height i}}
+    addUserKnob {7 custom_ar R 0 4}
+    custom_ar {{"parent.ar_selection==0?this.input_ar:parent.ar_selection==23?parent.ar_custom:\[value ar_selection]" i}}
+    addUserKnob {6 ar_isBigger +STARTLINE}
+    ar_isBigger {{this.input_ar>=this.custom_ar i}}
+    addUserKnob {26 ""}
+    addUserKnob {12 ar_area}
+    ar_area {{ar_isBigger?((input.height*this.custom_ar)/input.pixel_aspect):input.width i} {ar_isBigger?input.height:((input.width*input.pixel_aspect)/this.custom_ar) i}}
+    addUserKnob {12 ar_pos}
+    ar_pos {{((input.width-this.ar_area.x)/2)*(parent.offset/100) i} {((input.height-this.ar_area.y)/2)*(parent.offset/100) i}}
+    addUserKnob {15 ar}
+    ar {{ar_isBigger?this.ar_pos.x+((input.width/2)-(((input.height*this.custom_ar)/input.pixel_aspect)/2)):0 i} {ar_isBigger?0:this.ar_pos.y+((input.height/2)-(((input.width*input.pixel_aspect)/this.custom_ar)/2)) i} {ar_isBigger?this.ar_pos.x+((input.width/2)+(((input.height*this.custom_ar)/input.pixel_aspect)/2)):input.width i} {ar_isBigger?input.height:this.ar_pos.y+((input.height/2)+(((input.width*input.pixel_aspect)/this.custom_ar)/2)) i}}
+   }
+   Crop {
+    box {{parent.Aspect.ar.main i} {parent.Aspect.ar.main i} {parent.Aspect.ar.main i} {parent.Aspect.ar.main i}}
+    softness {{parent.softness.w i} {parent.softness.h i}}
+    reformat {{parent.reformat i}}
+    intersect {{parent.intersect i}}
+    name AspectRatio
+    tile_color 0xffffffff
+    label Crop
+    selected true
+    xpos 81
+    ypos 246
+   }
+   Output {
+    name Output1
+    xpos 81
+    ypos 304
+   }
+  end_group
+set N532f0c0 [stack 0]
+  Shuffle {
+   red white
+   green white
+   blue white
+   alpha white
+   name Shuffle1
+   label (Alpha)
+   xpos 381
+   ypos 675
+  }
+set N53582b0 [stack 0]
+  Crop {
+   box {{input.bbox.x+1} {input.bbox.y+1} {input.bbox.r-1} {input.bbox.t-1}}
+   name Box
+   label Crop
+   xpos 381
+   ypos 747
+  }
+push $N53582b0
+  Crop {
+   box {{Box.box.x} {Box.box.y-edge} {Box.box.r} {Box.box.t+edge}}
+   name Crop1
+   xpos 507
+   ypos 753
+   addUserKnob {20 User}
+   addUserKnob {7 edge R 0 10}
+   edge {{line}}
+  }
+  Multiply {
+   inputs 1+1
+   value 0
+   name Multiply1
+   xpos 381
+   ypos 821
+  }
+push $N532f0c0
+push $N5320890
+  Dissolve {
+   inputs 2
+   which {{opacity_volet}}
+   name Dissolve1
+   xpos 257
+   ypos 745
+  }
+  Merge2 {
+   inputs 2
+   mix {{opacity_edges}}
+   name Merge1
+   xpos 257
+   ypos 827
+  }
+  CopyBBox {
+   inputs 2
+   name CopyBBox1
+   xpos 257
+   ypos 915
+  }
+  Output {
+   name Output1
+   xpos 257
+   ypos 983
+  }
+ end_group
+ Output {
+  name Output1
+  xpos 2206
+  ypos 841
+ }
+end_group
