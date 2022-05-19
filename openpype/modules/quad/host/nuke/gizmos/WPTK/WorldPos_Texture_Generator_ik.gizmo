@@ -1,0 +1,122 @@
+#! C:/Program Files/Nuke7.0v9/Nuke7.0.exe -nx
+version 7.0 v9
+Gizmo {
+ help "WorldPos_Texture_Generator create procedural texture over world position points. Choose type of texture, adjust properties, enjoy! To adjust scale and position use together with TransformWorld_ik gizmo,\n------\nv002\nIvan Kokov. Pixomondo. Beijing. 2015\nbutafor@inbox.ru\n\n"
+ addUserKnob {20 Texture}
+ addUserKnob {68 textureType l "Texture Type" M {Checker Random fBm Turbulate RadialWaves "" ""}}
+ textureType RadialWaves
+ addUserKnob {3 switcher l INVISIBLE +INVISIBLE}
+ switcher {{"\[python -execlocal n\\ =\\ nuke.thisNode()\\nret\\ =\\ n\\\['textureType'\\].getValue()\\nif\\ (ret\\ ==\\ 0)\\ :\\n\\ \\ \\ \\ n.knob('checker').setEnabled(True)\\n\\ \\ \\ \\ n.knob('CheckerSize').setEnabled(True)\\n\\ \\ \\ \\ n.knob('tip').setEnabled(True)\\n\\ \\ \\ \\ n.knob('noise').setEnabled(False)\\n\\ \\ \\ \\ n.knob('octaves').setEnabled(False)\\n\\ \\ \\ \\ n.knob('lacunarity').setEnabled(False)\\n\\ \\ \\ \\ n.knob('gain').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves_Radius').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves_Center').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves_Phase').setEnabled(False)\\n\\ \\ \\ \\ ret\\ =\\ 0\\n\\nif\\ (ret\\ ==\\ 1):\\n\\ \\ \\ \\ n.knob('noise').setEnabled(True)\\n\\ \\ \\ \\ n.knob('checker').setEnabled(False)\\n\\ \\ \\ \\ n.knob('CheckerSize').setEnabled(False)\\n\\ \\ \\ \\ n.knob('tip').setEnabled(False)\\n\\ \\ \\ \\ n.knob('octaves').setEnabled(False)\\n\\ \\ \\ \\ n.knob('lacunarity').setEnabled(False)\\n\\ \\ \\ \\ n.knob('gain').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves_Radius').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves_Center').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves_Phase').setEnabled(False)\\n\\ \\ \\ \\ ret\\ =\\ 1\\n\\nif\\ (\\ (ret\\ ==\\ 2)\\ or\\ (ret\\ ==\\ 3)\\ )\\ \\ :\\n\\ \\ \\ \\ n.knob('noise').setEnabled(True)\\n\\ \\ \\ \\ n.knob('octaves').setEnabled(True)\\n\\ \\ \\ \\ n.knob('lacunarity').setEnabled(True)\\n\\ \\ \\ \\ n.knob('gain').setEnabled(True)\\n\\ \\ \\ \\ n.knob('checker').setEnabled(False)\\n\\ \\ \\ \\ n.knob('CheckerSize').setEnabled(False)\\n\\ \\ \\ \\ n.knob('tip').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves_Radius').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves_Center').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves_Phase').setEnabled(False)\\n\\ \\ \\ \\ ret\\ =\\ 1\\n\\nif\\ (\\ (ret\\ ==\\ 4)\\ )\\ \\ :\\n\\ \\ \\ \\ n.knob('noise').setEnabled(False)\\n\\ \\ \\ \\ n.knob('octaves').setEnabled(False)\\n\\ \\ \\ \\ n.knob('lacunarity').setEnabled(False)\\n\\ \\ \\ \\ n.knob('gain').setEnabled(False)\\n\\ \\ \\ \\ n.knob('checker').setEnabled(False)\\n\\ \\ \\ \\ n.knob('CheckerSize').setEnabled(False)\\n\\ \\ \\ \\ n.knob('tip').setEnabled(False)\\n\\ \\ \\ \\ n.knob('RadialWaves').setEnabled(True)\\n\\ \\ \\ \\ n.knob('RadialWaves_Radius').setEnabled(True)\\n\\ \\ \\ \\ n.knob('RadialWaves_Center').setEnabled(True)\\n\\ \\ \\ \\ n.knob('RadialWaves_Phase').setEnabled(True)\\n\\ \\ \\ \\ ret\\ =\\ 2\\n]"}}
+ addUserKnob {20 checker l Checker +DISABLED n 1}
+ addUserKnob {41 CheckerSize T CheckerTexture.CheckerSize}
+ addUserKnob {26 tip l "" -STARTLINE +DISABLED T "<i> most interesting is in alpha</i>"}
+ addUserKnob {20 endGroup n -1}
+ addUserKnob {20 noise l Noise +DISABLED n 1}
+ addUserKnob {41 octaves T NoiseTexture_ik.octaves}
+ addUserKnob {41 lacunarity T NoiseTexture_ik.lacunarity}
+ addUserKnob {41 gain T NoiseTexture_ik.gain}
+ addUserKnob {20 endGroup_1 l endGroup n -1}
+ addUserKnob {20 RadialWaves l "Radial Waves" n 1}
+ addUserKnob {18 RadialWaves_Radius l Radius}
+ RadialWaves_Radius 10
+ addUserKnob {18 RadialWaves_Center l Center}
+ addUserKnob {7 RadialWaves_Phase l Phase R 0 100}
+ addUserKnob {20 endGroup_2 l endGroup n -1}
+ addUserKnob {26 ""}
+ addUserKnob {26 credits l "" +STARTLINE T "v002 © Ivan Kokov. Pixomondo. Beijing. 2015"}
+}
+ Input {
+  inputs 0
+  name InputPointPos
+  xpos 2
+  ypos 3
+ }
+set N1b409c00 [stack 0]
+ Expression {
+  temp_name0 dist
+  temp_expr0 "sqrt(pow2( (r - Center.r) /Radius.r*2) + pow2( (g- Center.g) / Radius.g*2) + pow2( (b - Center.b) / Radius.b*2) )"
+  temp_name1 tex
+  temp_expr1 "sin(dist+Phase)/2 + 0.5"
+  expr0 tex
+  expr1 tex
+  expr2 tex
+  name RadialWaves
+  selected true
+  xpos 293
+  ypos 160
+  addUserKnob {20 User}
+  addUserKnob {18 Radius}
+  Radius {{parent.RadialWaves_Radius.r} {parent.RadialWaves_Radius.g} {parent.RadialWaves_Radius.b}}
+  addUserKnob {18 Center}
+  Center {{parent.RadialWaves_Center.r} {parent.RadialWaves_Center.g} {parent.RadialWaves_Center.b}}
+  addUserKnob {7 Phase R 0 100}
+  Phase {{parent.RadialWaves_Phase}}
+ }
+set N1b930070 [stack 0]
+push $N1b409c00
+ Expression {
+  temp_name0 RND
+  temp_expr0 "random(r, g, b) "
+  temp_name1 FBM
+  temp_expr1 "(fBm(r, g, b, octaves, lacunarity, gain))/2 + 0.5"
+  temp_name2 TRB
+  temp_expr2 "turbulence(r, g, b, octaves, lacunarity, gain)"
+  temp_name3 OUTPUT
+  temp_expr3 "(textureType == 1) ? RND : ((textureType == 2) ? FBM : TRB)"
+  expr0 OUTPUT
+  expr1 OUTPUT
+  expr2 OUTPUT
+  name NoiseTexture_ik
+  xpos -103
+  ypos 155
+  addUserKnob {20 User}
+  addUserKnob {7 octaves +DISABLED R 0 10}
+  octaves 10
+  addUserKnob {7 lacunarity +DISABLED}
+  lacunarity 2
+  addUserKnob {7 gain +DISABLED}
+  gain 0.5
+ }
+push $N1b409c00
+ Expression {
+  temp_name0 LinesR
+  temp_expr0 "fabs(fmod(r, CheckerSize.x)/CheckerSize.x) > 0.5 ? (r>0) : (r<0)"
+  temp_name1 LinesG
+  temp_expr1 "fabs(fmod(g, CheckerSize.y)/CheckerSize.y) > 0.5 ? (g>0) : (g<0)"
+  temp_name2 LinesB
+  temp_expr2 "fabs(fmod(b, CheckerSize.z)/CheckerSize.z) > 0.5 ? (b>0) : (b<0)"
+  temp_name3 Checker
+  temp_expr3 "LinesR ^^ LinesG ^^ LinesB"
+  expr0 LinesR
+  expr1 LinesG
+  expr2 LinesB
+  expr3 Checker
+  name CheckerTexture
+  xpos 130
+  ypos 155
+  addUserKnob {20 User}
+  addUserKnob {13 CheckerSize +DISABLED}
+  CheckerSize {500 500 500}
+ }
+ Switch {
+  inputs 3
+  which {{switcher}}
+  name Switch1
+  xpos 8
+  ypos 254
+ }
+ Output {
+  name Output1
+  xpos 8
+  ypos 300
+ }
+push $N1b930070
+ Viewer {
+  frame 981
+  useGPUForViewer false
+  input_process false
+  name Viewer1
+  xpos 156
+  ypos -29
+ }
+end_group
