@@ -1,0 +1,11 @@
+set cut_paste_input [stack 0]
+version 10.0 v5
+push $cut_paste_input
+NoOp {
+name center_pivot_3d_object
+selected true
+xpos 5258
+ypos -289
+addUserKnob {20 User}
+addUserKnob {22 CENTER_PIVOT T "\"\"\"\nCreated on August 11, 2014\n\n@author Frederic Freund, frederic.freund2013@gmail.com\n\"\"\"\n\n#get selected geometry Node\ngeo = nuke.selectedNode()\n\n#conditions on which script is to be performed\ncond1 = geo.Class() == \"Card\"\ncond2 = geo.Class() == \"Cube\"\ncond3 = geo.Class() == \"Sphere\"\ncond4 = geo.Class() == \"ReadGeo2\"\ncond5 = geo.Class() == \"Cylinder\"\ncond6 = geo.Class() == \"Card2\"\ncond7 = geo.Class() == \"ReadGeo\"\n\n\n#check if selected node is one of the above\nif cond1 or cond2 or cond3 or cond4 or cond5 or cond6 or cond7: \n\n\t#create hidden PythonGeo node\n\tpyg = nuke.nodes.PythonGeo()\n\n\t#set input to selected geometry node\n\tpyg.setInput(0,geo)\n\n\t#get geometry data of PythonGeo's input\n\tgObj = pyg\['geo'].getGeometry()\[0]\n\n\t#get tuple of all vertices of the geometry \n\tpoints = gObj.points()\n\n\tpoint_amount = len(points)/3\n\n\tx_min = 0\n\tx_max = 0\n\n\ty_min = 0\n\ty_max = 0\n\n\tz_min = 0\n\tz_max = 0\n\n\n\tx_list = \[]\n\n\t#iterating over x coordinates and adding them together\n\tfor i in range(0, len(points)-2, 3):\n\t\t\n\t\tx_list.append(points\[i])\n\n\tx_min = min(x_list)\n\tx_max = max(x_list)\n\n\n\ty_list = \[]\n\n\t#iterating over y coordinates and adding them together\n\tfor i in range(1, len(points)-1, 3):\n\t\t\n\t\ty_list.append(points\[i])\n\t\t\n\ty_min = min(y_list)\n\ty_max = max(y_list)\n\t\t\n\tz_list = \[]\n\n\t#iterating over z coordinates and adding them together\n\tfor i in range(2, len(points), 3):\n\t\t\n\t\tz_list.append(points\[i])\n\t\t\n\tz_min = min(z_list)\n\tz_max = max(z_list)\n\t\t\n\n\t#calculate centred pivot coordinates\n\tpivot_x = (x_min + x_max)/2\n\tpivot_y = (y_min + y_max)/2\n\tpivot_z = (z_min + z_max)/2\n\n\t#set geometries pivot to calculated coordinates\n\tgeo\['pivot'].setValue(pivot_x,0)\n\tgeo\['pivot'].setValue(pivot_y,1)\n\tgeo\['pivot'].setValue(pivot_z,2)\n\n\t#delete PythonGeo node after it isn't needed any more\n\tnuke.delete(pyg)\n\nelse:\n\tnuke.message(\"Selected has no geometry\")" +STARTLINE}
+}
