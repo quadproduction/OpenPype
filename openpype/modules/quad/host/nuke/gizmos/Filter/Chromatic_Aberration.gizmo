@@ -1,0 +1,175 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+ inputs 2
+ tile_color 0xc879ffff
+ note_font "Bitstream Vera Sans"
+ mapsize {0.15 0.15}
+ addUserKnob {20 Setup l User}
+ addUserKnob {26 RC l "Red Channel"}
+ addUserKnob {41 translate T Transform1_RED.translate}
+ addUserKnob {26 GC l "Green Channel"}
+ addUserKnob {41 translate_1 l translate T Transform3_GREEN.translate}
+ addUserKnob {26 BC l "Blue Channel"}
+ addUserKnob {41 translate_2 l translate T Transform2_BLUE.translate}
+ addUserKnob {26 ""}
+ addUserKnob {26 MV l "Effect Mix"}
+ addUserKnob {41 mix T Merge3_MIX_VALUE.mix}
+ addUserKnob {26 ""}
+ addUserKnob {26 "" l mask}
+ addUserKnob {41 maskChannelMask l "" -STARTLINE T Merge3_MIX_VALUE.maskChannelMask}
+ addUserKnob {41 inject T Merge3_MIX_VALUE.inject}
+ addUserKnob {41 invert_mask l invert T Merge3_MIX_VALUE.invert_mask}
+ addUserKnob {41 fringe T Merge3_MIX_VALUE.fringe}
+}
+ Input {
+  inputs 0
+  name Source
+  xpos -319
+  ypos 75
+ }
+ Dot {
+  name Dot1
+  xpos -285
+  ypos 224
+ }
+set N5ddd470 [stack 0]
+ Dot {
+  name Dot2
+  xpos -84
+  ypos 224
+ }
+set N5e2d050 [stack 0]
+ Dot {
+  name Dot10
+  xpos 26
+  ypos 224
+ }
+ Dot {
+  name Dot6
+  xpos 23
+  ypos 666
+ }
+ Input {
+  inputs 0
+  name Mask
+  xpos 79
+  ypos 76
+  number 1
+ }
+ Dot {
+  name Dot9
+  xpos 113
+  ypos 628
+ }
+push $N5e2d050
+ Shuffle {
+  red black
+  blue black
+  alpha black
+  name Shuffle3_GREEN
+  xpos -118
+  ypos 298
+ }
+ Transform {
+  center {512 288}
+  name Transform3_GREEN
+  xpos -118
+  ypos 324
+ }
+ Dot {
+  name Dot5
+  xpos -84
+  ypos 490
+ }
+push $N5ddd470
+ Shuffle {
+  red black
+  green black
+  alpha black
+  name Shuffle2_BLUE
+  xpos -319
+  ypos 297
+ }
+ Transform {
+  translate {-1 1}
+  center {512 288}
+  name Transform2_BLUE
+  xpos -319
+  ypos 323
+ }
+push $N5ddd470
+ Dot {
+  name Dot3
+  xpos -461
+  ypos 224
+ }
+set N62494b0 [stack 0]
+ Shuffle {
+  green black
+  blue black
+  alpha black
+  name Shuffle1_RED
+  xpos -495
+  ypos 297
+ }
+ Transform {
+  translate {1 0}
+  center {512 288}
+  name Transform1_RED
+  xpos -495
+  ypos 323
+ }
+ Dot {
+  name Dot4
+  xpos -461
+  ypos 391
+ }
+ Merge2 {
+  inputs 2
+  name Merge1_BLUE_RED
+  xpos -319
+  ypos 387
+ }
+ Merge2 {
+  inputs 2
+  name Merge2_BLUE_RED_GREEN
+  xpos -319
+  ypos 486
+ }
+ Shuffle {
+  alpha white
+  name Shuffle1_ALPHA
+  xpos -319
+  ypos 523
+ }
+push $N62494b0
+ Dot {
+  name Dot7
+  xpos -577
+  ypos 224
+ }
+ Dot {
+  name Dot8
+  xpos -577
+  ypos 628
+ }
+ Merge2 {
+  inputs 2+1
+  maskChannelMask -rgba.alpha
+  name Merge3_MIX_VALUE
+  xpos -319
+  ypos 624
+ }
+ ShuffleCopy {
+  inputs 2
+  name ShuffleCopy1_ALPHA
+  xpos -319
+  ypos 662
+ }
+ Output {
+  name Output1
+  xpos -319
+  ypos 732
+ }
+end_group

@@ -1,0 +1,870 @@
+#! /prod/softprod/apps/nuke/10.5v7/linux/libnuke-10.5.7.so -nx
+version 10.5 v7
+Gizmo {
+inputs 2
+addUserKnob {20 grain l Grain}
+addUserKnob {4 source M {premult unpremult}}
+source unpremult
+addUserKnob {4 alpha l "apply through" M {"B alpha" "mask alpha" "full frame (alpha is white)" "" "" ""}}
+alpha "full frame (alpha is white)"
+addUserKnob {41 lock_connections_1 l "lock all connections" T duGrain.lock_connections}
+addUserKnob {41 colorspace T duGrain.colorspace}
+addUserKnob {41 seedValue l "seed value" T duGrain.seedValue}
+addUserKnob {20 sizeGroup l Size n 1}
+addUserKnob {41 redSize l red T duGrain.redSize}
+addUserKnob {41 greenSize l green T duGrain.greenSize}
+addUserKnob {41 blueSize l blue T duGrain.blueSize}
+addUserKnob {20 endSizeGroup l endGroup n -1}
+addUserKnob {20 blurGroup l Blur n 1}
+addUserKnob {41 blurRed l red T duGrain.blurRed}
+addUserKnob {41 blurGreen l green T duGrain.blurGreen}
+addUserKnob {41 blurBlue l blue T duGrain.blurBlue}
+addUserKnob {20 endBlurGroup l endGroup n -1}
+addUserKnob {20 intensityGroup l Intensity n 1}
+addUserKnob {41 redM l red T duGrain.redM}
+addUserKnob {41 greenM l green T duGrain.greenM}
+addUserKnob {41 blueM l blue T duGrain.blueM}
+addUserKnob {41 min l minimum T duGrain.min}
+addUserKnob {41 max l maximum T duGrain.max}
+addUserKnob {41 multiply T duGrain.multiply}
+addUserKnob {41 random T duGrain.random}
+addUserKnob {20 endIntensityGroup l endGroup n -1}
+addUserKnob {20 saturationGroup l Saturation n 1}
+addUserKnob {41 masterSaturation l master T duGrain.masterSaturation}
+addUserKnob {41 shadowsSaturation l shadows T duGrain.shadowsSaturation}
+addUserKnob {41 midtonesSaturation l midtones T duGrain.midtonesSaturation}
+addUserKnob {41 highlightsSaturation l highlights T duGrain.highlightsSaturation}
+addUserKnob {20 endSaturationGroup l endGroup n -1}
+addUserKnob {20 lumi l Lumi}
+addUserKnob {41 enableMask l "enable luminance mask" T duGrain.enableMask}
+addUserKnob {41 mask_grain l "display masks" T duGrain.mask_grain}
+addUserKnob {41 lut l "" +STARTLINE T duGrain.lut}
+addUserKnob {20 lumakeyer l "Luma Keyer" n 1}
+addUserKnob {6 show_luma l "show Luma Key" +STARTLINE}
+addUserKnob {7 mix_key_power l "mix Luma Key power"}
+mix_key_power 0.5
+addUserKnob {41 range T Keyer1.range}
+addUserKnob {20 endGroup n -1}
+addUserKnob {20 Mask}
+addUserKnob {6 show_mask l "show Mask" +STARTLINE}
+addUserKnob {7 more_mask l "add edge mask"}
+more_mask 1
+addUserKnob {41 size_1 l "Edge size" T EdgeDetectLub.size_1}
+addUserKnob {6 invert_m l "invert Mask" +STARTLINE}
+addUserKnob {20 courbe l "change centre" n 1}
+addUserKnob {41 lut_1 l "" -STARTLINE T EdgeDetectLub.lut}
+addUserKnob {20 endGroup_1 l endGroup n -1}
+}
+Input {
+inputs 0
+name B
+xpos 254
+ypos -254
+}
+Unpremult {
+name Unpremult1
+xpos 254
+ypos -170
+disable {{source}}
+}
+Dot {
+name Dot32
+xpos 288
+ypos -99
+}
+set N925ffd0 [stack 0]
+Dot {
+name Dot4
+xpos 1323
+ypos -99
+}
+Shuffle {
+alpha white
+name Shuffle3
+xpos 1289
+ypos 7
+}
+Input {
+inputs 0
+name mask
+xpos 919
+ypos -212
+number 1
+}
+Invert {
+channels alpha
+name Invert1
+xpos 919
+ypos -169
+disable {{!invert_m}}
+}
+push $N925ffd0
+Dot {
+name Dot5
+xpos 288
+ypos 11
+}
+set N9289ba0 [stack 0]
+Switch {
+inputs 3
+which {{alpha}}
+name Switch3
+xpos 919
+ypos 7
+}
+Shuffle {
+red alpha
+green alpha
+blue alpha
+name Shuffle2
+xpos 919
+ypos 51
+}
+Dot {
+name Dot42
+xpos 953
+ypos 101
+}
+set N92a5fc0 [stack 0]
+Dot {
+name Dot94
+xpos 1082
+ypos 101
+}
+Group {
+name EdgeDetectLub
+tile_color 0x8e3c1fff
+xpos 1048
+ypos 159
+addUserKnob {20 User}
+addUserKnob {41 size_1 l "Edge size" T Blur71.size}
+addUserKnob {20 courbe l "change centre" t "move right or left the middle point to change edge centre" n 1}
+addUserKnob {41 lut l "" +STARTLINE T ColorLookup11.lut}
+addUserKnob {20 endGroup n -1}
+}
+Input {
+inputs 0
+name B
+xpos 166
+ypos -571
+}
+Blur {
+channels alpha
+size 1
+name Blur71
+label "\[value size]"
+xpos 166
+ypos -458
+}
+ColorLookup {
+channels alpha
+lut {master {curve L 0 C k x0.5 1 s0 L 0}
+  red {}
+  green {}
+  blue {}
+  alpha {}}
+name ColorLookup11
+xpos 166
+ypos -386
+}
+Shuffle {
+red alpha
+green alpha
+blue alpha
+name Shuffle1
+xpos 166
+ypos -326
+}
+Output {
+name Output1
+xpos 166
+ypos -219
+}
+end_group
+push $N92a5fc0
+ChannelMerge {
+inputs 2
+mix {{parent.more_mask}}
+name ChannelMerge4
+xpos 919
+ypos 147
+}
+Clamp {
+channels alpha
+name Clamp3
+xpos 919
+ypos 207
+}
+Shuffle {
+red alpha
+green alpha
+blue alpha
+name Shuffle7
+xpos 919
+ypos 269
+}
+Dot {
+name Dot41
+xpos 953
+ypos 362
+}
+set N931a640 [stack 0]
+Dot {
+name Dot1
+xpos 953
+ypos 594
+}
+push $N925ffd0
+Dot {
+name Dot38
+xpos 178
+ypos -99
+}
+set N9323f80 [stack 0]
+Keyer {
+operation "luminance key"
+name Keyer1
+xpos 144
+ypos 157
+}
+Dot {
+name Dot40
+xpos 178
+ypos 230
+}
+set N9332f90 [stack 0]
+Multiply {
+channels alpha
+value {{parent.Keymix4.mix}}
+name Multiply1
+xpos 144
+ypos 297
+}
+Shuffle {
+red alpha
+green alpha
+blue alpha
+name Shuffle1
+xpos 144
+ypos 544
+}
+push $N92a5fc0
+Dot {
+name Dot3
+xpos 789
+ypos 101
+}
+Clamp {
+channels alpha
+name Clamp1
+xpos 755
+ypos 224
+}
+Dot {
+name Dot2
+xpos 789
+ypos 439
+}
+push $N931a640
+push $N9332f90
+push $N9323f80
+Dot {
+name Dot37
+xpos 56
+ypos -99
+}
+set N936bfe0 [stack 0]
+Dot {
+name Dot33
+xpos -46
+ypos -99
+}
+Dot {
+name Dot36
+xpos -46
+ypos 230
+}
+push $N936bfe0
+Group {
+name duGrain
+help "Adds synthetic grain. Push \"presets\" to get predefined types of grain, these are the correct size for 2K scans.\n\nYou can also adjust the sliders to match a sample piece of grain. Find a sample with a rather constant background, blur it to remove the grain, and use as input to this. View with a wipe in the viewer so you can make a match. It helps to view and match each of the red, green, blue seperately."
+note_font "Bitstream Vera Sans"
+xpos 22
+ypos 159
+mapsize {0.15 0.15}
+addUserKnob {20 grain l Grain}
+addUserKnob {4 colorspace M {Linear Cineon sRGB AlexaV3LogC "" ""}}
+colorspace AlexaV3LogC
+addUserKnob {41 seedValue l "seed value" T seed.seedValue}
+addUserKnob {20 sizeGroup l Size n 1}
+addUserKnob {14 redSize l red R 0 100}
+redSize {2.5 1}
+addUserKnob {14 greenSize l green R 0 100}
+greenSize {3 1}
+addUserKnob {14 blueSize l blue R 0 100}
+blueSize {2 1}
+addUserKnob {20 endSizeGroup l endGroup n -1}
+addUserKnob {20 blurGroup l Blur n 1}
+addUserKnob {41 blurRed l red T BlurRed.size}
+addUserKnob {41 blurGreen l green T BlurGreen.size}
+addUserKnob {41 blurBlue l blue T BlurBlue.size}
+addUserKnob {20 endBlurGroup l endGroup n -1}
+addUserKnob {7 redI l INVISIBLE +INVISIBLE}
+redI 0.2
+addUserKnob {7 greenI l INVISIBLE +INVISIBLE}
+greenI 0.15
+addUserKnob {7 blueI l INVISIBLE +INVISIBLE}
+blueI 0.1
+addUserKnob {20 intensityGroup l Intensity n 1}
+addUserKnob {7 redM l red t "Amount of grain to add to a white pixel"}
+redM 0.51
+addUserKnob {7 greenM l green}
+greenM 0.845
+addUserKnob {7 blueM l blue}
+blueM 0.86
+addUserKnob {18 min l minimum}
+min {0 0 0}
+addUserKnob {6 min_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+addUserKnob {18 max l maximum}
+max 1
+addUserKnob {6 max_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+addUserKnob {18 multiply R 0 4}
+multiply {1.23 1 1}
+addUserKnob {6 multiply_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+addUserKnob {18 random}
+random {0 0 0}
+addUserKnob {6 random_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+addUserKnob {20 endIntensityGroup l endGroup n -1}
+addUserKnob {20 saturationGroup l Saturation n 1}
+addUserKnob {41 masterSaturation l master T SaturationCorrect.saturation}
+addUserKnob {41 shadowsSaturation l shadows T SaturationCorrect.shadows.saturation}
+addUserKnob {41 midtonesSaturation l midtones T SaturationCorrect.midtones.saturation}
+addUserKnob {41 highlightsSaturation l highlights T SaturationCorrect.highlights.saturation}
+addUserKnob {20 endSaturationGroup l endGroup n -1}
+addUserKnob {20 maskGroup l Mask n 1}
+addUserKnob {41 which l mix T Mix.which}
+addUserKnob {6 alpha l "Apply only through alpha" +STARTLINE}
+addUserKnob {41 invert_mask l "invert alpha" -STARTLINE T CopyAlpha.invert_mask}
+addUserKnob {20 endMaskGroup l endGroup n -1}
+addUserKnob {20 lumi l Lumi}
+addUserKnob {6 enableMask l "enable luminance mask" +STARTLINE}
+enableMask true
+addUserKnob {6 mask_grain l "display masks" +STARTLINE}
+addUserKnob {41 lut l "" +STARTLINE T LookupCache.lut}
+}
+BackdropNode {
+inputs 0
+name BackdropNode_add_noise
+xpos 257
+ypos 522
+bdwidth 322
+bdheight 375
+}
+BackdropNode {
+inputs 0
+name BackdropNode_create_original_noise
+xpos 79
+ypos 250
+bdwidth 125
+bdheight 356
+}
+BackdropNode {
+inputs 0
+name BackdropNode_luminance_mask_disabled
+xpos -552
+ypos 596
+bdwidth 174
+bdheight 77
+}
+BackdropNode {
+inputs 0
+name BackdropNode_use_mask
+xpos -367
+ypos 403
+bdwidth 407
+bdheight 341
+}
+StickyNote {
+inputs 0
+name StickyNote2
+label "display mask in linear colorspace"
+xpos 389
+ypos 1455
+}
+StickyNote {
+inputs 0
+name StickyNote3
+label "add some high level values"
+xpos 391
+ypos 549
+}
+StickyNote {
+inputs 0
+name StickyNote4
+label "depending on cache luminosity"
+xpos 396
+ypos 765
+}
+StickyNote {
+inputs 0
+name StickyNote5
+label add
+xpos 400
+ypos 859
+}
+ColorLookup {
+inputs 0
+channels {rgba.red rgba.green rgba.blue -rgba.alpha}
+lut {master {}
+  red {curve 0.563 s0 t-0.5839999914 0.223 s0}
+  green {curve 0.44 s0 t-0.8190000057 0.224 s-0.05700000003 t0}
+  blue {curve 1 s0 t-1.593999982 0.564 s-0.1209999993 t0}
+  alpha {}}
+name LookupCache_presetDutruc_5245
+xpos -880
+ypos 402
+}
+StickyNote {
+inputs 0
+name StickyNote1
+label "La valeur de Seed est fix a 50"
+xpos 392
+ypos 268
+}
+Input {
+inputs 0
+name Input1
+xpos -120
+ypos -12
+}
+Dot {
+name Dot1
+xpos -86
+ypos 69
+}
+set N93cdd30 [stack 0]
+Colorspace {
+colorspace_out AlexaV3LogC
+name Lin2LogC
+xpos 65
+ypos 108
+}
+push $N93cdd30
+Colorspace {
+colorspace_out sRGB
+name Lin2sRGB
+xpos -215
+ypos 112
+}
+set N93e8720 [stack 0]
+push $N93cdd30
+Colorspace {
+colorspace_out Cineon
+name Lin2Cin
+xpos -47
+ypos 110
+}
+push $N93cdd30
+Switch {
+inputs 4
+which {{colorspace}}
+name InColorspace
+xpos -120
+ypos 202
+}
+set N9412600 [stack 0]
+ColorLookup {
+channels {rgba.red rgba.green rgba.blue -rgba.alpha}
+lut {master {}
+  red {curve 0.7380596995 s0 t-1.600000024 x0.5588763952 0.2017413378 s0}
+  green {curve 0.5577499866 s0 t-1.950000048 x0.5570885539 0.05 s-0.05700000003 t0}
+  blue {curve 0.8995024562 s0 t-2.099999905 x0.5375948548 0.06218904257 s0}
+  alpha {}}
+name LookupCache
+xpos -400
+ypos 418
+}
+set N941a8d0 [stack 0]
+push $N941a8d0
+push $N9412600
+Noise {
+output {rgba.red -rgba.green -rgba.blue -rgba.alpha}
+cliptype none
+replace true
+size {{parent.redSize.w i} {parent.redSize.h i}}
+zoffset {{(frame+(random(frame)*10*(seed.seedValue)))/2 i}}
+octaves 2
+gamma 1
+xrotate {{(0.5+(random(frame+10)/2)+redI)*20 i}}
+yrotate {{(0.5+(random(frame-10)/2)+redI)*20 i}}
+name red
+xpos 101
+ypos 280
+}
+Noise {
+output {-rgba.red rgba.green -rgba.blue -rgba.alpha}
+cliptype none
+replace true
+size {{parent.greenSize.w i} {parent.greenSize.h i}}
+zoffset {{(frame+(random(frame)*10*(seed.seedValue)))/2 i}}
+octaves 2
+gamma 1
+xrotate {{(0.5+(random(frame+20)/2)+greenI)*20 i}}
+yrotate {{(0.5+(random(frame-20)/2)+greenI)*20 i}}
+name green
+xpos 101
+ypos 322
+}
+Noise {
+output {-rgba.red -rgba.green rgba.blue -rgba.alpha}
+cliptype none
+replace true
+size {{parent.blueSize.w i} {parent.blueSize.h i}}
+zoffset {{(frame+(random(frame)*10*(seed.seedValue)))/2 i}}
+octaves 2
+gamma 1
+xrotate {{(0.5+(random(frame+30)/2)+blueI)*20 i}}
+yrotate {{(0.5+(random(frame-30)/2)+blueI)*20 i}}
+name blue
+xpos 101
+ypos 364
+}
+Blur {
+channels {rgba.red -rgba.green -rgba.blue none}
+size 2.5
+name BlurRed
+xpos 101
+ypos 412
+}
+Blur {
+channels {-rgba.red rgba.green -rgba.blue none}
+size 1.3
+name BlurGreen
+xpos 101
+ypos 454
+}
+Blur {
+channels {-rgba.red -rgba.green rgba.blue none}
+size 1.8
+name BlurBlue
+xpos 101
+ypos 496
+}
+Clamp {
+channels rgb
+minimum {{min.r i} {min.g i} {min.b i} 0}
+maximum {{max.r/2+0.5 i} {max.g/2+0.5 i} {max.b/2+0.5 i} 1}
+name ClampGrain
+xpos 101
+ypos 550
+}
+ColorCorrect {
+lookup {shadow {curve 1 s-2.5 0 s0}
+  midtone {1-shadow-highlight}
+  highlight {curve 0 s0 1 s2.5}}
+name SaturationCorrect
+xpos 101
+ypos 588
+}
+set N94a2410 [stack 0]
+Grade {
+add {{random.r/2-1 i} {random.g/2-1 i} {random.b/2-1 i} 1}
+name GradeRandom
+xpos 293
+ypos 550
+}
+Blur {
+channels {rgba.red -rgba.green -rgba.blue none}
+size {{BlurRed.size/random.r i}}
+name BlurRed1
+xpos 293
+ypos 578
+}
+Blur {
+channels {-rgba.red rgba.green -rgba.blue none}
+size {{BlurGreen.size/random.g i}}
+name BlurGreen1
+xpos 293
+ypos 620
+}
+Blur {
+channels {-rgba.red -rgba.green rgba.blue none}
+size {{BlurBlue.size/random.b i}}
+name BlurBlue1
+xpos 293
+ypos 673
+}
+Merge2 {
+inputs 2
+operation multiply
+name Mult_RANDOM
+xpos 293
+ypos 765
+}
+push $N94a2410
+Dot {
+name Dot4
+xpos 25
+ypos 567
+}
+set N9506d20 [stack 0]
+push $N941a8d0
+push $N9412600
+ShuffleCopy {
+inputs 2
+green red2
+blue red2
+alpha red
+name RED
+xpos -276
+ypos 503
+}
+MergeExpression {
+inputs 2
+expr0 Br+(2*Ar-1)*(Br*(multiply.r*redM*Ba))
+channel1 {-rgba.red -rgba.green -rgba.blue none}
+channel2 {-rgba.red -rgba.green -rgba.blue none}
+name EXPGRAINR
+xpos -291
+ypos 625
+}
+push $N9506d20
+push $N941a8d0
+push $N9412600
+ShuffleCopy {
+inputs 2
+red green2
+blue green2
+alpha green
+name GREEN
+xpos -173
+ypos 502
+}
+MergeExpression {
+inputs 2
+channel0 {-rgba.red -rgba.green -rgba.blue none}
+expr1 Bg+(2*Ag-1)*(Bg*(multiply.g*greenM*Ba))
+channel2 {-rgba.red -rgba.green -rgba.blue none}
+name EXPGRAING
+xpos -188
+ypos 622
+}
+ShuffleCopy {
+inputs 2
+red red
+alpha white
+name RplusG
+xpos -291
+ypos 667
+}
+push $N9506d20
+push $N941a8d0
+push $N9412600
+ShuffleCopy {
+inputs 2
+red blue2
+green blue2
+alpha blue
+name BLUE
+xpos -82
+ypos 502
+}
+MergeExpression {
+inputs 2
+channel0 {-rgba.red -rgba.green -rgba.blue none}
+channel1 {-rgba.red -rgba.green -rgba.blue none}
+expr2 Bb+(2*Ab-1)*(Bb*(multiply.b*blueM*Ba))
+name EXPGRAINB
+xpos -82
+ypos 620
+}
+ShuffleCopy {
+inputs 2
+red red
+green green
+alpha white
+name plusB
+xpos -291
+ypos 705
+}
+push $N9506d20
+push $N9412600
+MergeExpression {
+inputs 2
+expr0 Br+(2*Ar-1)*(Br*(multiply.r*redM))
+expr1 Bg+(2*Ag-1)*(Bg*(multiply.g*greenM))
+expr2 Bb+(2*Ab-1)*(Bb*(multiply.b*blueM))
+name EXPGRAIN
+xpos -503
+ypos 626
+}
+Switch {
+inputs 2
+which {{enableMask i}}
+name Enable_Mask
+xpos -377
+ypos 793
+}
+MergeExpression {
+inputs 2
+expr0 Br+(Ar*random.r)
+expr1 Bg+(Ag*random.g)
+expr2 Bb+(Ab*random.b)
+name RANDOM
+xpos 293
+ypos 865
+}
+Dot {
+name Dot9
+xpos 327
+ypos 993
+}
+set N95a4270 [stack 0]
+Colorspace {
+colorspace_in AlexaV3LogC
+name LogC2Lin
+xpos 495
+ypos 1065
+}
+push $N95a4270
+Colorspace {
+colorspace_in sRGB
+name sRGB2Lin
+xpos 216
+ypos 1057
+}
+push $N95a4270
+Colorspace {
+colorspace_in Cineon
+name Cin2Lin
+xpos 368
+ypos 1061
+}
+push $N95a4270
+Switch {
+inputs 4
+which {{colorspace}}
+name OutColorspace
+xpos 293
+ypos 1131
+}
+set N95e7ee0 [stack 0]
+push $N93cdd30
+Dot {
+name Dot11
+xpos -571
+ypos 69
+}
+Dot {
+name Dot10
+xpos -571
+ypos 1346
+}
+set N95f4db0 [stack 0]
+Copy {
+inputs 2
+channels rgb
+maskChannelInput rgba.alpha
+name CopyAlpha
+xpos 56
+ypos 1196
+}
+push $N95e7ee0
+Switch {
+inputs 2
+which {{alpha i}}
+name Enable_Alpha
+xpos 293
+ypos 1268
+}
+push $N95f4db0
+Dissolve {
+inputs 2
+channels rgb
+which 1
+name Mix
+xpos 90
+ypos 1326
+}
+Switch {
+inputs 2
+which {{mask_grain i}}
+name Display_Mask
+xpos 293
+ypos 1434
+}
+Output {
+name Output2
+xpos 293
+ypos 1508
+}
+NoOp {
+inputs 0
+name seed
+xpos 289
+ypos 268
+addUserKnob {20 User}
+addUserKnob {7 seedValue l "seed value" R -100 100}
+}
+push $N93e8720
+Viewer {
+input_process false
+name Viewer1
+xpos -55
+ypos 1538
+}
+end_group
+Keymix {
+inputs 3
+channels rgb
+mix {{mix_key_power}}
+name Keymix4
+xpos 22
+ypos 226
+}
+Dot {
+name Dot39
+xpos 56
+ypos 362
+}
+push $N9289ba0
+Keymix {
+inputs 3
+channels rgb
+name Keymix3
+xpos 254
+ypos 358
+}
+ShuffleCopy {
+inputs 2
+name ShuffleCopy1
+xpos 254
+ypos 435
+disable {{source}}
+}
+Premult {
+name Premult1
+xpos 254
+ypos 487
+disable {{source}}
+}
+Switch {
+inputs 2
+which {{show_luma}}
+name Switch2
+xpos 254
+ypos 544
+}
+Switch {
+inputs 2
+which {{show_mask}}
+name Switch1
+xpos 254
+ypos 590
+}
+Output {
+name Output1
+xpos 254
+ypos 740
+}
+end_group
