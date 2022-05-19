@@ -1,0 +1,184 @@
+#! /prod/softprod/apps/nuke/10.0v5/linux/libnuke-10.0.5.so -nx
+version 10.0 v5
+Gizmo {
+help "Channel ID\n\nKeep in the Channel you want the color you want (r g b and a). \nBring all them in the channel Alpha (by default) or in all rgba.\nIf you select many color you have the choise to merge them using two differents operations \"Plus\" or \"Screen\".\n"
+knobChanged "node = nuke.thisNode()\nknob = nuke.thisKnob()\nif knob.name() in ('merge', 'showPanel'):\n    mode = node\['merge'].value()\n    if mode == 'Plus':\n        node\['clamp'].setVisible(True)\n    elif mode == 'Screen':\n        node\['clamp'].setVisible(False)"
+tile_color 0x9e3c63ff
+note_font_color 0x40404ff
+addUserKnob {20 User l "Channel ID"}
+addUserKnob {41 in l Channel t "Input Channel" -STARTLINE T Shuffle1.in}
+addUserKnob {26 S1 l " " T " "}
+addUserKnob {26 S3 l " " T " "}
+addUserKnob {6 red l "<font size = 3 color=\"#FE2E2E\">_Red" t "Select to keep the channel in render." -STARTLINE}
+addUserKnob {6 green l "<font size = 3 color=\"green\">_Green" t "Select to keep the channel in render." -STARTLINE}
+addUserKnob {6 blue l "<font size = 3 color=\"#0080FF\">_Blue" t "Select to keep the channel in render." -STARTLINE}
+addUserKnob {6 alpha l "<font size = 3 color=\"#D8D8D8\">_Alpha      " t "Select to keep the channel in render." -STARTLINE}
+addUserKnob {26 arr l "       <img src=\":qrc/images/arrow_right.png\">" t "Merge all them to the selected channel behind." -STARTLINE T " "}
+addUserKnob {4 out l "   " t "Choose the output channel. \n(Alpha or rgba)" -STARTLINE M {rgba Alpha "" "" "" "" "" "" "" "" "" "" ""}}
+out Alpha
+addUserKnob {26 S2 l " " T " "}
+addUserKnob {4 merge l "     Merge" t "Operation:\n\nPlus A+B\nScreen A+B-AB if A and B between 0-1, else A if A>B else B" M {"" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" Plus Screen "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""}}
+merge Plus
+addUserKnob {26 S4 l " " -STARTLINE T "   "}
+addUserKnob {6 clamp l Clamp t "Clamp the channel to the 0..1 range." -STARTLINE}
+clamp true
+addUserKnob {26 by1 l " " T " "}
+addUserKnob {26 by2 l " " T "                                                                                                     "}
+addUserKnob {1 output l INVISIBLE +INVISIBLE}
+output "\[value in]\[if \{\[value out]==\"rgba\"\} \{return \"\[knob this.icon //stora/diska/global/templatesProd/Other_images/F_iconrgba.png]\"\} \{return \"\[knob this.icon //stora/diska/global/templatesProd/Other_images/F_iconalpha.png]\"\}]\[string map \{\"true\" \" R\" \"false\" \"\"\} \"\[value red]\" ]\[string map \{\"true\" \" G\" \"false\" \"\"\} \"\[value green]\" ]\[string map \{\"true\" \" B\" \"false\" \"\"\} \"\[value blue]\" ]\[string map \{\"true\" \" A\" \"false\" \"\"\} \"\[value alpha]\" ]"
+}
+Input {
+inputs 0
+name Input
+tile_color 0x222222ff
+note_font_size -9
+xpos -1093
+ypos 527
+}
+Shuffle {
+name Shuffle1
+tile_color 0x222222ff
+xpos -1093
+ypos 590
+}
+set N9a03bd80 [stack 0]
+Dot {
+name Dot2
+xpos -852
+ypos 593
+icon F_ondot.png
+}
+set N1bd98930 [stack 0]
+Shuffle {
+red alpha
+green alpha
+blue alpha
+name Shuffle5
+tile_color 0xffffffff
+xpos -667
+ypos 655
+disable {{!parent.alpha i}}
+}
+Remove {
+name Remove1
+tile_color 0xffffffff
+xpos -667
+ypos 679
+disable {{parent.alpha i}}
+}
+push $N1bd98930
+Shuffle {
+red blue
+green blue
+alpha blue
+name Shuffle4
+tile_color 0xff00
+xpos -777
+ypos 655
+disable {{!parent.blue i}}
+}
+Remove {
+name Remove2
+tile_color 0xff00
+xpos -777
+ypos 679
+disable {{parent.blue i}}
+}
+push 0
+push $N1bd98930
+Shuffle {
+green red
+blue red
+alpha red
+name Shuffle2
+tile_color 0xff000000
+xpos -997
+ypos 658
+disable {{!parent.red i}}
+}
+Remove {
+name Remove4
+tile_color 0xff000000
+xpos -997
+ypos 682
+disable {{parent.red i}}
+}
+push $N1bd98930
+Shuffle {
+red green
+blue green
+alpha green
+name Shuffle3
+tile_color 0xff0000
+xpos -886
+ypos 655
+disable {{!parent.green i}}
+}
+Remove {
+name Remove3
+tile_color 0xff0000
+xpos -886
+ypos 679
+disable {{parent.green i}}
+}
+Merge2 {
+inputs 4+1
+operation {{parent.merge i}}
+name Merge
+tile_color 0xffffffff
+xpos -886
+ypos 763
+}
+Shuffle {
+red alpha
+green alpha
+blue alpha
+name Shuffle6
+tile_color 0xffffffff
+xpos -886
+ypos 787
+}
+Clamp {
+channels rgba
+name Clamp1
+tile_color 0x222222ff
+xpos -886
+ypos 854
+disable {{!parent.clamp}}
+}
+set N315d9230 [stack 0]
+AddChannels {
+channels rgba
+name AddChannels1
+tile_color 0x222222ff
+xpos -983
+ypos 854
+}
+push $N9a03bd80
+Copy {
+inputs 2
+from0 rgba.alpha
+to0 rgba.alpha
+name Copy1
+tile_color 0x222222ff
+xpos -1093
+ypos 848
+}
+push $N315d9230
+Switch {
+inputs 2
+which {{parent.out i}}
+name Switch2
+tile_color 0x222222ff
+xpos -986
+ypos 911
+}
+Output {
+name Output1
+tile_color 0x222222ff
+label "\n\n\n\n\n\n\n\n\n\n."
+xpos -986
+ypos 885
+icon F_greyg.png
+}
+end_group
