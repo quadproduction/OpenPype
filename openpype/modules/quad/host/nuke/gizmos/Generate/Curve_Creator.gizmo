@@ -1,0 +1,167 @@
+set cut_paste_input [stack 0]
+version 9.0 v8
+push $cut_paste_input
+NoOp {
+name Curve_Creator
+help "Curve Creator\n\nCréateur de courbes procédurales avec des paramétres pour chaque type de courbes."
+tile_color 0xc4b566ff
+selected true
+xpos 2722
+ypos 973
+addUserKnob {20 fBm01 l fBm}
+addUserKnob {7 fBm l "@b; <font size = 4 color=\"green\">fBm"}
+fBm {{"(((((fBm(((frame)-fBmOffset)*(1/(fBmWaveLenght)),2.10,3.5,fBmOctave,2,.5))+.5)))*(fBmMaxVal-fBmMinVal)) + fBmMinVal"}}
+addUserKnob {26 ""}
+addUserKnob {7 fBmWaveLenght l "       Frequency" R 0 50}
+fBmWaveLenght 10
+addUserKnob {7 fBmOffset l Offset R 0 100}
+addUserKnob {22 RandomfBmSeed l Random -STARTLINE T "import random\nnuke.thisNode().knob('fBmOffset').setValue( random.randint(1,16384) )"}
+addUserKnob {7 fBmMaxVal l "Max Value"}
+fBmMaxVal 8
+addUserKnob {7 fBmMinVal l "Min Value"}
+fBmMinVal 7
+addUserKnob {7 fBmOctave l Octave R 0 20}
+fBmOctave 10
+addUserKnob {26 ""}
+addUserKnob {26 by1 l " " T " \n"}
+addUserKnob {26 by2 l " " T "                                                                                               "}
+addUserKnob {26 CGEV l " " t "\nEn cas de probleme, contacter Gaetan Baldy sur le chat\n" -STARTLINE T "<font color=\"#1C1C1C\"> v02 - CGEV - 2016"}
+addUserKnob {20 Noise1 l Noise}
+addUserKnob {7 Noise l "@b; <font size = 4 color=\"green\">Noise"}
+Noise {{"((1*(noise((frame/NoWaveLength)-NoOffset))+1 ) /2 ) * (NoMaxVal-NoMinVal) + NoMinVal"}}
+addUserKnob {26 ""}
+addUserKnob {7 NoWaveLength l "       Frequence" R 0 50}
+NoWaveLength 10
+addUserKnob {7 NoOffset l Offset R 0 100}
+addUserKnob {22 RandomNoSeed l Random -STARTLINE T "import random\nnuke.thisNode().knob('NoOffset').setValue( random.randint(1,16384) )"}
+addUserKnob {7 NoMaxVal l "Max Value"}
+NoMaxVal 7
+addUserKnob {7 NoMinVal l "Min Value"}
+NoMinVal 6
+addUserKnob {26 ""}
+addUserKnob {20 Sin}
+addUserKnob {7 Sinusoidal l "@b; <font size = 4 color=\"green\">Sinusoidal"}
+Sinusoidal {{"(((sin(((frame*(pi*2/(SinWaveLength/2))/2)-(SinOffset+1.5)))+1)/2) * (SinMaxVal-SinMinVal) ) + SinMinVal"}}
+addUserKnob {26 ""}
+addUserKnob {7 SinWaveLength l "       Frequence" R 0 50}
+SinWaveLength 10
+addUserKnob {7 SinOffset l Offset R 0 100}
+addUserKnob {7 SinMaxVal l "Max Value"}
+SinMaxVal 1
+addUserKnob {7 SinMinVal l "Min Value"}
+addUserKnob {26 ""}
+addUserKnob {20 Triangle2 l Triangle}
+addUserKnob {7 Triangle l "@b; <font size = 4 color=\"green\">Triangle"}
+Triangle {{"(((((2*asin(sin(2*pi*(frame/TriWaveLength)-TriOffset)))/pi) / 2)+0.5) * (TriMaxVal-TriMinVal) ) + TriMinVal"}}
+addUserKnob {26 ""}
+addUserKnob {7 TriWaveLength l "       Frequence" R 0 50}
+TriWaveLength 10
+addUserKnob {7 TriOffset l Offset R 0 100}
+addUserKnob {7 TriMaxVal l "Max Value"}
+TriMaxVal 2
+addUserKnob {7 TriMinVal l "Min Value"}
+TriMinVal 1
+addUserKnob {26 ""}
+addUserKnob {20 Squares l Square}
+addUserKnob {7 Square l "@b; <font size = 4 color=\"green\">Square"}
+Square {{"((((sin(((frame*(pi*2/(SqWaveLength))/2)-SqOffset))+1)/2) * (SqMaxVal-SqMinVal) ) + SqMinVal) > ((SqMaxVal/2)+(SqMinVal/2)) ? SqMaxVal : SqMinVal"}}
+addUserKnob {26 ""}
+addUserKnob {7 SqWaveLength l "       Frequence" R 0 50}
+SqWaveLength 10
+addUserKnob {7 SqOffset l Offset R 0 100}
+addUserKnob {7 SqMaxVal l "Max Value"}
+SqMaxVal 3
+addUserKnob {7 SqMinVal l "Min Value"}
+SqMinVal 2
+addUserKnob {26 ""}
+addUserKnob {20 SawTooth1 l SawTooth}
+addUserKnob {7 SawTooth l "@b; <font size = 4 color=\"green\">SawTooth"}
+SawTooth {{"((1/StWaveLength)*(((frame)-StOffset) % StWaveLength) * ((StMaxVal-StMinVal) ) + StMinVal)"}}
+addUserKnob {26 ""}
+addUserKnob {7 StWaveLength l "       Frequence" R 0 50}
+StWaveLength 10
+addUserKnob {7 StOffset l Offset R 0 100}
+addUserKnob {7 StMaxVal l "Max Value"}
+StMaxVal 4
+addUserKnob {7 StMinVal l "Min Value"}
+StMinVal 3
+addUserKnob {26 ""}
+addUserKnob {20 Bounce1 l Bounce}
+addUserKnob {7 Bounce l "@b; <font size = 4 color=\"green\">Bounce"}
+Bounce {{"((sin(((frame/BoWaveLength)*pi)-BoOffset)>0?sin(((frame/BoWaveLength)*pi)-BoOffset):cos((((frame/BoWaveLength)*pi)-BoOffset)+(pi/2))) * (BoMaxVal-BoMinVal) ) + BoMinVal"}}
+addUserKnob {26 ""}
+addUserKnob {7 BoWaveLength l "       Frequence" R 0 50}
+BoWaveLength 10
+addUserKnob {7 BoOffset l Offset R 0 100}
+addUserKnob {7 BoMaxVal l "Max Value"}
+BoMaxVal 5
+addUserKnob {7 BoMinVal l "Min Value"}
+BoMinVal 4
+addUserKnob {26 ""}
+addUserKnob {20 Random1 l Random}
+addUserKnob {7 Random l "@b; <font size = 4 color=\"green\">Random"}
+Random {{"((random((frame/RndWaveLength)-RndOffset)) * (RndMaxVal-RndMinVal) ) + RndMinVal"}}
+addUserKnob {26 ""}
+addUserKnob {7 RndWaveLength l "       Frequence" R 0 50}
+RndWaveLength 10
+addUserKnob {7 RndOffset l Offset R 0 100}
+addUserKnob {22 RandomRndSeed l Random -STARTLINE T "import random\nnuke.thisNode().knob('RndOffset').setValue( random.randint(1,16384) )"}
+addUserKnob {7 RndMaxVal l "Max Value"}
+RndMaxVal 6
+addUserKnob {7 RndMinVal l "Min Value"}
+RndMinVal 5
+addUserKnob {26 ""}
+addUserKnob {20 SawtoothWaveTab l SawtoothWave}
+addUserKnob {7 SawtoothWave l "@b; <font size = 4 color=\"green\">SawtoothWave"}
+SawtoothWave {{"StWReverse ? cos((pi*(frame-StWOffset)/(2*StWwaveLength)) % (pi/2)) * (StWMaxVal-StWMinVal) + StWMinVal : sin((pi*(frame-StWOffset)/(2*StWwaveLength)) % (pi/2)) * (StWMaxVal-StWMinVal) + StWMinVal"}}
+addUserKnob {26 SettingsStW l Settings}
+addUserKnob {7 StWwaveLength l Frequence R 0 50}
+StWwaveLength 10
+addUserKnob {6 StWReverse l Reverse -STARTLINE}
+addUserKnob {7 StWOffset l Offset R 0 100}
+addUserKnob {7 StWMaxVal l "Max Value"}
+StWMaxVal 9
+addUserKnob {7 StWMinVal l "Min Value"}
+StWMinVal 8
+addUserKnob {26 ""}
+addUserKnob {20 SawToothExpTab l SawToothExp}
+addUserKnob {7 SawToothExp l "@b; <font size = 4 color=\"green\">SawToothExp"}
+SawToothExp {{"(exp(2*pi*((frame-StEOffset) % StEWaveLength)/StEWaveLength)-1)/exp(2*pi) * (StEMaxVal-StEMinVal) + StEMinVal"}}
+addUserKnob {26 StESettings l Settings}
+addUserKnob {7 StEWaveLength l Frequence R 0 50}
+StEWaveLength 10
+addUserKnob {7 StEOffset l Offset R 0 100}
+addUserKnob {7 StEMaxVal l "Max Value"}
+StEMaxVal 10
+addUserKnob {7 StEMinVal l "Min Value"}
+StEMinVal 9
+addUserKnob {26 ""}
+addUserKnob {20 BlipTab l Blip}
+addUserKnob {7 Blip l "@b; <font size = 4 color=\"green\">Blip"}
+Blip {{"((frame+(-BlpOffset+BlpWaveLength)) % (BlpWaveLength+BlpLength)/(BlpWaveLength)) *(BlpWaveLength/BlpLength) - (BlpWaveLength/BlpLength) >= 0 ? BlpMaxVal : BlpMinVal"}}
+addUserKnob {26 BlipSettings l Settings}
+addUserKnob {7 BlpWaveLength l Frequence R 0 100}
+BlpWaveLength 10
+addUserKnob {7 BlpLength l "Blip time" R 0 50}
+BlpLength 5
+addUserKnob {7 BlpOffset l Offset R 0 100}
+addUserKnob {7 BlpMaxVal l "Max Value"}
+BlpMaxVal 11
+addUserKnob {7 BlpMinVal l "Min Value"}
+BlpMinVal 10
+addUserKnob {26 ""}
+addUserKnob {20 SineBlipTab l SineBlip}
+addUserKnob {7 SineBlip l "@b; <font size = 4 color=\"green\">SineBlip"}
+SineBlip {{"((int((frame-SnbOffset) % SnbWaveLength)) >= 0 ? ((int((frame-SnbOffset) % SnbWaveLength)) <= (0+(SnbLength-1)) ? ((sin(pi*((frame-SnbOffset) % SnbWaveLength)/SnbLength)/2+1/2) * (2*SnbMaxVal-2*SnbMinVal) + (2*SnbMinVal-SnbMaxVal)) : SnbMinVal)  : SnbMinVal)"}}
+addUserKnob {26 SnbSettings l Settings}
+addUserKnob {7 SnbWaveLength l Frequence R 0 100}
+SnbWaveLength 15
+addUserKnob {7 SnbLength l "Blip Time" R 0 50}
+SnbLength 5
+addUserKnob {7 SnbOffset l Offset R 0 100}
+addUserKnob {7 SnbMaxVal l "Max Value"}
+SnbMaxVal 12
+addUserKnob {7 SnbMinVal l "Min Value"}
+SnbMinVal 11
+addUserKnob {26 ""}
+}
