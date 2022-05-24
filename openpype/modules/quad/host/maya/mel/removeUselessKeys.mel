@@ -1,0 +1,33 @@
+global proc removeUselessKeys(){
+    source generateChannelMenu.mel;
+    source channelBoxCommand.mel;
+    for($obj in `ls -sl`){
+        float $testVar;
+        float $testVar2;
+        $from = `playbackOptions -q -ast`;
+        $to = `playbackOptions -q -aet`;
+        $safe = false;
+        string $Attrs[] = `listAnimatable $obj`;
+        for($Attr in $Attrs){
+            $safe = false;
+            $numbK = `keyframe -query -keyframeCount $Attr`;
+            if($numbK > 0){
+                $testVar = `getAttr -t $from $Attr`;
+                $testVar2 = 0;
+                for($i = $from;$i<=$to;$i++){
+                    $testVar2 = `getAttr -t $i $Attr`;
+                        if($testVar2 != $testVar){
+                        //print("Clés sur "+$Attr+"\n");
+                        $safe = true;
+                        break;
+                    }
+                    $testVar = $testVar2;
+                }
+                //print("\n"+($safe)?"\nAnim: "+$Attr:"\nNotAnim: "+$Attr);
+                if(!$safe){
+                    CBdeleteConnection($Attr);
+                }
+            }       
+        }
+    }
+}
