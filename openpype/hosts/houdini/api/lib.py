@@ -461,28 +461,30 @@ def reset_framerange():
 
 
 def load_hdas(hda_path):
-    if not os.path.isdir(hda_path) and not os.path.isfile(hda_path):
-        log.warning("This path does not exist: {}".format(hda_path))
+    if not os.path.exist(hda_path):
+        log.warning("Cannot load HDA/OTL from {}, this path does not exist !".format(hda_path))
         return
 
     loaded_files = hou.hda.loadedFiles()
 
-    extensions = ['.otl', '.hda']
     if os.path.isfile(hda_path):
-        if not os.path.splitext(hda_path)[-1] in extensions:
-            log.warning("This file is not a hda file: {}".format(os.path.basename(hda_path)))
-            return
-        files = [hda_path]
+        hda_list = [hda_path]
     else:
-        files = [f for f in os.listdir(hda_path) if os.path.splitext(f)[-1] in extensions]
+        hda_list = [os.path.join(hda_path, f) for f in os.listdir(hda_path)]
 
-    for file in files:
-        full_path = os.path.join(hda_path, file)
+    valid_ext = ['.otl', '.hda']
+    for file in hda_list:
+        if file in loaded_files:
+            continue
+        if not os.path.splitext(file)[-1] in valid_ext:
+            log.warning("This file is not a hda or otl file: {}".format(
+                os.path.basename(hda_path)
+            ))
+            continue
 
-        if full_path not in loaded_files:
-            try:
-                hou.hda.installFile(full_path)
-            except hou.OperationFailed:
-                log.warning("Failed to load this HDA: {}. \
-Check that it's a valid operator type library.".format(file))
-                continue
+        try:
+            hou.hda.installFile(file)
+        except hou.OperationFailed:
+            log.warning("Failed to load this HDA: {}. \
+Check that it's a valid operator type library".format(file))
+            continue
