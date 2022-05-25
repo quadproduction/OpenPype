@@ -27,7 +27,7 @@ global proc removeUselessKeys(){
                 if(!$safe){
                     CBdeleteConnection($Attr);
                 }
-            }       
+            }
         }
     }
 }
