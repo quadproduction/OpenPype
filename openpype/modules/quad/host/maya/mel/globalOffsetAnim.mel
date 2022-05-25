@@ -1,0 +1,87 @@
+global proc globalOffsetAnim_exe ( float $offsetTime, string $mode) {
+
+	string $listTL[]	=	`ls -type animCurveTL`;
+	string $listTU[]	=	`ls -type animCurveTU`;
+	string $listTA[]	=	`ls -type animCurveTA`;
+
+	string $listGlobal_1[] = stringArrayCatenate($listTL, $listTU);
+	string $listGlobal[] = stringArrayCatenate($listGlobal_1, $listTA);
+
+	selectKey -replace $listGlobal;
+
+	string $timeChange = ("0 " + $offsetTime);
+	print $timeChange;
+	if ($mode == "+") {
+		keyframe -animation keys -option over -relative -timeChange ( 0 + $offsetTime);
+	}
+	if ($mode == "-") {
+		keyframe -animation keys -option over -relative -timeChange ( 0 - $offsetTime);
+	}
+
+}
+
+global proc globalOffsetAnim() {
+
+	string $windowName	=	"globalOffsetAnim";
+	string $windowTitle	=	"globalOffsetAnim";
+
+	// create UI layout - vars for global sizing
+	int $uiLabelWidth = 110;
+	int $uiInputWidth = 100;
+	int $uiWidth = $uiLabelWidth + $uiInputWidth + 00;
+
+
+	// kill existing UI
+	if ( `window -exists $windowName` == true )
+		deleteUI $windowName;
+
+	window
+		-title $windowTitle
+		-maximizeButton false
+		-minimizeButton true
+		-sizeable true
+		-resizeToFitChildren false
+		-menuBar true
+		-menuBarVisible true
+		-wh 400 281
+		$windowName;
+
+
+	//	PREF UI
+	float $A	=	60;
+	float $B	=	50;
+	float $C	=	70;
+	float $D	=	50;
+
+	// begin actual form content
+	string $rForm = `formLayout -numberOfDivisions 100`;
+
+		string $rScroll = `frameLayout -label "" -labelAlign "center" -cll false -bv 0 -mh 0 main_frame`;
+
+			columnLayout -adjustableColumn true;
+
+				rowLayout -numberOfColumns 4 -cw 1 $A -cw 2 $B -cw 3 $C -cw 4 $D;
+					text -l "Offset";
+					optionMenu -h 26 -label "" -w $B mode_menu;
+						menuItem -label "-";
+ 						menuItem -label "+";
+					textField -h 25 -w $C val_tField;
+					button -h 25 -w $D -label "Offset" -command "pre_globalOffsetAnim" offset_but;
+				setParent ..;
+
+			setParent ..;
+
+		setParent ..;
+
+showWindow $windowName;
+
+}
+
+global proc pre_globalOffsetAnim() {
+
+	float 	$val	= `textField -q -tx val_tField`;
+	string	$x		= `optionMenu -q -v mode_menu`;
+
+	globalOffsetAnim_exe $val $x;
+
+}
