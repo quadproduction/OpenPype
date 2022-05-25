@@ -7,10 +7,12 @@ import re
 from copy import copy, deepcopy
 import requests
 import clique
+import appdirs
 
 import pyblish.api
 
 import openpype.api
+from openpype.lib import requests_post
 from openpype.pipeline import (
     get_representation_path,
     legacy_io,
@@ -99,7 +101,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
 
     """
     print(100*"I9NSIDE CLASS")
-    label = "Submit image sequence jobs to Deadline or Muster"
+    label = "Submit image sequence jobs to Muster"
     order = pyblish.api.IntegratorOrder + 0.2
     icon = "tractor"
     deadline_plugin = "OpenPype"
@@ -133,11 +135,8 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
 
     # custom deadline attributes
     deadline_department = ""
-    deadline_pool = ""
-    deadline_pool_secondary = ""
     deadline_group = ""
     deadline_chunk_size = 1
-    deadline_priority = None
 
     # regex for finding frame number in string
     R_FRAME_NUMBER = re.compile(r'.+\.(?P<frame>[0-9]+)\..+')
@@ -191,17 +190,20 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
 
         return metadata_path, roothless_mtdt_p
 
-    def _submit_deadline_post_job(self, instance, job, instances):
-        """Submit publish job to Deadline.
+    def _submit_muster_post_job(self, instance, job, instances):
+        """Submit publish job to muster.
 
         Deadline specific code separated from :meth:`process` for sake of
         more universal code. Muster post job is sent directly by Muster
         submitter, so this type of code isn't necessary for it.
 
         """
+        print(100*'-')
+        from pprint import pprint
+        pprint(job)
         data = instance.data.copy()
         subset = data["subset"]
-        job_name = "Publish - {subset}".format(subset=subset)
+        job_name = "Publish-{subset}".format(subset=subset)
 
         # instance.data.get("subset") != instances[0]["subset"]
         # 'Main' vs 'renderMain'
@@ -209,20 +211,22 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
         instance_version = instance.data.get("version")  # take this if exists
         if instance_version != 1:
             override_version = instance_version
-        output_dir = self._get_publish_folder(instance.context.data['anatomy'],
-                                              deepcopy(
-                                                instance.data["anatomyData"]),
-                                              instance.data.get("asset"),
-                                              instances[0]["subset"],
-                                              'render',
-                                              override_version)
+        output_dir = self._get_publish_folder(
+            instance.context.data['anatomy'],
+            deepcopy(instance.data["anatomyData"]),
+            instance.data.get("asset"),
+            instances[0]["subset"],
+            'render',
+            override_version
+        )
 
         # Transfer the environment from the original job to this dependent
         # job so they use the same environment
-        metadata_path, roothless_metadata_path = \
-            self._create_metadata_path(instance)
+        metadata_path, roothless_metadata_path = self._create_metadata_path(
+            instance
+        )
 
-        environment = job["Props"].get("Env", {})
+        environment = {}
         environment["AVALON_PROJECT"] = legacy_io.Session["AVALON_PROJECT"]
         environment["AVALON_ASSET"] = legacy_io.Session["AVALON_ASSET"]
         environment["AVALON_TASK"] = legacy_io.Session["AVALON_TASK"]
@@ -232,84 +236,150 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
         environment["OPENPYPE_PUBLISH_JOB"] = "1"
         environment["OPENPYPE_RENDER_JOB"] = "0"
         # Add mongo url if it's enabled
-        if instance.context.data.get("deadlinePassMongoUrl"):
-            mongo_url = os.environ.get("OPENPYPE_MONGO")
-            if mongo_url:
-                environment["OPENPYPE_MONGO"] = mongo_url
+        mongo_url = os.environ.get("OPENPYPE_MONGO")
+        if mongo_url:
+            environment["OPENPYPE_MONGO"] = mongo_url
 
-        priority = self.deadline_priority or instance.data.get("priority", 50)
+        priority = instance.data.get("priority", 50)
 
         args = [
-            "--headless",
-            'publish',
-            roothless_metadata_path,
-            "--targets", "deadline",
+            "--targets", "muster",
             "--targets", "farm"
         ]
 
-        # Generate the payload for Deadline submission
-        payload = {
-            "JobInfo": {
-                "Plugin": self.deadline_plugin,
-                "BatchName": job["Props"]["Batch"],
-                "Name": job_name,
-                "UserName": job["Props"]["User"],
-                "Comment": instance.context.data.get("comment", ""),
-
-                "Department": self.deadline_department,
-                "ChunkSize": self.deadline_chunk_size,
-                "Priority": priority,
-
-                "Group": self.deadline_group,
-                "Pool": instance.data.get("primaryPool"),
-                "SecondaryPool": instance.data.get("secondaryPool"),
-
-                "OutputDirectory0": output_dir
-            },
-            "PluginInfo": {
-                "Version": self.plugin_pype_version,
-                "Arguments": " ".join(args),
-                "SingleFrameOnly": "True",
-            },
-            # Mandatory for Deadline, may be empty
-            "AuxFiles": [],
-        }
-
         # add assembly jobs as dependencies
+        dependencies = []
         if instance.data.get("tileRendering"):
             self.log.info("Adding tile assembly jobs as dependencies...")
-            job_index = 0
             for assembly_id in instance.data.get("assemblySubmissionJobs"):
-                payload["JobInfo"]["JobDependency{}".format(job_index)] = assembly_id  # noqa: E501
-                job_index += 1
+                dependencies.append(assembly_id)
         else:
-            payload["JobInfo"]["JobDependency0"] = job["_id"]
+            dependencies.append(job["ResponseStatus"]["objectId"])
 
-        if instance.data.get("suspend_publish"):
-            payload["JobInfo"]["InitialStatus"] = "Suspended"
-
-        index = 0
-        for key in environment:
-            if key.upper() in self.enviro_filter:
-                payload["JobInfo"].update(
-                    {
-                        "EnvironmentKeyValue%d"
-                        % index: "{key}={value}".format(
-                            key=key, value=environment[key]
-                        )
+        # Generate the payload for Muster submission
+        payload = {
+            "RequestData": {
+                "platform": 0,
+                "job": {
+                    "jobName": job_name,
+                    "templateId": 1002,
+                    "department": "",
+                    "dependIds": dependencies,
+                    "emergencyQueue": False,
+                    "includedPools": [instance.data.get("primaryPool")],
+                    "packetSize": 4,
+                    "priority": priority,
+                    "parentId": -1,
+                    "project": os.environ.get('AVALON_PROJECT') or "",
+                    "maximumInstances": 0,
+                    "attributes": {
+                        "environmental_variables": {
+                            "value": ", ".join("{!s}={!r}".format(k, v)
+                                               for (k, v) in environment.items()),
+                            "state": True,
+                            "subst": False
+                        },
+                        "memo": {
+                            "value": instance.context.data.get("comment", ""),
+                            "state": True,
+                            "subst": False
+                        },
+                        "job_file": {
+                            "value": roothless_metadata_path,
+                            "state": True,
+                            "subst": True
+                        },
+                        "OPFLAGS": {
+                            "value": "--headless",
+                            "state": True,
+                            "subst": False
+                        },
+                        "OPCMD": {
+                            "value": "publish",
+                            "state": True,
+                            "subst": False
+                        },
+                        "OPCMDFLAGS": {
+                            "value": " ".join(args),
+                            "state": True,
+                            "subst": False
+                        },
+                        "output_folder": {
+                            "value": output_dir,
+                            "state": True,
+                            "subst": True
+                        },
+                        "ABORTRENDER": {
+                            "value": "0",
+                            "state": True,
+                            "subst": True
+                        },
                     }
-                )
-                index += 1
+                }
+            }
+        }
 
-        # remove secondary pool
-        payload["JobInfo"].pop("SecondaryPool", None)
+        self.log.info("Submitting Muster job ...")
+        self.log.info(json.dumps(payload, indent=4, sort_keys=True))
 
-        self.log.info("Submitting Deadline job ...")
-
-        url = "{}/api/jobs".format(self.deadline_url)
-        response = requests.post(url, json=payload, timeout=10)
+        response = self._submit(json.dumps(payload))
+        print("response = {}".format(response))
+        # response = requests.post(url, json=payload)
         if not response.ok:
             raise Exception(response.text)
+
+    def _load_credentials(self):
+        """
+        Load Muster credentials from file and set `MUSTER_USER`,
+        `MUSTER_PASSWORD`, `MUSTER_REST_URL` is loaded from settings.
+
+        .. todo::
+
+           Show login dialog if access token is invalid or missing.
+        """
+        app_dir = os.path.normpath(
+            appdirs.user_data_dir('pype-app', 'pype')
+        )
+        file_name = 'muster_cred.json'
+        fpath = os.path.join(app_dir, file_name)
+        file = open(fpath, 'r')
+        muster_json = json.load(file)
+        self._token = muster_json.get('token', None)
+        if not self._token:
+            raise RuntimeError("Invalid access token for Muster")
+        file.close()
+        self.MUSTER_REST_URL = os.environ.get("MUSTER_REST_URL")
+        if not self.MUSTER_REST_URL:
+            raise AttributeError("Muster REST API url not set")
+
+    def _submit(self, payload):
+        """
+        Submit job to Muster
+
+        :param payload: json with job to submit
+        :type payload: str
+        :returns: response
+        :raises: Exception status is wrong
+        """
+        self._load_credentials()
+        params = {
+            "authToken": self._token,
+            "name": "submit"
+        }
+        api_entry = '/api/queue/actions'
+        response = requests_post(
+            self.MUSTER_REST_URL + api_entry,
+            params=params,
+            data=payload,
+            headers={'Content-type': "application/json"}
+        )
+
+        if response.status_code != 200:
+            self.log.error(
+                'Cannot submit job to Muster: {}'.format(response.text))
+            raise Exception('Cannot submit job to Muster.')
+
+        return response
 
     def _copy_extend_frames(self, instance, representation):
         """Copy existing frames from latest version.
@@ -941,15 +1011,8 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
                 "FTRACK_SERVER": os.environ.get("FTRACK_SERVER"),
             }
 
-        if submission_type == "deadline":
-            # get default deadline webservice url from deadline module
-            self.deadline_url = instance.context.data["defaultDeadline"]
-            # if custom one is set in instance, use that
-            if instance.data.get("deadlineUrl"):
-                self.deadline_url = instance.data.get("deadlineUrl")
-            assert self.deadline_url, "Requires Deadline Webservice URL"
-
-            self._submit_deadline_post_job(instance, render_job, instances)
+        # submit the publish job to muster
+        self._submit_muster_post_job(instance, render_job, instances)
 
         # publish job file
         publish_job = {

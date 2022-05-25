@@ -399,6 +399,7 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                             "state": True,
                             "subst": False
                         },
+                        # start and end frame for muster 8.5
                         "start_frame": {
                             "value": int(instance.data["frameStart"]),
                             "state": True,
@@ -488,6 +489,13 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
             # TODO(marcus): This won't work if the slaves don't
             # have access to these paths, such as if slaves are
             # running Linux and the submitter is on Windows.
+            "OPENPYPE_REPOS_ROOT",
+            "OPENPYPE_MONGO",
+            "OPENPYPE_DATABASE_NAME",
+            "AUTODESK_ADLM_THINCLIENT_ENV",
+            "MAYA_LICENSE",
+            "MAYA_LICENSE_METHOD",
+            "MAYA_LEGACY_THINCLIENT",
             "PYTHONPATH",
             "PATH",
             "MTOA_EXTENSIONS_PATH",
@@ -496,6 +504,8 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
             "MAYA_RENDER_DESC_PATH",
             "MAYA_MODULE_PATH",
             "ARNOLD_PLUGIN_PATH",
+            "solidangle_LICENSE",
+            "ADSKFLEX_LICENSE_FILE",
             "FTRACK_API_KEY",
             "FTRACK_API_USER",
             "FTRACK_SERVER",
