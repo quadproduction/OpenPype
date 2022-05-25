@@ -1,0 +1,1268 @@
+//dkAnim.mel v .96
+//Written by Daniel Kramer
+//daniel@visionart.com
+//June 11 2000
+
+int $DKANIM_REFRESH = 1;
+int $DKANIM_REFRESH_KEEP = 1;
+
+global proc dkAnim ( )
+{
+	if (`window -ex  dkAnim`)
+    		deleteUI dkAnim;
+    	if (`window -ex  dkAnim_channels`)
+    		deleteUI dkAnim_channels;
+	
+
+	window -s 0 -ip  -in "dkAnim" -w 600 -h 495 -title "dkAnim V .96" dkAnim;
+	
+	
+	columnLayout -co left 10 -rs 10;
+		frameLayout -borderVisible true -labelVisible true -li 10 -h 125 -w 575 -labelAlign "center" -label "WriteOptions" -marginWidth 5 -marginHeight 5 ;
+			columnLayout -rs 5;
+				rowColumnLayout -nc 2 -cw 1 500 -cw 2 50 -cs 2 5 ;
+					textField -text "out.dkanim" -ed 1 dk_outname;
+					button -label "Browse" -c "dk_browse_output 0";
+					setParent ..;
+				checkBox -v 0 -label " Save Hierarchy" dk_hierarchy;	
+				button -label "Write Anim" -w 560 -c "dk_animWrite `textField -q -text dk_outname` `checkBox -q -v dk_hierarchy`" ;	
+				setParent ..;
+			setParent ..;
+		setParent ..;
+		frameLayout -borderVisible true -labelVisible true -li 10 -h 310 -w 575 -labelAlign "center" -label "ReadOptions" -marginWidth 5 -marginHeight 5 ;
+			columnLayout -rs 5;
+				rowColumnLayout -nc 2 -cw 1 500 -cw 2 50 -cs 2 5 ;
+					textField -text "out.dkanim" -cc "dk_setRefresh 0" dk_inname  ;
+					button -label "Browse" -c "dk_browse_output 1";
+					setParent ..;
+				separator -height 10 -w 565 -style "out";	
+				rowColumnLayout -nc 1 -cs 1 30 -cw 1 550;
+					checkBox -al "left" -v 0 -label "Use Search and Replace" -cc "dk_setRefresh 1" dk_doReplace;
+					rowColumnLayout -nc 2 -cw 1 250 -cw 2 260 -cs 2 0 ;
+ 						textFieldGrp  -cw 1 90 -cw 2 160 -label "Search For:" -cc "dk_setRefresh 1" dk_search;
+						textFieldGrp -cw 1 100 -cw 2 160 -label "Replace With:" -cc "dk_setRefresh 1"  dk_replace;
+						setParent ..;
+					setParent ..;
+					
+				separator -height 5 -w 565 -style "out";			
+				columnLayout -rs 5;
+					rowColumnLayout -nc 2 -cs 1 20 -cw 1 300 -cw 2 175 -cs 2 0 ;
+						textFieldGrp -cw 1 100 -cw 2 160 -label "Add Prefix:" -cc "dk_setRefresh 1" dk_prefix;
+						checkBox -v 0 -label "Add To Top Nodes Only" -cc "dk_setRefresh 1" dk_topNodes;
+						setParent ..;	
+					setParent ..;
+					
+				separator -height 5 -w 565 -style "out";			
+				columnLayout -rs 5;
+					rowColumnLayout -nc 2 -cw 1 290 -cw 2 175 -cs 2 0 -cs 1 30;
+						checkBox -al "left" -v 0 -label "Load Explicit Node Paths" -cc "dk_setRefresh 1" dk_paths;
+						checkBox -v 1 -label "Load Un-Keyed Attributes" -cc "dk_setRefresh 0" dk_unKeyed;
+						setParent ..;
+							
+					setParent ..;
+					
+					separator -height 5 -w 565 -style "out";
+					rowColumnLayout -cs 1 30 -cw 1 290 -cw 2 200 -nc 2 ;
+						checkBox -label "Limit Channels to Scope" -al "left" dk_useChannels;
+						button -label "Define Channel Scope"  -c dk_channels;
+						setParent ..;
+					separator -height 5 -w 565 -style "out";
+					button -label "Read Anim" -w 560 -c "dk_animRead `textField -q -text dk_inname` `checkBox -q -v dk_paths`" ;	
+					
+				setParent ..;
+			setParent ..;
+		setParent ..;
+		
+		
+	showWindow dkAnim;
+	window -e -w 600 -h 495 dkAnim;
+	
+	
+	
+}
+
+global proc dk_setRefresh (int $keep_selection)
+{
+	global int $DKANIM_REFRESH_KEEP;
+	global int $DKANIM_REFRESH;
+	$DKANIM_REFRESH = 1;
+	$DKANIM_REFRESH_KEEP = $keep_selection;
+
+	if (`window -ex  dkAnim_channels`)
+		dk_updateChanLabel;
+}
+
+global proc dk_channels ()
+{
+global int $DKANIM_REFRESH;
+
+	if (`window -ex  dkAnim_channels`)
+	{
+		if($DKANIM_REFRESH == 1)
+			dk_loadChannels;
+
+	}
+	else
+	{
+		window -ret -ip  -in "Channels" -w 375 -h 400 -title "Channels" dkAnim_channels;
+			scrollLayout -horizontalScrollBarThickness 16 -verticalScrollBarThickness 16 -rc dk_resize_chanList dk_scroll_layout;
+				columnLayout -rs 5 ;
+					rowColumnLayout  -cs 2 5 -cs 3 5  -cw 1 75 -cw 2 75  -cw 3 150 -nc 3 ;
+						button -label "Add" -c "dk_matchChannels 1";
+						button -label "Remove" -c "dk_matchChannels 0";
+						textField -tx "*" dk_wildCard;
+						setParent ..;
+					rowColumnLayout  -cs 2 5  -cw 1 100 -cw 2 250  -nc 2 ;
+						button -label "Refresh List" -c "dk_loadChannels";
+						text -label "1000 Channels Scoped" dk_chanLabel;
+					setParent ..;
+					textScrollList -h (`scrollLayout -q -h dk_scroll_layout`-60) -allowMultiSelection true -sc dk_updateChanLabel dk_chanList;
+					
+				
+		dk_loadChannels;
+		window -e -w 375 -h 400 dkAnim_channels;
+		dk_matchChannels 1;
+	
+		
+	}
+	
+	showWindow dkAnim_channels;	
+	dk_resize_chanList;
+}
+
+
+global proc dk_resize_chanList()
+{
+
+string $filteredNames[];
+textScrollList -e -nr `textScrollList -q -ni dk_chanList` dk_chanList;
+textScrollList -e  -a "tempSizerLine"  dk_chanList;
+textScrollList -e  -ri "tempSizerLine"  dk_chanList;
+if(`textScrollList -q -w dk_chanList` < `scrollLayout -q -w dk_scroll_layout`)
+	textScrollList -e  -w (`scrollLayout -q -w dk_scroll_layout` -25)  dk_chanList;
+
+
+}
+
+
+global proc dk_updateChanLabel()
+{
+	global int $DKANIM_REFRESH;
+	global int $DKANIM_REFRESH_KEEP;
+	int $num = `textScrollList -q -nsi dk_chanList`;
+	string $s = "s";
+	string $state = "Refreshed";
+
+	if($num == 1)
+		$s = "";
+
+	if($DKANIM_REFRESH)
+		$state = "Refresh Needed";
+
+	text -e -label ($num + " Channel" + $s + " Scoped (" + $state + ")") dk_chanLabel;
+	
+}
+
+
+
+global proc dk_loadChannels( )
+{
+	global int $DKANIM_REFRESH;
+	global int $DKANIM_REFRESH_KEEP;
+	int $size;
+	string $buffer[];
+	string $chan;
+	string $node;
+	string $path = "";
+	int $i;
+	string $filename = `textField -q -text dk_inname`;
+	int $test = filetest("-r",$filename);
+	int $selected[] = `textScrollList -q -sii dk_chanList`;
+
+	textScrollList -e -w 10 -h 10 -vis 0 -m 0  dk_chanList;
+	print "\nLoading Channel List...\n";
+
+	if(!$test)
+	{
+		textScrollList -e -w 10 -h 10 -vis 0 -m 0 -ra dk_chanList;
+		//$confirm = `confirmDialog -title "Warning" -message "File Doesn't Exist" -button "Ok" -defaultButton "Ok" -cancelButton "Ok" -dismissString "Ok"`;
+	}
+	else
+	{
+		textScrollList -e -w 10 -h 10 -vis 0 -m 0 -ra dk_chanList;
+		
+		int $fileID = fopen( $filename, "r+" ); 	
+		while (!feof($fileID))
+		{
+			
+			$line = fgetline($fileID);
+			$size = tokenize ($line," ",$buffer); 
+
+			if (size($line) > 0)
+			{
+				if (`substring $line 1 5` == "anim " || `substring $line 1 7` == "static ")
+				{
+					if($size == 7 || $size == 6)
+					{
+					
+						if (`substring $line 1 5` == "anim " || (`substring $line 1 7` == "static " && `checkBox -q -v dk_unKeyed`))
+						{
+							$filteredNames = dk_filter_nodes($line,`checkBox -q -v dk_paths`);
+						
+						
+							$node = $filteredNames[2];
+							$chan = $filteredNames[3];
+
+							textScrollList -e -a ($node + "." + $chan) -w 10 -h 10 -vis 0 -m 0  dk_chanList;
+						}
+					
+					}
+					
+				}
+			
+			}
+			
+		}
+	
+	fclose($fileID);
+	}
+$DKANIM_REFRESH = 0;
+
+if($DKANIM_REFRESH_KEEP == 1)
+{
+	for ($item in $selected)
+		textScrollList -e -sii $item dk_chanList;
+}	
+	
+
+
+textScrollList -e  -w 10 -h 10 -vis 1 -m 1  dk_chanList;
+$DKANIM_REFRESH_KEEP = 1;
+dk_updateChanLabel;
+dk_resize_chanList;
+print "\nDone Loading Channel List\n";
+
+}
+
+
+global proc dk_matchChannels (int $mode)
+{
+
+	int $loop = 1;
+	int $total = `textScrollList -q -ni dk_chanList`;
+	string $all_items[] = `textScrollList -q -ai  dk_chanList`;
+	string $text = `textField -q -tx dk_wildCard` ;
+	while ($loop<=$total)
+		{
+		if (gmatch($all_items[$loop-1],$text))
+			if($mode)
+				textScrollList -e -sii $loop  dk_chanList;
+			else 
+				textScrollList -e -dii $loop  dk_chanList;
+		$loop++;
+		}
+dk_updateChanLabel;
+}
+
+
+
+global proc dk_browse_output( int $field )
+{
+	string $file;
+	if ($field == 0)
+	{
+		if (`getenv("OS")` == "Windows_NT")
+			fileBrowserDialog -m 1 -fc "dk_edit_output" -ft "text" -an "Save";
+		else 
+		{
+			$file = `fileDialog`; 
+			textField  -e -tx $file dk_outname;
+		}
+	}
+	if ($field == 1)
+	{
+		$file = `fileDialog`; 
+		textField  -e -tx $file dk_inname;
+	}
+}
+
+
+global proc dk_edit_output(string $fileName,string $fileType)
+  {
+		textField  -e -tx $fileName dk_outname;
+  }
+
+
+
+global proc dk_animWrite( string $filename, int $hi ) 
+{
+int $parent = 0;
+string $objects[];
+string $node;
+string $evalme;
+string $chan;
+string $item;
+string $attr;
+string $buffer[];
+string $curAttr;
+int $weighted = 0;
+string $preIn = "constant";
+string $postIn = "constant";
+int $bd;
+string $nodeTemp[];
+int $test;
+string $selected[] = `ls -sl`;
+string $confirm ;
+string $channels[];
+
+
+//Does File Exist?
+	$test = filetest("-r",$filename);
+    
+	//if($test)
+		//$confirm = `confirmDialog -title "Confirm" -message "File Exists,  Do you want to Overwrite it?" -button "Yes" -button "No" -defaultButton "No" -cancelButton "No" -dismissString "No"`;
+		$confirm = "Yes";
+		
+	if($test == 0 || $confirm == "Yes")
+		{
+		print "\nWriting Animation Curves...\n";
+		int $fileID = fopen( $filename, "w" );
+		fprint ($fileID, "#Generated by dkAnim.mel\n#\n#dkAnim written by Daniel Kramer\n#daniel@visionart.com\n");
+		fprint ($fileID, "#Written out of " + `file -q -sn` + "\n#\n\n");
+	
+		if ($hi)
+			select -hi;
+		
+		
+		$objects = `ls -sl -l`;
+		
+		
+		for ($item in $objects)
+			{
+			$shortItem = `ls -sl $item`;
+	
+			$channels = `listConnections -t animCurve $item`;
+			for ($chan in $channels)
+				{
+				
+				string $connects[] = (`listConnections -p 1 $chan`);
+				$curAttr =  $connects[0];
+
+				int $num = tokenize ($curAttr, ".", $buffer);
+
+				$num = $num - 1;
+				$node = "";
+				for ($i = 0;  $i < $num; $i++)
+				{
+				if($i == 0)
+					$node = $buffer[$i];
+				else
+					$node = $node + "." + $buffer[$i];
+				}
+
+				
+				$nodeTemp = `ls -l $node`;
+
+				$attr = $buffer[$num];
+				$node = $nodeTemp[0];
+			
+				$nodeTemp = `listRelatives -p $node`;		
+
+				if($nodeTemp[0] != "")
+					$parent = 1;
+				else 
+					$parent = 0;
+
+				string $testit[] = `listAnimatable $curAttr`;
+				float $testit2[] = `keyframe -q $chan`;
+				if ($testit[0] != "" && size($testit2))
+					{
+					$evalme = ("getAttr " + $chan + ".preInfinity;");
+			
+					if(`eval $evalme` == 0)
+						$preIn = "constant";
+					if(`eval $evalme` == 1)
+						$preIn = "linear";
+					if(`eval $evalme` == 2)
+						$preIn = "constant";
+					if(`eval $evalme` == 3)
+						$preIn = "cycle";
+					if(`eval $evalme` == 4)
+						$preIn = "cycleRelative";	
+					if(`eval $evalme` == 5)
+						$preIn = "oscillate";	
+			
+					$evalme = ("getAttr " + $chan + ".postInfinity;");
+					$postIn = `eval $evalme`;
+			
+					if(`eval $evalme` == 0)
+						$postIn = "constant";
+					if(`eval $evalme` == 1)
+						$postIn = "linear";
+					if(`eval $evalme` == 2)
+						$postIn = "constant";
+					if(`eval $evalme` == 3)
+						$postIn = "cycle";
+					if(`eval $evalme` == 4)
+						$postIn = "cycleRelative";	
+					if(`eval $evalme` == 5)
+						$postIn = "oscillate";	
+			
+			
+					$evalme = ("getAttr " + $chan + ".weightedTangents;");
+					$weighted = `eval $evalme`;
+			
+					fprint ($fileID, "anim " + $attr + " " + $attr + " " + $node + " " + $parent + " 0 0;\n");
+					fprint ($fileID, "animData {\n");
+					fprint ($fileID, "  weighted " + $weighted + ";\n");
+					fprint ($fileID, "  preInfinity " + $preIn  + ";\n");
+					fprint ($fileID, "  postInfinity " + $postIn + ";\n");
+					fprint ($fileID, "  keys {\n");
+
+					
+					float $keys[] = `keyframe -q $chan`;
+					float $values[]  = `keyframe -q -vc $chan`;
+					string $inTan[] = `keyTangent -q -itt $chan`;
+					string $outTan[] = `keyTangent -q -ott $chan`;
+					int $tanLock[] = `keyTangent -q -lock $chan`;
+					int $weightLock[] = `keyTangent -q -weightLock $chan`;
+					float $breakDown[] = `keyframe -q -breakdown $chan`;
+					float $inAngle[] = `keyTangent -q -inAngle $chan`;
+					float $outAngle[] = `keyTangent -q -outAngle $chan`;
+					float $inWeight[] = `keyTangent -q -inWeight $chan`;
+					float $outWeight[] = `keyTangent -q -outWeight $chan`;
+					
+					for ($i = 0;  $i < size($keys); $i++)
+			  			{
+			  			
+			  			$bd = 0;
+			  			
+			  			for ($bd_item in $breakDown)
+			  			{
+			  				if($bd_item == $keys[$i])
+				    				$bd = 1;
+				    		}
+			  			
+						fprint ($fileID, "    " + $keys[$i] + " " + $values[$i] + " " + $inTan[$i] + " " + $outTan[$i] + " " + $tanLock[$i] + " " + $weightLock[$i] + " " + $bd);
+						if ($inTan[$i] == "fixed")
+				   			fprint ($fileID, " " + $inAngle[$i] + " " + $inWeight[$i]);
+				    			
+						if ($outTan[$i] == "fixed")
+				    			fprint ($fileID, " " + $outAngle[$i] + " " + $outWeight[$i]);
+				    			
+						fprint ($fileID, ";\n");					
+					}
+		
+					fprint ($fileID, "  }\n}\n");
+				}
+			}
+			
+			
+			$staticChans = `listAnimatable $item`;
+			for ($staticChan in $staticChans)
+				{
+				$curAttr =  $staticChan;
+
+				int $num = tokenize ($curAttr, ".", $buffer);
+
+				$num = $num - 1;
+				$node = "";
+				for ($i = 0;  $i < $num; $i++)
+				{
+				if($i == 0)
+					$node = $buffer[$i];
+				else
+					$node = $node + "." + $buffer[$i];
+				}
+
+				
+				$nodeTemp = `ls -l $node`;
+				
+
+				$attr = $buffer[$num];
+				$node = $nodeTemp[0];
+			
+				$nodeTemp = `listRelatives -p $node`;		
+
+				if($nodeTemp[0] != "")
+					$parent = 1;
+				else 
+					$parent = 0;
+
+				
+				$staticChan = ($node + "." + $attr);
+				float $testit[] = `keyframe -q $staticChan`;
+
+				string $connected[] = `listConnections -d 0 $staticChan`;
+		
+				
+				if (size($testit) == 0 && $connected[0] == "")
+				{
+				fprint ($fileID, "static " + $attr + " " + $attr + " " + $node + " " + $parent + " " + `getAttr $staticChan` + "\n");
+				}
+			}
+
+	    	}
+
+fclose $fileID;
+select -cl;
+for ($item in $selected)
+	select -tgl $item;
+	}
+print "\nDone Writing Animation Curves\n";
+}
+
+global proc string[] dk_filter_nodes ( string $line, int $paths )
+{
+	global int $DKANIM_REFRESH;
+	string $newPath = "";
+	string $buffer2[];
+	string $buffer[];
+	string $buffer3[];
+	int $pass = 1;
+	string $returnVal[];
+	
+	$size = tokenize ($line," ",$buffer);
+
+	string $search = `textFieldGrp -q -text dk_search`;
+	string $replace = `textFieldGrp  -q -text dk_replace`;
+	if (`checkBox -q -v dk_doReplace` && ($search != ""))
+	{
+		string $match = ("*" + $search + "*");
+		while (`gmatch $buffer[3] $match`)
+			$buffer[3] = `substitute $search $buffer[3] $replace`;
+	}
+
+	string $prefix = `textFieldGrp -q -text dk_prefix`;
+						
+	$newPath = "";
+
+	if ((`checkBox -q -v dk_topNodes` && $buffer[4] == "0") || `checkBox -q -v dk_topNodes` == 0)
+	{
+		if (`gmatch $buffer[3] "*|*"`)
+		{
+			int $count = tokenize($buffer[3],"|",$buffer2);
+								
+			for ($item in $buffer2)
+				$newPath = ($newPath + "|" + $prefix + $item);	
+				$buffer[3] = $newPath;
+		}
+		else 
+			$buffer[3] = ($prefix + "" + $buffer[3]);
+	}
+						
+						
+		
+	if (`checkBox -q -v dk_topNodes` && $buffer[4] == "1")
+	{
+		if (`gmatch $buffer[3] "*|*"`)
+		{
+			int $count = tokenize($buffer[3],"|",$buffer2);
+			for ($i = 0;  $i < size($buffer2); $i++)
+			{
+				if ($i ==0)
+					$newPath = ("|" + $prefix + $buffer2[$i]);
+				else
+					$newPath = ($newPath + "|" + $buffer2[$i]);
+									
+				$buffer[3] = $newPath;
+			}	
+		}	
+		else
+			$buffer[3] = ($buffer[3]);
+	}
+						
+						
+	if ($paths == 0)
+	{
+		int $total  = tokenize($buffer[3],"|",$buffer3);
+		$total = $total - 1;
+		$buffer[3] = $buffer3[$total];
+	}
+
+		
+	if(`checkBox -q -v dk_useChannels` && `window -ex dkAnim_channels` )
+	{
+		if($DKANIM_REFRESH == 1)
+			dk_loadChannels;
+		$pass = 0;
+		int $loop = 1;
+		int $total = `textScrollList -q -nsi dk_chanList`;
+		string $all_items[] = `textScrollList -q -ai dk_chanList`;
+		int $selected[] = `textScrollList -q -sii dk_chanList`;
+		string $text = ($buffer[3] + "." + $buffer[2]) ;
+		while ($loop<=$total)
+		{
+			if (gmatch($all_items[$selected[$loop-1]-1],$text))
+				$pass = 1;
+				
+			$loop++;
+		}
+			
+	}
+
+
+$returnVal = {$buffer[3],$buffer[2],$buffer[3],$buffer[2]};
+
+if ($pass == 0)
+	$returnVal = {"dk_skip","dk_skip",$buffer[3],$buffer[2]};
+
+return $returnVal;
+
+}
+
+
+global proc dk_animRead( string $filename, int $paths ) 
+{	
+	float $tan1;
+	float $tan2;
+	float $weight1;
+	float $weight2;
+	string $weighted;
+	string $preI;
+	string $postI;
+	string $attr;
+	string $node;
+	string $line;
+	string $curAttr;
+	string $buffer[];
+	string $buffer2[];
+	string $buffer3[];
+	float $time = 0;
+	float $value = 0;
+	string $inType = "";
+	string $outType = "";
+	int $tanLock = 0;
+	int $weightLock = 0;
+	int $breakDown = 0;
+	string $filteredNames[];
+	string $test2[];
+	
+	
+	string $selected[] = `ls -sl`;
+	
+	int $size;
+	int $endit = 0;
+	
+	int $test = filetest("-r",$filename);
+
+	if(!$test)
+	{
+		$confirm = `confirmDialog -title "Warning" -message "File Doesn't Exist" -button "Ok" -defaultButton "Ok" -cancelButton "Ok" -dismissString "Ok"`;
+	}
+	else
+	{
+		int $fileID = fopen( $filename, "r+" ); 
+		print "\nReading Animation Curves...\n\n";	
+		while (!feof($fileID))
+		{
+			$line = fgetline($fileID); 
+			$weightState = 0;
+			if (size($line) > 0)
+			{
+
+				if (`substring $line 1 5` == "anim " || `substring $line 1 7` == "static ")
+				{
+					$size = tokenize ($line," ",$buffer);
+					if($size == 7 || $size == 6)
+					{
+						
+						$filteredNames = dk_filter_nodes($line,$paths);
+						
+						$curAttr = $filteredNames[0] + "." + $filteredNames[1];
+						$node = $filteredNames[0];
+						$attr = $filteredNames[1];
+						$endit = 0;
+						string $curAttrLong = ($node + "." + $attr);
+					
+						if (`objExists $node`)
+						{
+							$test2 = `ls $curAttrLong`;
+							if (size($test2) > 0)
+							{
+
+
+								if (`substring $line 1 7` == "static " && `checkBox -q -v dk_unKeyed`)
+								{
+	
+								string $connected[] = `listConnections -d 0 $curAttrLong`;
+								if (`getAttr -l $curAttrLong` == 0 && $connected[0] == "")
+									{
+									string $setMe = ("setAttr " + $curAttrLong + " " + $buffer[5] + ";");
+									eval $setMe;
+									}
+								else
+									print ("Warning: Attribute is locked - " + $curAttr + "\n");
+ 
+								}
+
+								if (`substring $line 1 5` == "anim ")
+								{
+									
+									while ($endit == 0)
+					 				{
+					    					$line = fgetline($fileID); 
+
+					    					if(`substring $line 3 11` == "weighted ")
+										{
+											if(`substring $line 12 12` == "1")
+						    					{
+						    						
+												$weighted = "keyTangent -edit -weightedTangents true " + $curAttr;
+												$weightState = 1;
+						    					}	
+						    					else
+						    						$weightState = 0;
+										}
+						
+					    					if(`substring $line 3 7` == "preIn")
+										{
+											tokenize ($line," ",$buffer);
+											tokenize ($buffer[1],";",$buffer);
+											$preI = $buffer[0]; 
+										}
+						
+					   					if(`substring $line 3 8` == "postIn")
+										{
+											tokenize ($line," ",$buffer);
+											tokenize ($buffer[1],";",$buffer);
+											$postI = $buffer[0]; 
+										}
+						
+					    					if(`substring $line 3 8` == "keys {")
+										{
+											$line = fgetline($fileID); 
+											while (`substring $line 3 3` != "}")
+						 					{
+						   						int $argNum = tokenize ($line," ",$buffer);
+						    						$time = $buffer[0];
+						    						$value = $buffer[1];
+						    						$inType = $buffer[2];
+						    						$outType = $buffer[3];
+						    						$tanLock = $buffer[4];
+						    						$weightLock = $buffer[5];
+						    						$breakDown = 0;
+						    						
+						   						if ($argNum == 7)
+												{
+													tokenize ($buffer[6],";",$buffer2);
+													$breakDown = $buffer2[0];
+												}
+						    						else
+												{
+													$breakDown = $buffer[6];
+							
+													if ($argNum > 7)
+							    						{
+														$tan1 = $buffer[7];
+														tokenize ($buffer[8],";",$buffer2);
+														$weight1 = $buffer2[0];
+							
+							    						}
+													if ($argNum > 9)
+							    						{
+														$tan2 = $buffer[9];
+														tokenize ($buffer[10],";",$buffer2);
+														$weight2 = $buffer2[0];							
+							    						}
+												}
+					  
+					    							setKeyframe -time $time -value $value -bd $breakDown $curAttr;
+						    						keyTangent -lock $tanLock -t $time $curAttr;
+						    						
+						    						if ($weightState == 1)
+												{
+													eval $weighted;
+													keyTangent -t $time -weightLock $weightLock $curAttr;
+													
+												}
+									
+						    						if($inType != "fixed" && $outType != "fixed")
+						    						{
+						    							keyTangent -e -a -t $time -itt $inType -ott $outType $curAttr;
+						    							//keyTangent -e -a -t $time -itt $inType -ott $outType $curAttr;
+						    						}
+						    			
+						    						if($inType == "fixed" && $outType != "fixed")
+												{
+											
+							   						keyTangent -e -a -t $time -inAngle $tan1 -inWeight $weight1 -itt $inType -ott $outType $curAttr;
+							   						//keyTangent -e -a -t $time -inAngle $tan1 -inWeight $weight1 -itt $inType -ott $outType $curAttr;
+	
+												}
+						    						if($inType != "fixed" && $outType == "fixed")
+												{
+										
+													keyTangent -e -a -t $time -outAngle $tan1 -inWeight $weight1 -itt $inType -ott $outType $curAttr;
+													//keyTangent -e -a -t $time -outAngle $tan1 -inWeight $weight1 -itt $inType -ott $outType $curAttr;
+							   		
+												}
+						    						if($inType == "fixed" && $outType == "fixed")
+												{
+							   			
+													keyTangent -e -a -t $time -inAngle $tan1 -inWeight $weight1 -outAngle $tan2 -outWeight $weight2 -itt $inType -ott $outType $curAttr;
+							   						//keyTangent -e -a -t $time -inAngle $tan1 -inWeight $weight1 -outAngle $tan2 -outWeight $weight2 -itt $inType -ott $outType $curAttr;
+												}
+						  
+						
+						    						$line = fgetline($fileID); 
+						   
+						    					}
+						    				setInfinity -poi $postI -pri $preI $curAttr; 	
+										$endit = 1;
+										}
+					
+									}
+								}
+							}
+							else
+							{
+								if ($curAttr != "dk_skip")
+									print ("Warning: " + $curAttr + " Does not exist... Skipping\n");
+							}
+						
+						}
+						else
+						{	
+							if ($node != "dk_skip")
+								print ("Warning: " + $node + " Does not exist... Skipping\n");
+						}
+						
+					}	
+		
+				}
+		
+		
+
+			}
+		
+
+		}
+		fclose $fileID;	
+		print "\nDone Reading Animation Curves\n";
+	}
+
+	select -cl;
+	for ($item in $selected)
+		select -tgl $item;
+	
+}
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------
+//
+//	MODIF DK ANIM
+//
+//-----------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------
+global proc dk_loadChannelsStrong( )
+{
+	global int $DKANIM_REFRESH;
+	global int $DKANIM_REFRESH_KEEP;
+	int $size;
+	string $buffer[];
+	string $chan;
+	string $node;
+	string $path = "";
+	int $i;
+	
+	int $unkeyed	= 0;
+	
+	
+	string $filename = `textField -q -text dk_inname`;
+	int $test = filetest("-r",$filename);
+	int $selected[] = `textScrollList -q -sii dk_chanList`;
+
+	textScrollList -e -w 10 -h 10 -vis 0 -m 0  dk_chanList;
+	print "\nLoading Channel List...\n";
+
+	if(!$test)
+	{
+		textScrollList -e -w 10 -h 10 -vis 0 -m 0 -ra dk_chanList;
+		//$confirm = `confirmDialog -title "Warning" -message "File Doesn't Exist" -button "Ok" -defaultButton "Ok" -cancelButton "Ok" -dismissString "Ok"`;
+	}
+	else
+	{
+		textScrollList -e -w 10 -h 10 -vis 0 -m 0 -ra dk_chanList;
+		
+		int $fileID = fopen( $filename, "r+" ); 	
+		while (!feof($fileID))
+		{
+			
+			$line = fgetline($fileID);
+			$size = tokenize ($line," ",$buffer); 
+
+			if (size($line) > 0)
+			{
+				if (`substring $line 1 5` == "anim " || `substring $line 1 7` == "static ")
+				{
+					if($size == 7 || $size == 6)
+					{
+					
+						if (`substring $line 1 5` == "anim " || (`substring $line 1 7` == "static " && $unkeyed == 1))
+						{
+							$filteredNames = dk_filter_nodes($line, 0);
+						
+						
+							$node = $filteredNames[2];
+							$chan = $filteredNames[3];
+
+							textScrollList -e -a ($node + "." + $chan) -w 10 -h 10 -vis 0 -m 0  dk_chanList;
+						}
+					
+					}
+					
+				}
+			
+			}
+			
+		}
+	
+	fclose($fileID);
+	}
+$DKANIM_REFRESH = 0;
+
+if($DKANIM_REFRESH_KEEP == 1)
+{
+	for ($item in $selected)
+		textScrollList -e -sii $item dk_chanList;
+}	
+	
+
+
+textScrollList -e  -w 10 -h 10 -vis 1 -m 1  dk_chanList;
+$DKANIM_REFRESH_KEEP = 1;
+dk_updateChanLabel;
+dk_resize_chanList;
+print "\nDone Loading Channel List\n";
+
+}
+
+global proc string[] dk_filter_nodesStrong ( string $line, int $paths )
+{
+	global int $DKANIM_REFRESH;
+	string $newPath = "";
+	string $buffer2[];
+	string $buffer[];
+	string $buffer3[];
+	int $pass = 1;
+	string $returnVal[];
+	
+	$size = tokenize ($line," ",$buffer);
+
+	string $search, $replace;
+	string $prefix = "";
+	int $topNode = 0;
+	int $useChannels = 0;
+	
+	$newPath = "";
+	
+	if (($topNode == 1 && $buffer[4] == "0") || $topNode == 0)
+	{
+		if (`gmatch $buffer[3] "*|*"`)
+		{
+			int $count = tokenize($buffer[3],"|",$buffer2);
+								
+			for ($item in $buffer2)
+				$newPath = ($newPath + "|" + $prefix + $item);	
+				$buffer[3] = $newPath;
+		}
+		else 
+			$buffer[3] = ($prefix + "" + $buffer[3]);
+	}
+						
+						
+		
+	if ($topNode == 1 && $buffer[4] == "1")
+	{
+		if (`gmatch $buffer[3] "*|*"`)
+		{
+			int $count = tokenize($buffer[3],"|",$buffer2);
+			for ($i = 0;  $i < size($buffer2); $i++)
+			{
+				if ($i ==0)
+					$newPath = ("|" + $prefix + $buffer2[$i]);
+				else
+					$newPath = ($newPath + "|" + $buffer2[$i]);
+									
+				$buffer[3] = $newPath;
+			}	
+		}	
+		else
+			$buffer[3] = ($buffer[3]);
+	}
+						
+						
+	if ($paths == 0)
+	{
+		int $total  = tokenize($buffer[3],"|",$buffer3);
+		$total = $total - 1;
+		$buffer[3] = $buffer3[$total];
+	}
+
+		
+	if( $useChannels == 1 && `window -ex dkAnim_channels` )
+	{
+		if($DKANIM_REFRESH == 1)
+			dk_loadChannels;
+		$pass = 0;
+		int $loop = 1;
+		int $total = `textScrollList -q -nsi dk_chanList`;
+		string $all_items[] = `textScrollList -q -ai dk_chanList`;
+		int $selected[] = `textScrollList -q -sii dk_chanList`;
+		string $text = ($buffer[3] + "." + $buffer[2]) ;
+		while ($loop<=$total)
+		{
+			if (gmatch($all_items[$selected[$loop-1]-1],$text))
+				$pass = 1;
+				
+			$loop++;
+		}
+			
+	}
+
+
+$returnVal = {$buffer[3],$buffer[2],$buffer[3],$buffer[2]};
+
+if ($pass == 0)
+	$returnVal = {"dk_skip","dk_skip",$buffer[3],$buffer[2]};
+
+return $returnVal;
+
+}
+
+global proc dk_animReadStrong( string $filename, int $paths ) 
+{	
+	float $tan1;
+	float $tan2;
+	float $weight1;
+	float $weight2;
+	string $weighted;
+	string $preI;
+	string $postI;
+	string $attr;
+	string $node;
+	string $line;
+	string $curAttr;
+	string $buffer[];
+	string $buffer2[];
+	string $buffer3[];
+	float $time = 0;
+	float $value = 0;
+	string $inType = "";
+	string $outType = "";
+	int $tanLock = 0;
+	int $weightLock = 0;
+	int $breakDown = 0;
+	string $filteredNames[];
+	string $test2[];
+	
+	int $unkeyed	= 0;
+	
+	string $selected[] = `ls -sl`;
+	
+	int $size;
+	int $endit = 0;
+	
+	int $test = filetest("-r",$filename);
+
+	if(!$test)
+	{
+		$confirm = `confirmDialog -title "Warning" -message "File Doesn't Exist" -button "Ok" -defaultButton "Ok" -cancelButton "Ok" -dismissString "Ok"`;
+	}
+	else
+	{
+		int $fileID = fopen( $filename, "r+" ); 
+		print "\nReading Animation Curves...\n\n";	
+		while (!feof($fileID))
+		{
+			$line = fgetline($fileID); 
+			$weightState = 0;
+			if (size($line) > 0)
+			{
+
+				if (`substring $line 1 5` == "anim " || `substring $line 1 7` == "static ")
+				{
+					$size = tokenize ($line," ",$buffer);
+					if($size == 7 || $size == 6)
+					{
+						$filteredNames = dk_filter_nodesStrong($line,$paths);
+						//$filteredNames = dk_filter_nodes($line,$paths);
+						
+						$curAttr = $filteredNames[0] + "." + $filteredNames[1];
+						$node = $filteredNames[0];
+						$attr = $filteredNames[1];
+						$endit = 0;
+						string $curAttrLong = ($node + "." + $attr);
+					
+						if (`objExists $node`)
+						{
+							$test2 = `ls $curAttrLong`;
+							if (size($test2) > 0)
+							{
+
+
+								if (`substring $line 1 7` == "static " && $unkeyed == 1)
+								{
+	
+								string $connected[] = `listConnections -d 0 $curAttrLong`;
+								if (`getAttr -l $curAttrLong` == 0 && $connected[0] == "")
+									{
+									string $setMe = ("setAttr " + $curAttrLong + " " + $buffer[5] + ";");
+									eval $setMe;
+									}
+								else
+									print ("Warning: Attribute is locked - " + $curAttr + "\n");
+ 
+								}
+
+								if (`substring $line 1 5` == "anim ")
+								{
+									
+									while ($endit == 0)
+					 				{
+					    					$line = fgetline($fileID); 
+
+					    					if(`substring $line 3 11` == "weighted ")
+										{
+											if(`substring $line 12 12` == "1")
+						    					{
+						    						
+												$weighted = "keyTangent -edit -weightedTangents true " + $curAttr;
+												$weightState = 1;
+						    					}	
+						    					else
+						    						$weightState = 0;
+										}
+						
+					    					if(`substring $line 3 7` == "preIn")
+										{
+											tokenize ($line," ",$buffer);
+											tokenize ($buffer[1],";",$buffer);
+											$preI = $buffer[0]; 
+										}
+						
+					   					if(`substring $line 3 8` == "postIn")
+										{
+											tokenize ($line," ",$buffer);
+											tokenize ($buffer[1],";",$buffer);
+											$postI = $buffer[0]; 
+										}
+						
+					    					if(`substring $line 3 8` == "keys {")
+										{
+											$line = fgetline($fileID); 
+											while (`substring $line 3 3` != "}")
+						 					{
+						   						int $argNum = tokenize ($line," ",$buffer);
+						    						$time = $buffer[0];
+						    						$value = $buffer[1];
+						    						$inType = $buffer[2];
+						    						$outType = $buffer[3];
+						    						$tanLock = $buffer[4];
+						    						$weightLock = $buffer[5];
+						    						$breakDown = 0;
+						    						
+						   						if ($argNum == 7)
+												{
+													tokenize ($buffer[6],";",$buffer2);
+													$breakDown = $buffer2[0];
+												}
+						    						else
+												{
+													$breakDown = $buffer[6];
+							
+													if ($argNum > 7)
+							    						{
+														$tan1 = $buffer[7];
+														tokenize ($buffer[8],";",$buffer2);
+														$weight1 = $buffer2[0];
+							
+							    						}
+													if ($argNum > 9)
+							    						{
+														$tan2 = $buffer[9];
+														tokenize ($buffer[10],";",$buffer2);
+														$weight2 = $buffer2[0];							
+							    						}
+												}
+					  
+					    							setKeyframe -time $time -value $value -bd $breakDown $curAttr;
+						    						keyTangent -lock $tanLock -t $time $curAttr;
+						    						
+						    						if ($weightState == 1)
+												{
+													eval $weighted;
+													keyTangent -t $time -weightLock $weightLock $curAttr;
+													
+												}
+									
+						    						if($inType != "fixed" && $outType != "fixed")
+						    						{
+						    							keyTangent -e -a -t $time -itt $inType -ott $outType $curAttr;
+						    							//keyTangent -e -a -t $time -itt $inType -ott $outType $curAttr;
+						    						}
+						    			
+						    						if($inType == "fixed" && $outType != "fixed")
+												{
+											
+							   						keyTangent -e -a -t $time -inAngle $tan1 -inWeight $weight1 -itt $inType -ott $outType $curAttr;
+							   						//keyTangent -e -a -t $time -inAngle $tan1 -inWeight $weight1 -itt $inType -ott $outType $curAttr;
+	
+												}
+						    						if($inType != "fixed" && $outType == "fixed")
+												{
+										
+													keyTangent -e -a -t $time -outAngle $tan1 -inWeight $weight1 -itt $inType -ott $outType $curAttr;
+													//keyTangent -e -a -t $time -outAngle $tan1 -inWeight $weight1 -itt $inType -ott $outType $curAttr;
+							   		
+												}
+						    						if($inType == "fixed" && $outType == "fixed")
+												{
+							   			
+													keyTangent -e -a -t $time -inAngle $tan1 -inWeight $weight1 -outAngle $tan2 -outWeight $weight2 -itt $inType -ott $outType $curAttr;
+							   						//keyTangent -e -a -t $time -inAngle $tan1 -inWeight $weight1 -outAngle $tan2 -outWeight $weight2 -itt $inType -ott $outType $curAttr;
+												}
+						  
+						
+						    						$line = fgetline($fileID); 
+						   
+						    					}
+						    				setInfinity -poi $postI -pri $preI $curAttr; 	
+										$endit = 1;
+										}
+					
+									}
+								}
+							}
+							else
+							{
+								if ($curAttr != "dk_skip")
+									print ("Warning: " + $curAttr + " Does not exist... Skipping\n");
+							}
+						
+						}
+						else
+						{	
+							if ($node != "dk_skip")
+								print ("Warning: " + $node + " Does not exist... Skipping\n");
+						}
+						
+					}	
+		
+				}		
+
+			}
+		
+
+		}
+		fclose $fileID;	
+		print "\nDone Reading Animation Curves\n";
+	}
+
+	select -cl;
+	for ($item in $selected)
+		select -tgl $item;
+	
+}
