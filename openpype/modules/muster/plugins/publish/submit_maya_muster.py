@@ -371,7 +371,7 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                     "includedPools": [renderglobals["Pool"]],
                     "packetSize": 4,
                     "packetType": 1,
-                    "priority": 1,
+                    "priority": renderglobals["Priority"],
                     "jobId": -1,
                     "startOn": 0,
                     "parentId": -1,
@@ -382,8 +382,10 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                     "assignedInstances": 0,
                     "attributes": {
                         "environmental_variables": {
-                            "value": ", ".join("{!s}={!r}".format(k, v)
-                                               for (k, v) in env.items()),
+                            "value": ",".join(
+                                "{}={}".format(k, v)
+                                for (k, v) in env.items()
+                            ),
                             "state": True,
                             "subst": False
                         },
@@ -396,17 +398,6 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                             "value": "{start}-{end}".format(
                                 start=int(instance.data["frameStart"]),
                                 end=int(instance.data["frameEnd"])),
-                            "state": True,
-                            "subst": False
-                        },
-                        # start and end frame for muster 8.5
-                        "start_frame": {
-                            "value": int(instance.data["frameStart"]),
-                            "state": True,
-                            "subst": False
-                        },
-                        "end_frame": {
-                            "value": int(instance.data["frameEnd"]),
                             "state": True,
                             "subst": False
                         },

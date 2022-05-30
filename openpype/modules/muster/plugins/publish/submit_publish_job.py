@@ -274,8 +274,10 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
                     "maximumInstances": 0,
                     "attributes": {
                         "environmental_variables": {
-                            "value": ", ".join("{!s}={!r}".format(k, v)
-                                               for (k, v) in environment.items()),
+                            "value": ",".join(
+                                "{}={}".format(k, v)
+                                for (k, v) in environment.items()
+                            ),
                             "state": True,
                             "subst": False
                         },
