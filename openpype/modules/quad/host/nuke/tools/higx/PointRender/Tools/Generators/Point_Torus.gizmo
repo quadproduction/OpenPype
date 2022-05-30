@@ -1,0 +1,160 @@
+Group {
+ inputs 0
+ name Point_Torus
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Torus Generator v1.0\n"}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {3 npointsX l "Numper of Points x"}
+ npointsX 200
+ addUserKnob {3 npointsY l y -STARTLINE}
+ npointsY 1500
+ addUserKnob {7 Radius R 0 10}
+ Radius 2.5
+ addUserKnob {26 divider_transform l "<b><font color=#7DADF9>Transform</font><b>"}
+ addUserKnob {41 orientation l Orientation T Switch1.orientation}
+ addUserKnob {41 translate l Translate T Axis1.translate}
+ addUserKnob {41 rotate l Rotate T Axis1.rotate}
+ addUserKnob {41 scaling l Scale T Axis1.scaling}
+ addUserKnob {41 uniform_scale l "Uniform scale" T Axis1.uniform_scale}
+ addUserKnob {26 DeviderTweak l "<b><font color=#7DADF9>Tweak</font><b>"}
+ addUserKnob {7 YCompletion l "Y Completion"}
+ YCompletion 1
+ addUserKnob {7 RadialCompletion l "Radial Completion"}
+ RadialCompletion 1
+ addUserKnob {7 OffsetY l "Offset Y"}
+ addUserKnob {7 OffsetInner}
+}
+ Reformat {
+  inputs 0
+  type "to box"
+  format "256 256 0 0 256 256 1 square_256"
+  box_width {{parent.npointsX}}
+  box_height {{parent.npointsY}}
+  box_fixed true
+  name Reformat7
+  xpos 509
+  ypos -398
+ }
+ Expression {
+  expr0 ((x/width-.5)*2)*pi
+  expr1 ((y/height-.5)*2)*pi
+  expr2 0
+  expr3 1
+  name Expression4
+  xpos 509
+  ypos -355
+ }
+ Expression {
+  expr0 ((ra+sin(r*rb))*cos(g*rc))*(1-min(1,abs(bd))+sin(r*bd))
+  expr1 ((cos(r*rb))+((g*re)))
+  expr2 ((ra+sin(r*rb))*sin(g*rc))*(1-min(1,abs(bd))+sin(r*bd))
+  name Expression5
+  xpos 509
+  ypos -296
+  addUserKnob {20 User}
+  addUserKnob {7 ra}
+  ra {{parent.Radius}}
+  addUserKnob {7 rb}
+  rb {{-parent.YCompletion}}
+  addUserKnob {7 rc}
+  rc {{parent.RadialCompletion}}
+  addUserKnob {7 rd}
+  addUserKnob {7 ga}
+  addUserKnob {7 gb}
+  addUserKnob {7 gc}
+  addUserKnob {7 ba}
+  addUserKnob {7 bb}
+  addUserKnob {7 bc}
+  addUserKnob {7 bd}
+  bd {{parent.OffsetInner}}
+  addUserKnob {7 re}
+  re {{parent.OffsetY}}
+ }
+set N616f8400 [stack 0]
+ Shuffle {
+  red blue
+  green red
+  blue green
+  name Shuffle1
+  xpos 615
+  ypos -208
+ }
+push $N616f8400
+ Shuffle {
+  red green
+  green blue
+  blue red
+  name Shuffle5
+  xpos 392
+  ypos -207
+ }
+push $N616f8400
+ Switch {
+  inputs 3
+  which {{orientation}}
+  name Switch1
+  xpos 509
+  ypos -123
+  addUserKnob {20 User}
+  addUserKnob {4 orientation l Orientation M {XZ XY YZ}}
+ }
+ ColorMatrix {
+  matrix {
+      {{parent.Axis1.world_matrix.0} {parent.Axis1.world_matrix.1} {parent.Axis1.world_matrix.2}}
+      {{parent.Axis1.world_matrix.4} {parent.Axis1.world_matrix.5} {parent.Axis1.world_matrix.6}}
+      {{parent.Axis1.world_matrix.8} {parent.Axis1.world_matrix.9} {parent.Axis1.world_matrix.10}}
+    }
+  name ColorMatrix1
+  xpos 509
+  ypos -65
+ }
+ Grade {
+  white 0.3
+  add {{parent.Axis1.world_matrix.3} {parent.Axis1.world_matrix.7} {parent.Axis1.world_matrix.11} 0}
+  add_panelDropped true
+  black_clamp false
+  name Grade11
+  xpos 509
+  ypos -37
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  black white
+  white white
+  red2 white
+  green2 white
+  out pos
+  out2 rgba
+  name Shuffle7
+  xpos 509
+  ypos 4
+ }
+ Grade {
+  white {{1/((parent.npointsX*parent.npointsY)/40000)}}
+  black_clamp false
+  name Grade9
+  xpos 509
+  ypos 28
+ }
+ Crop {
+  box {0 0 {parent.npointsX} {parent.npointsY}}
+  crop false
+  name Crop1
+  xpos 509
+  ypos 52
+ }
+ Output {
+  name Output1
+  xpos 509
+  ypos 78
+ }
+ Axis2 {
+  inputs 0
+  name Axis1
+  selected true
+  xpos 681
+  ypos -98
+ }
+end_group

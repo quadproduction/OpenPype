@@ -1,0 +1,86 @@
+Group {
+ name Point_GeoSourceUV
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info_1 l "" +STARTLINE T "GeoSourceUV v1.1\n"}
+ addUserKnob {26 divider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {14 PointDensity l "Point Density" R 0 100}
+ PointDensity 1100
+ addUserKnob {26 divider_transform l "<b><font color=#7DADF9>Transform</font><b>"}
+ addUserKnob {41 translate l Translate T Axis1.translate}
+ addUserKnob {41 rotate l Rotate T Axis1.rotate}
+ addUserKnob {41 scaling l Scale T Axis1.scaling}
+ addUserKnob {41 uniform_scale l "Uniform scale" T Axis1.uniform_scale}
+ addUserKnob {41 skew l Skew T Axis1.skew}
+ addUserKnob {20 Help}
+ addUserKnob {26 info l "" +STARTLINE T ""}
+}
+ Input {
+  inputs 0
+  name InputGeo
+  xpos 389
+  ypos -279
+ }
+ Crop {
+  inputs 0
+  box {0 0 {parent.PointDensity.w} {parent.PointDensity.h}}
+  reformat true
+  crop false
+  name Crop1
+  xpos 279
+  ypos -178
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ ScanlineRender {
+  inputs 2
+  conservative_shader_sampling false
+  projection_mode uv
+  motion_vectors_type distance
+  output_shader_vectors true
+  P_channel pos
+  name ScanlineRender1
+  xpos 389
+  ypos -178
+ }
+ Shuffle {
+  in2 pos
+  red red2
+  green green2
+  blue blue2
+  out pos
+  name Shuffle1
+  xpos 389
+  ypos -116
+ }
+ ColorMatrix {
+  channels pos
+  matrix {
+      {{parent.Axis1.world_matrix.0} {parent.Axis1.world_matrix.1} {parent.Axis1.world_matrix.2}}
+      {{parent.Axis1.world_matrix.4} {parent.Axis1.world_matrix.5} {parent.Axis1.world_matrix.6}}
+      {{parent.Axis1.world_matrix.8} {parent.Axis1.world_matrix.9} {parent.Axis1.world_matrix.10}}
+    }
+  name ColorMatrix1
+  xpos 389
+  ypos 31
+ }
+ Grade {
+  channels pos
+  add {{parent.Axis1.translate} {parent.Axis1.translate} {parent.Axis1.translate} 0}
+  black_clamp false
+  name Grade1
+  xpos 389
+  ypos 63
+ }
+ Output {
+  name Output1
+  xpos 389
+  ypos 97
+ }
+ Axis2 {
+  inputs 0
+  name Axis1
+  xpos 533
+  ypos 12
+ }
+end_group

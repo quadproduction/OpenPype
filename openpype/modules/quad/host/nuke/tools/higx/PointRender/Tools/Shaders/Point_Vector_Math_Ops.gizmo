@@ -1,0 +1,609 @@
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+Group {
+ name Vector_Math_Ops1
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ selected true
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Vector Math Ops v1.0\n"}
+ addUserKnob {26 devidergeneral l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {4 Operation M {"Dot Product 3D" "Dot Product 2D" "Vector Length 3D (Input 1)" "Vector Length 2D (Input 1)" "Reflect Vector" "Normalize (Input 1)" "Cross Product" Substract Add Distance "" "" ""}}
+ Operation Distance
+ addUserKnob {6 Normalise_Output l "Normalize Output" t "If this is checked, all outputs will be normalised." +STARTLINE}
+ addUserKnob {6 Saturate_Output l "Saturate Output" t "This will move vectors from -1:1 space to 0:1 space" +STARTLINE}
+ addUserKnob {26 ""}
+ addUserKnob {41 in l "Input 1 Channal" T Shuffle1.in}
+ addUserKnob {41 in_1 l "Input 2 Channal" T Shuffle2.in}
+ addUserKnob {4 AlphaChanal l "Keep Alpha From" M {1 2 "" ""}}
+ addUserKnob {26 ""}
+ addUserKnob {26 Info l "" +STARTLINE T "For Reflect Vector A=Normal, B=Velocity"}
+ addUserKnob {20 Help}
+ addUserKnob {26 HelpText l "" +STARTLINE T "This node will let you do common vector math operations on One or Two input streams.\n\nThe input will be the channals that you select in the User section and the output will be in the RGBA channal."}
+}
+ BackdropNode {
+  inputs 0
+  name BackdropNode1
+  tile_color 0x8e388e00
+  label DotProduct2D
+  note_font_size 25
+  xpos 652
+  ypos -4
+  bdwidth 178
+  bdheight 166
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode2
+  tile_color 0x7171c600
+  label "Vector Length 3D"
+  note_font_size 25
+  xpos 861
+  ypos 2
+  bdwidth 213
+  bdheight 159
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode3
+  tile_color 0x7171c600
+  label "Vector Length 2D"
+  note_font_size 25
+  xpos 1106
+  ypos 2
+  bdwidth 213
+  bdheight 159
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode4
+  tile_color 0x388e8e00
+  label Normalize
+  note_font_size 25
+  xpos 1570
+  ypos 1
+  bdwidth 183
+  bdheight 159
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode5
+  tile_color 0x7171c600
+  label "Cross Product"
+  note_font_size 25
+  xpos 1816
+  ypos -3
+  bdwidth 203
+  bdheight 168
+ }
+ BackdropNode {
+  inputs 0
+  name DotProduct3D
+  tile_color 0x8e8e3800
+  label DotProduct3D
+  note_font_size 25
+  xpos 423
+  ypos -6
+  bdwidth 158
+  bdheight 164
+ }
+ BackdropNode {
+  inputs 0
+  name Reflect_Vecor
+  tile_color 0x8e388e00
+  label "Reflect Vector 3D\nA=normal\nB = Velocity"
+  note_font_size 25
+  xpos 1339
+  ypos -1
+  bdwidth 197
+  bdheight 163
+ }
+ BackdropNode {
+  inputs 0
+  name Substract
+  tile_color 0x7171c600
+  label Substract
+  note_font_size 25
+  xpos 2102
+  ypos -3
+  bdwidth 203
+  bdheight 168
+ }
+ BackdropNode {
+  inputs 0
+  name Substract1
+  tile_color 0x7171c600
+  label Add
+  note_font_size 25
+  xpos 2350
+  ypos -3
+  bdwidth 203
+  bdheight 168
+ }
+ BackdropNode {
+  inputs 0
+  name Substract2
+  tile_color 0x7171c600
+  label Dist
+  note_font_size 25
+  xpos 2607
+  ypos -3
+  bdwidth 203
+  bdheight 168
+ }
+ Input {
+  inputs 0
+  name Input2
+  xpos 1000
+  ypos -246
+  number 1
+ }
+ Dot {
+  name B
+  label B
+  xpos 1034
+  ypos -206
+ }
+ Shuffle {
+  in pos
+  in2 rgba
+  alpha alpha2
+  name Shuffle2
+  xpos 1000
+  ypos -165
+ }
+ Dot {
+  name Dot13
+  xpos 1034
+  ypos -38
+ }
+set Nefd89830 [stack 0]
+ Dot {
+  name Dot21
+  xpos 778
+  ypos -38
+ }
+set Nfeae79a0 [stack 0]
+ Dot {
+  name Dot19
+  xpos 525
+  ypos -38
+ }
+set Nfea4c2c0 [stack 0]
+ Dot {
+  name Dot30
+  xpos 271
+  ypos -38
+ }
+ Dot {
+  name Dot32
+  xpos 271
+  ypos 706
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos 905
+  ypos -244
+ }
+ Dot {
+  name A
+  label A
+  xpos 939
+  ypos -204
+ }
+ Shuffle {
+  in pos
+  in2 rgba
+  alpha alpha2
+  name Shuffle1
+  xpos 905
+  ypos -164
+ }
+ Dot {
+  name Dot12
+  xpos 939
+  ypos -89
+ }
+set Nefd69910 [stack 0]
+ Dot {
+  name Dot15
+  xpos 662
+  ypos -89
+ }
+set Nefdc6630 [stack 0]
+ Dot {
+  name Dot14
+  xpos 433
+  ypos -89
+ }
+set Nfda66150 [stack 0]
+ Dot {
+  name Dot31
+  xpos 336
+  ypos -89
+ }
+ Dot {
+  name Dot33
+  xpos 336
+  ypos 584
+ }
+ Switch {
+  inputs 2
+  which {{parent.AlphaChanal}}
+  name Switch2
+  xpos 872
+  ypos 703
+ }
+push $Nefd89830
+ Dot {
+  name Dot4
+  xpos 1374
+  ypos -38
+ }
+set Nefdbdbc0 [stack 0]
+ Dot {
+  name Dot1
+  xpos 1867
+  ypos -38
+ }
+set Nfdf7a4f0 [stack 0]
+ Dot {
+  name Dot28
+  xpos 2153
+  ypos -38
+ }
+set N25ca7550 [stack 0]
+ Dot {
+  name Dot35
+  xpos 2401
+  ypos -38
+ }
+set N25c96b10 [stack 0]
+ Dot {
+  name Dot42
+  xpos 2658
+  ypos -38
+ }
+ Dot {
+  name Dot43
+  xpos 2658
+  ypos 137
+ }
+push $Nefd69910
+ Dot {
+  name Dot17
+  xpos 1215
+  ypos -89
+ }
+set Nfeaf3020 [stack 0]
+ Dot {
+  name Dot16
+  xpos 1452
+  ypos -89
+ }
+set Nefd97790 [stack 0]
+ Dot {
+  name Dot18
+  xpos 1665
+  ypos -89
+ }
+set N25ce2aa0 [stack 0]
+ Dot {
+  name Dot2
+  xpos 1924
+  ypos -89
+ }
+set Nefdde600 [stack 0]
+ Dot {
+  name Dot29
+  xpos 2210
+  ypos -89
+ }
+set Nfda09830 [stack 0]
+ Dot {
+  name Dot37
+  xpos 2458
+  ypos -89
+ }
+set N25c538b0 [stack 0]
+ Dot {
+  name Dot44
+  xpos 2715
+  ypos -89
+ }
+ MergeExpression {
+  inputs 2
+  temp_name0 xd
+  temp_expr0 A.red-B.red
+  temp_name1 yd
+  temp_expr1 A.green-B.green
+  temp_name2 zd
+  temp_expr2 A.blue-B.blue
+  temp_name3 Distance
+  temp_expr3 "sqrt(xd*xd + yd*yd + zd*zd)"
+  expr0 Distance
+  expr1 Distance
+  expr2 Distance
+  name Distance
+  xpos 2681
+  ypos 134
+ }
+ Dot {
+  name Dot45
+  xpos 2715
+  ypos 264
+ }
+push $N25c96b10
+ Dot {
+  name Dot36
+  xpos 2401
+  ypos 137
+ }
+push $N25c538b0
+ MergeExpression {
+  inputs 2
+  expr0 A.red+B.red
+  expr1 A.green+B.green
+  expr2 A.blue+B.blue
+  name Cross_Product2
+  xpos 2424
+  ypos 134
+ }
+ Dot {
+  name Dot38
+  xpos 2458
+  ypos 264
+ }
+push $N25ca7550
+ Dot {
+  name Dot27
+  xpos 2153
+  ypos 137
+ }
+push $Nfda09830
+ MergeExpression {
+  inputs 2
+  expr0 A.red-B.red
+  expr1 A.green-B.green
+  expr2 A.blue-B.blue
+  name Cross_Product1
+  xpos 2176
+  ypos 134
+ }
+ Dot {
+  name Dot34
+  xpos 2210
+  ypos 236
+ }
+push $Nfdf7a4f0
+ Dot {
+  name Dot25
+  xpos 1867
+  ypos 137
+ }
+push $Nefdde600
+ MergeExpression {
+  inputs 2
+  expr0 "A.green*B.blue - A.blue*B.green"
+  expr1 "A.blue*B.red - A.red*B.blue"
+  expr2 "A.red*B.green - A.green*B.red"
+  name Cross_Product
+  xpos 1890
+  ypos 134
+ }
+ Dot {
+  name Dot26
+  xpos 1924
+  ypos 225
+ }
+push $N25ce2aa0
+ Expression {
+  temp_name3 Length
+  temp_expr3 sqrt(Red*Red+Green*Green+Blue*Blue)+0.000000001
+  expr0 Red/Length
+  expr1 Green/Length
+  expr2 Blue/Length
+  name Normalize_Vector
+  xpos 1631
+  ypos 125
+ }
+ Dot {
+  name Dot11
+  xpos 1665
+  ypos 214
+ }
+push $Nefd97790
+push $Nefdbdbc0
+ Dot {
+  name Dot5
+  xpos 1374
+  ypos 129
+ }
+ MergeExpression {
+  inputs 2
+  temp_expr0 "A = Normal, B = Velocity Vector!"
+  temp_name3 dot
+  temp_expr3 (A.red*B.red+A.green*B.green+A.blue*B.blue)
+  expr0 "-2*(dot)*A.red + B.red"
+  expr1 "-2*(dot)*A.green + B.green"
+  expr2 "-2*(dot)*A.blue + B.blue"
+  name Reflect3D
+  xpos 1418
+  ypos 126
+ }
+ Dot {
+  name Dot20
+  xpos 1452
+  ypos 201
+ }
+push $Nfeaf3020
+ Expression {
+  temp_name3 VectorLength_2D
+  temp_expr3 sqrt(Red*Red+Green*Green)
+  expr0 VectorLength_2D
+  expr1 VectorLength_2D
+  expr2 VectorLength_2D
+  name Vector_Length2D
+  xpos 1181
+  ypos 124
+ }
+ Dot {
+  name Dot22
+  xpos 1215
+  ypos 175
+ }
+push $Nefd69910
+ Expression {
+  temp_name3 VectorLength_3D
+  temp_expr3 sqrt(Red*Red+Green*Green+Blue*Blue)
+  expr0 VectorLength_3D
+  expr1 VectorLength_3D
+  expr2 VectorLength_3D
+  name Vector_Length3D
+  selected true
+  xpos 905
+  ypos 128
+ }
+ Dot {
+  name Dot23
+  xpos 939
+  ypos 186
+ }
+push $Nefdc6630
+ Dot {
+  name Dot6
+  xpos 662
+  ypos 130
+ }
+push $Nfeae79a0
+ MergeExpression {
+  inputs 2
+  temp_name3 dot_product_2d
+  temp_expr3 (A.red*B.red+A.green*B.green)
+  expr0 dot_product_2d
+  expr1 dot_product_2d
+  expr2 dot_product_2d
+  name Dot_Product2D
+  xpos 744
+  ypos 127
+ }
+ Dot {
+  name Dot10
+  xpos 778
+  ypos 204
+ }
+push $Nfda66150
+ Dot {
+  name Dot3
+  xpos 433
+  ypos 133
+ }
+push $Nfea4c2c0
+ MergeExpression {
+  inputs 2
+  temp_name3 dot_product_3d
+  temp_expr3 (A.red*B.red+A.green*B.green+A.blue*B.blue)
+  expr0 dot_product_3d
+  expr1 dot_product_3d
+  expr2 dot_product_3d
+  name Dot_Product3D
+  xpos 491
+  ypos 130
+ }
+ Dot {
+  name Dot9
+  xpos 525
+  ypos 250
+ }
+ Switch {
+  inputs 10
+  which {{parent.Operation}}
+  name Switch1
+  xpos 1023
+  ypos 291
+ }
+ Dot {
+  name Dot7
+  xpos 1057
+  ypos 332
+ }
+set Nfdab4260 [stack 0]
+ Dot {
+  name Dot8
+  xpos 1192
+  ypos 332
+ }
+ Expression {
+  temp_name3 Length
+  temp_expr3 "sqrt((Red*Red) + (Green*Green) + (Blue*Blue))+0.00000001"
+  expr0 Red/Length
+  expr1 Green/Length
+  expr2 Blue/Length
+  expr3 Length
+  name Normalize_Vector_out
+  xpos 1158
+  ypos 373
+ }
+ Dot {
+  name Dot24
+  xpos 1192
+  ypos 444
+ }
+push $Nfdab4260
+ Switch {
+  inputs 2
+  which {{parent.Normalise_Output}}
+  name Normalise
+  xpos 1023
+  ypos 441
+ }
+ Dot {
+  name Dot39
+  xpos 1057
+  ypos 550
+ }
+set Nfdad1dd0 [stack 0]
+ Dot {
+  name Dot40
+  xpos 1192
+  ypos 550
+ }
+ Expression {
+  expr0 r/2+0.5
+  expr1 g/2+0.5
+  expr2 b/2+0.5
+  name Saturate_Vector_out
+  xpos 1158
+  ypos 597
+ }
+ Dot {
+  name Dot41
+  xpos 1192
+  ypos 662
+ }
+push $Nfdad1dd0
+ Switch {
+  inputs 2
+  which {{parent.Saturate_Output}}
+  name Saturate
+  xpos 1023
+  ypos 659
+ }
+ ShuffleCopy {
+  inputs 2
+  name ShuffleCopy1
+  xpos 1023
+  ypos 703
+ }
+ Dot {
+  name Out
+  label Out
+  xpos 1057
+  ypos 744
+ }
+ Output {
+  name Output1
+  xpos 1023
+  ypos 770
+ }
+end_group

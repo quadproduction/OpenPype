@@ -1,0 +1,74 @@
+Group {
+ name Point_Expression
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info_header l "" +STARTLINE T "Point Expression 1.1\n"}
+ addUserKnob {26 info_variables l "<b><font color=#7DADF9>Variables</font><b>"}
+ addUserKnob {41 temp_name0 l "" -STARTLINE T Expression1.temp_name0}
+ addUserKnob {41 temp_expr0 l = -STARTLINE T Expression1.temp_expr0}
+ addUserKnob {41 temp_name1 l "" +STARTLINE T Expression1.temp_name1}
+ addUserKnob {41 temp_expr1 l = -STARTLINE T Expression1.temp_expr1}
+ addUserKnob {41 temp_name2 l "" +STARTLINE T Expression1.temp_name2}
+ addUserKnob {41 temp_expr2 l = -STARTLINE T Expression1.temp_expr2}
+ addUserKnob {41 temp_name3 l "" +STARTLINE T Expression1.temp_name3}
+ addUserKnob {41 temp_expr3 l = -STARTLINE T Expression1.temp_expr3}
+ addUserKnob {26 info_expression l "<b><font color=#7DADF9>Expression</font><b>"}
+ addUserKnob {41 expr0 l "X =" t "r = x, g = y, b = z\nAll other syntax is just like the regular expression node" T Expression1.expr0}
+ addUserKnob {41 expr1 l "Y =" t "r = x, g = y, b = z\nAll other syntax is just like the regular expression node" T Expression1.expr1}
+ addUserKnob {41 expr2 l "Z =" t "r = x, g = y, b = z\nAll other syntax is just like the regular expression node" T Expression1.expr2}
+ addUserKnob {20 help_1 l Help}
+ addUserKnob {26 help_2 l "" +STARTLINE T "The point expression node is just like the expression node \nexcept that you can use r,g and b as variables rather than pos.r,pos.g and pos.b"}
+}
+ Input {
+  inputs 0
+  name Input1
+  xpos 160
+  ypos -160
+ }
+ Dot {
+  name Dot1
+  xpos 194
+  ypos -102
+ }
+set N72c61400 [stack 0]
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle1
+  selected true
+  xpos 272
+  ypos -105
+ }
+ Expression {
+  expr0 r
+  expr1 g
+  expr2 b
+  name Expression1
+  xpos 272
+  ypos -1
+ }
+ Shuffle {
+  out pos
+  name Shuffle2
+  xpos 272
+  ypos 114
+ }
+push $N72c61400
+ Merge2 {
+  inputs 2
+  operation copy
+  bbox B
+  Achannels pos
+  Bchannels pos
+  output pos
+  name Merge1
+  xpos 160
+  ypos 110
+ }
+ Output {
+  name Output1
+  xpos 160
+  ypos 174
+ }
+end_group

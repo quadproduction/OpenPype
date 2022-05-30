@@ -1,0 +1,88 @@
+Group {
+ name Point_ProximityShader
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Point Proximity Shader v1.0\n\nCalcualtes the point density of 2D based generators, \nsuch as: Plane, Sphere, Torus, Cylinder.\n"}
+ addUserKnob {41 useGPUIfAvailable l "Use GPU if available" T BlinkScript1.useGPUIfAvailable}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {7 Mag l Magnitude R 0 20}
+ Mag 90
+}
+ BackdropNode {
+  inputs 0
+  name BackdropNode5
+  tile_color 0x388e8e00
+  label Proximity
+  note_font_size 42
+  xpos -628
+  ypos 326
+  bdwidth 224
+  bdheight 161
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos -580
+  ypos 50
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle5
+  xpos -580
+  ypos 120
+ }
+ Dot {
+  name Dot16
+  xpos -546
+  ypos 284
+ }
+set N8b10b000 [stack 0]
+ Dot {
+  name Dot2
+  xpos -647
+  ypos 284
+ }
+ Dot {
+  name Dot1
+  xpos -647
+  ypos 513
+ }
+push $N8b10b000
+ BlinkScript {
+  recompileCount 10
+  ProgramGroup 1
+  KernelDescription "2 \"BoxBlur2D\" iterate pixelWise 4502aee56a1693e2b562d021931cada75d544ad3ccd6712168e5db6f1a307578 2 \"src\" Read Ranged2D \"dst\" Write Point 0 0 2 \"srcrangeMin\" Int 2 1 AAAAAAAAAAA= \"srcrangeMax\" Int 2 1 AAAAAAAAAAA="
+  kernelSource "kernel BoxBlur2D : public ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRanged2D, eEdgeClamped> src;\n  Image<eWrite, eAccessPoint> dst;\n\n  void init() \{\n    //Set the range we need to access from the source \n    src.setRange(-1, -1, 1, 1);\n  \}\n\n  void process() \{\n    float sum = 0.0f;\n    float xd,yd,zd,distance;\n    float4 centerSample = src(0,0);\n    float4 sample;\n    for(int j = -1; j <= 1; j++)\n      for(int i = -1; i <= 1; i++)\n \tsample = src(i, j);\n\txd = centerSample.x-sample.x;\n\tyd = centerSample.y-sample.y;\n\tzd = centerSample.z-sample.z;\n\tdistance = sqrt(xd*xd + yd*yd + zd*zd);\n\tsum += distance;\n    dst() = sum;\n  \}\n\};"
+  rebuild ""
+  rebuild_finalise ""
+  name BlinkScript1
+  selected true
+  xpos -580
+  ypos 363
+ }
+ Multiply {
+  channels rgb
+  value {{parent.Mag}}
+  name Multiply1
+  xpos -580
+  ypos 419
+ }
+ ShuffleCopy {
+  inputs 2
+  name ShuffleCopy1
+  xpos -580
+  ypos 510
+ }
+ Dot {
+  name Dot22
+  xpos -546
+  ypos 582
+ }
+ Output {
+  name Output1
+  xpos -580
+  ypos 685
+ }
+end_group

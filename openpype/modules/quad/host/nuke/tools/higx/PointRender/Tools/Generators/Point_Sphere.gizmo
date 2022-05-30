@@ -1,0 +1,182 @@
+Group {
+ inputs 0
+ name Point_Sphere
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Sphere Generator v1.1\n"}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {14 PointDensity l "Point Density" R 0 100}
+ PointDensity {100 100}
+ addUserKnob {26 divider_transformation l "<b><font color=#7DADF9>Transform</font><b>"}
+ addUserKnob {13 offset l Translate}
+ addUserKnob {41 rotate l Rotate T Axis1.rotate}
+ addUserKnob {41 scaling l Scale T Axis1.scaling}
+ addUserKnob {41 uniform_scale l "Uniform Scale" T Axis1.uniform_scale}
+ addUserKnob {41 skew l Skew T Axis1.skew}
+ addUserKnob {26 devider_completion l "<b><font color=#7DADF9>Completion</font><b>"}
+ addUserKnob {7 Width t "Let you peel open the sphere."}
+ addUserKnob {7 Height t "Let you peel open the sphere."}
+ addUserKnob {26 info_shade l "<b><font color=#7DADF9>Shading</font><b>"}
+ addUserKnob {6 poleLight l "Reduce Pole" t "Due to the fact that the point density at the equator and at the poles are the same, the poles will appear brighter. This option will attempt to reduce the brightness of the points at the poles to make them appear just as bright as the equator." +STARTLINE}
+ addUserKnob {20 Help}
+ addUserKnob {26 info_1 l "" +STARTLINE T "When you render this sphere using the Wire Render mode \nyou will notice a gab where the edges meet.\n\nTo fix this use the \"Close X\" checkbox in the Render Settings of the Point Render node"}
+}
+ Crop {
+  inputs 0
+  box {{curve} {curve} {parent.PointDensity.w} {parent.PointDensity.h}}
+  reformat true
+  crop false
+  name Format
+  xpos 384
+  ypos -295
+ }
+ Expression {
+  expr1 (y)/height
+  expr2 (x)/width
+  name Generator
+  xpos 384
+  ypos -271
+ }
+ Grade {
+  channels {rgba.red rgba.green rgba.blue none}
+  blackpoint {{-whitepoint+1} {-whitepoint+1} {-whitepoint+1} {-whitepoint+1}}
+  blackpoint_panelDropped true
+  whitepoint {1 {((pow(parent.Height,2)*10)+1)} {((pow(parent.Width,2)*10)+1)} 1}
+  whitepoint_panelDropped true
+  add_panelDropped true
+  black_clamp false
+  name Grade2
+  xpos 383
+  ypos -228
+ }
+ Expression {
+  expr1 (g+(sin(((x/width)*pi*density))*scale))+offset
+  mix 0.095
+  name Expression3
+  xpos 383
+  ypos -197
+  disable true
+  addUserKnob {20 User}
+  addUserKnob {3 density l Density}
+  addUserKnob {7 offset l Offset R -2 2}
+  offset 77
+  addUserKnob {7 scale l Scale}
+ }
+ Expression {
+  expr1 g*height
+  expr2 b*width
+  name Expression2
+  xpos 383
+  ypos -166
+ }
+ Expression {
+  temp_name0 lat
+  temp_expr0 "g / (parent.PointDensity.h-1) * 180- 90"
+  temp_name1 lon
+  temp_expr1 "b / (parent.PointDensity.w-0) * 360-180"
+  temp_name2 r
+  temp_expr2 "cos(0.017453292519943295769236907684886 *  lat)"
+  expr0 "(r * cos (0.017453292519943295769236907684886 * lon) +1)*0.5"
+  expr1 "(sin (0.017453292519943295769236907684886 * lat)+1)*.5"
+  expr2 "(r * sin(0.017453292519943295769236907684886 * lon)+1)*.5"
+  name Expression9
+  selected true
+  xpos 384
+  ypos -142
+ }
+ Grade {
+  add 0.5
+  reverse true
+  black_clamp false
+  name Grade3
+  xpos 384
+  ypos -112
+ }
+ ColorMatrix {
+  matrix {
+      {{parent.Axis1.world_matrix.0} {parent.Axis1.world_matrix.1} {parent.Axis1.world_matrix.2}}
+      {{parent.Axis1.world_matrix.4} {parent.Axis1.world_matrix.5} {parent.Axis1.world_matrix.6}}
+      {{parent.Axis1.world_matrix.8} {parent.Axis1.world_matrix.9} {parent.Axis1.world_matrix.10}}
+    }
+  name ColorMatrix1
+  xpos 384
+  ypos -88
+ }
+ Grade {
+  add 0.5
+  black_clamp false
+  name Grade4
+  xpos 384
+  ypos -64
+ }
+ Add {
+  value {{-.5+parent.offset} {-.5+parent.offset} {-.5+parent.offset} 0}
+  name Add1
+  xpos 384
+  ypos -32
+ }
+ Shuffle {
+  alpha white
+  name Shuffle4
+  xpos 384
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  black white
+  white white
+  red2 white
+  green2 white
+  out pos
+  out2 rgba
+  name Shuffle5
+  xpos 384
+  ypos 47
+ }
+ Expression {
+  expr0 smoothstep(0,1,1-abs(cy*(width/height)))
+  channel1 {-rgba.red rgba.green -rgba.blue none}
+  expr1 smoothstep(0,1,1-abs(cy*(width/height)))
+  channel2 {-rgba.red -rgba.green rgba.blue none}
+  expr2 smoothstep(0,1,1-abs(cy*(width/height)))
+  channel3 {none none none -rgba.alpha}
+  name Expression1
+  xpos 384
+  ypos 71
+  disable {{!parent.poleLight}}
+ }
+ ModifyMetaData {
+  metadata {
+   {set pointrender/n_points "\[expr \[value parent.PointDensity.w]*\[value parent.PointDensity.h]]"}
+   {set pointrender/gen_type 2}
+  }
+  name SetMetaData
+  xpos 384
+  ypos 105
+ }
+ Grade {
+  white {{1/((parent.PointDensity.w*parent.PointDensity.h)/40000)}}
+  black_clamp false
+  name Grade9
+  xpos 384
+  ypos 129
+ }
+ Crop {
+  box {{curve} {curve} {parent.PointDensity.w} {parent.PointDensity.h}}
+  crop false
+  name Format1
+  xpos 384
+  ypos 153
+ }
+ Output {
+  name Output1
+  xpos 384
+  ypos 262
+ }
+ Axis2 {
+  inputs 0
+  name Axis1
+  xpos 529
+  ypos -111
+ }
+end_group

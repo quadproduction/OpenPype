@@ -1,0 +1,208 @@
+Group {
+ inputs 0
+ name Point_Particles
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info l " " T "Point Particle System v1.3"}
+ addUserKnob {6 useGPU l "Use GPU if available" +STARTLINE}
+ useGPU true
+ addUserKnob {26 divider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {3 firstFrame l "First Frame" t "First frame of the simulation"}
+ firstFrame 1
+ addUserKnob {3 lastFrame l "Last Frame" t "This is a indication of what frame the last particle will be spawned on." -STARTLINE}
+ lastFrame 20
+ addUserKnob {7 speed l Speed -STARTLINE +INVISIBLE}
+ speed 1
+ addUserKnob {3 p_pframe l "Particle Per Frame" t "Number of particles being spawned per frame"}
+ p_pframe 1000
+ addUserKnob {3 maxParticles l " Maximum Particles" t "The maximum number of particles (squared)\nSo 100 == 100^100" -STARTLINE +INVISIBLE}
+ maxParticles {{int(sqrt(p_pframe*(lastFrame-firstFrame)))}}
+ addUserKnob {26 squared l ² -STARTLINE +INVISIBLE T " "}
+ addUserKnob {7 fuelAmmount l "Fuel Ammount" t "The ammount of fuel that the particle spawns with. As long as the particle have fuel the particle will get a fractal force applied on every frame. Fuel is being spend on each frame, you can define this in the Fuel Consumption knob"}
+ fuelAmmount 1
+ addUserKnob {7 fuelConsumption l "Fuel Consumption" t "The ammount of fuel being spend per frame. Once the particle is out of fuel, it will no longer apply the fractal force (gravity is however still applied)."}
+ fuelConsumption 0.02
+ addUserKnob {26 info_src l "<b><font color=#7DADF9>Source Settings</font><b>"}
+ addUserKnob {13 sourceCenter l "Source Center" t "The center of the spawner area."}
+ addUserKnob {13 sourceScale l "Source Scale" t "The scale of the spawner"}
+ sourceScale {0.5 0.5 0.5}
+ addUserKnob {7 sourceUniformScale l "Source Uniform Scale" R 0 2}
+ sourceUniformScale 1
+ addUserKnob {7 sourceEdgeWidth l "Source Edge Size" t "When the edge size is set to 0 the points will spawn on the edge of the spawning sphere. If you increase the edge size the particles will spawn in a range from the original edge to get the new edge size."}
+ addUserKnob {7 TransferVelocity l "Transfer Velocity" t "If the source center is animated, you can transfer the velocity from the Source's velocity into the newly spawned particles."}
+ TransferVelocity 1
+ addUserKnob {26 info_sim l "<b><font color=#7DADF9>Simulation Settings</font><b>"}
+ addUserKnob {13 initialVelocity l "Initial Velocity" t "The velocity of the particle once it's born."}
+ addUserKnob {13 forceDirection l "Force Direction" t "The direction of the fractal force that is being applied each frame."}
+ addUserKnob {13 gravity l Gravity t "General gravity"}
+ addUserKnob {7 Drag t "Help avoid particles fly forever with a bit of drag"}
+ Drag 0.075
+ addUserKnob {26 info_collision l "<b><font color=#7DADF9>Collision Settings</font><b>"}
+ addUserKnob {6 EnableFloor l "Enable Floor Collision" t "Will enable a collision floor (ground) where the particles will collide on. " +STARTLINE}
+ addUserKnob {7 floorHeight l "Floor Height" t "The height (Y axis) of the floor." R -1 1}
+ addUserKnob {7 floorDrag l "Floor Drag" t "When paticles hit the floor some extra drag can be applied to slow the particles down."}
+ floorDrag 0.35
+ addUserKnob {26 info_fractal l "<b><font color=#7DADF9>Fractal Settings</font><b>"}
+ addUserKnob {7 flowSpeed l "Flow Speed" t "The speed of the flow / animation of the fractal."}
+ flowSpeed 0.1
+ addUserKnob {7 fractalScale l Scale}
+ fractalScale 1
+ addUserKnob {7 amplitude l Amplitude t "The general amplitude of the fractal force"}
+ amplitude 0.02
+ addUserKnob {3 octaves l Octaves t "Noise Octaves"}
+ octaves 2
+ addUserKnob {7 gain l Gain t "Gain of the fractal force"}
+ gain 0.52
+ addUserKnob {7 lacunarity l Lacunarity t "lacunarity of the fractal force"}
+ lacunarity 0.96
+ addUserKnob {26 info_creative l "<b><font color=#7DADF9>Creative Settings</font><b>"}
+ addUserKnob {6 AmplitudeFromVelocities l "Amplitude from Velocity" t "The Fractal amplitude is multiplied by the particle velocity. As such the particles will not flow unless they have some velocity." +STARTLINE}
+ addUserKnob {7 AmplitudeFromVelocity l Magnitude t "When Amplitude from Velocity is enabled. This setting will let you define how much the Amplitude should be affeted by the velocity." R 0 20}
+ AmplitudeFromVelocity 20
+ addUserKnob {7 VelocityCap l "Velocity Cap" t "The maximum megnitude in units per frame that the amplitude should be multiplied by the velocity" -STARTLINE}
+ VelocityCap 1
+ addUserKnob {7 fractalVelocityOffset l "Fractal Velocity Offset" t "Offset the fractal sampling position by the velocity of the particle. A positive value will mean that the position sampled will be infront of the particle, and a negative will be behind.\nGood for creating magical swirls." R 0 5}
+}
+ Reformat {
+  inputs 0
+  type "to box"
+  box_width {{parent.maxParticles}}
+  box_height {{parent.maxParticles}}
+  box_fixed true
+  center false
+  black_outside true
+  name Reformat1
+  xpos 16
+  ypos -235
+ }
+ Crop {
+  box {0 0 {parent.Reformat1.box_width} {parent.Reformat1.box_height}}
+  crop false
+  name Crop1
+  xpos 16
+  ypos -211
+ }
+ Expression {
+  expr0 y==1?parent.sourceCenter.x(x+firstFrame)-parent.sourceCenter.x(x+firstFrame-1):r
+  expr1 y==1?parent.sourceCenter.y(x+firstFrame)-parent.sourceCenter.y(x+firstFrame-1):g
+  expr2 y==1?parent.sourceCenter.z(x+firstFrame)-parent.sourceCenter.z(x+firstFrame-1):b
+  name Expression4
+  xpos 16
+  ypos -187
+ }
+ Grade {
+  white {{parent.TransferVelocity}}
+  black_clamp false
+  name Grade1
+  xpos 16
+  ypos -163
+ }
+ Expression {
+  expr0 y==0?parent.sourceCenter.x(x+firstFrame):r
+  expr1 y==0?parent.sourceCenter.y(x+firstFrame):g
+  expr2 y==0?parent.sourceCenter.z(x+firstFrame):b
+  name Expression3
+  xpos 16
+  ypos -106
+ }
+ BlinkScript {
+  kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Generator/Particles_v10.cpp
+  recompileCount 130
+  ProgramGroup 1
+  KernelDescription "2 \"Noise4D\" iterate pixelWise fa66de6df5ff903c7e8a5a4000a587465bbc52c2242b6f5820d08e49e91631e6 2 \"src\" Read Random \"dst\" Write Point 46 \"whformat\" Float 2 AADwRAAAh0Q= \"startFrame\" Int 1 AAAAAA== \"time\" Float 1 AAAAAA== \"partcilesPerFrame\" Int 1 AAAAAA== \"particleLifeTime\" Int 1 AAAAAA== \"particleDrag\" Float 1 AAAAAA== \"particleDragRandom\" Float 1 AAAAAA== \"particleInitialVelovity\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"particleInitialVelovityRandom\" Float 1 zcxMPw== \"randomSeedDist\" Float 1 zcxMPw== \"spawnerSize\" Float 1 AAAAAA== \"absNoise\" Bool 1 AA== \"curveNoise\" Bool 1 AA== \"curveInvert\" Bool 1 AA== \"curveGain\" Float 1 AACAPw== \"curveOffset\" Float 1 AACAPw== \"Octaves\" Int 1 CgAAAA== \"Gain\" Float 1 AAAAPw== \"Lacunarity\" Float 1 AAAAQA== \"Gamma\" Float 1 AAAAPw== \"amplitude\" Float 1 AAAAPw== \"Offset\" Float 4 AAAAAAAAAAAAAAAAAAAAAA== \"Scale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"suboffset\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"topoffset\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"subscale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"topscale\" Float 4 AACAPwAAgD8AAIA/AACAPw== \"fuel_amount\" Float 1 AACAPw== \"fuel_consumption\" Float 1 zczMPQ== \"sourceScale\" Float 3 AACAPwAAgD8AAIA/AAAAAA== \"sourceScaleRange\" Float 1 AAAAAA== \"sourceCenter\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"forceDirection\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"forceRandomRange\" Float 1 AAAAAA== \"_flowspeed\" Float 1 AAAAAA== \"gravity\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"_velXflowMultiplier\" Float 1 AAAAAA== \"_velXflowCap\" Float 1 AAAAAA== \"_velXflowMultiply\" Bool 1 AQ== \"enableFloor\" Bool 1 AA== \"floorHeight\" Float 1 AAAAvw== \"floorDragMultiplier\" Float 1 AAAAAA== \"floorBounce\" Float 1 AAAAAA== \"grav_center\" Float 3 AAAAAJqZmb4AAAAAAAAAAA== \"sphericalGravity\" Bool 1 AA== \"noiseVelOffset\" Float 1 AAAAAA== 46 \"whformat\" 2 1 \"startFrame\" 1 1 \"time\" 1 1 \"partcilesPerFrame\" 1 1 \"particleLifeTime\" 1 1 \"particleDrag\" 1 1 \"particleDragRandom\" 1 1 \"particleInitialVelovity\" 3 1 \"particleInitialVelovityRandom\" 1 1 \"randomSeedDist\" 1 1 \"spawnerSize\" 1 1 \"absNoise\" 1 1 \"curveNoise\" 1 1 \"curveInvert\" 1 1 \"curveGain\" 1 1 \"curveOffset\" 1 1 \"octaves\" 1 1 \"gain\" 1 1 \"lacunarity\" 1 1 \"gamma\" 1 1 \"amplitude\" 1 1 \"offset\" 4 1 \"scale\" 4 1 \"suboffset\" 4 1 \"topoffset\" 4 1 \"subscale\" 4 1 \"topscale\" 4 1 \"_fuel_amount\" 1 1 \"_fuel_consumption\" 1 1 \"sourceScale\" 3 1 \"sourceScaleRange\" 1 1 \"sourceCenter\" 3 1 \"forceDirection\" 3 1 \"forceRandomRange\" 1 1 \"_flowspeed\" 1 1 \"gravity\" 3 1 \"_velXflowMultiplier\" 1 1 \"_velXflowCap\" 1 1 \"_velXflowMultiply\" 1 1 \"enableFloor\" 1 1 \"floorHeight\" 1 1 \"floorDragMultiplier\" 1 1 \"floorBounce\" 1 1 \"grav_center\" 3 1 \"sphericalGravity\" 1 1 \"noiseVelOffset\" 1 1 0"
+  kernelSource "inline float Frac(float a_X)\n\{\n    return a_X-floor(a_X);\n\}\n\n//New noise algorithm\nfloat hash( float n ) \{ return Frac(sin(n)*753.5453123f); \}\n\n\n//Noise Only Code\ninline float cheap_noise( float x ,float y, float z )\n\{\n    float3 p = floor(float3(x,y,z));\n    float3 f = float3(Frac(x),Frac(y),Frac(z));\n    f = f*f*(3.0f-2.0f*f);\n    \n    float n = p.x + p.y*157.0f + 113.0f*p.z;\n    return _fc_lerp(_fc_lerp(_fc_lerp( hash(n+  0.0f), hash(n+  1.0f),f.x),\n                   _fc_lerp( hash(n+157.0f), hash(n+158.0f),f.x),f.y),\n               _fc_lerp(_fc_lerp( hash(n+113.0f), hash(n+114.0f),f.x),\n                   _fc_lerp( hash(n+270.0f), hash(n+271.0f),f.x),f.y),f.z);\n\}\n\n\n\nint fastfloor( const float x ) \{ return x > 0 ? (int) x : (int) x - 1; \}\ninline float raw_noise_4d( const float x, const float y, const float z, const float w ) \n\{\nint simplex\[64]\[4] = \{\n    \{0,1,2,3\},\{0,1,3,2\},\{0,0,0,0\},\{0,2,3,1\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{1,2,3,0\},\n    \{0,2,1,3\},\{0,0,0,0\},\{0,3,1,2\},\{0,3,2,1\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{1,3,2,0\},\n    \{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\n    \{1,2,0,3\},\{0,0,0,0\},\{1,3,0,2\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{2,3,0,1\},\{2,3,1,0\},\n    \{1,0,2,3\},\{1,0,3,2\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{2,0,3,1\},\{0,0,0,0\},\{2,1,3,0\},\n    \{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\n    \{2,0,1,3\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{3,0,1,2\},\{3,0,2,1\},\{0,0,0,0\},\{3,1,2,0\},\n    \{2,1,0,3\},\{0,0,0,0\},\{0,0,0,0\},\{0,0,0,0\},\{3,1,0,2\},\{0,0,0,0\},\{3,2,0,1\},\{3,2,1,0\}\n\};\n    int perm\[512] = \{\n        151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,\n        8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,\n        35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,\n        134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,\n        55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208, 89,\n        18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,\n        250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,\n        189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,\n        172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,\n        228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,\n        107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,\n        138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180,\n\n        151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,\n        8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,\n        35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,\n        134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,\n        55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208, 89,\n        18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,\n        250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,\n        189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,\n        172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,\n        228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,\n        107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,\n        138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180\n    \};\n   int grad4\[32]\[4]= \{\n    \{0,1,1,1\},  \{0,1,1,-1\},  \{0,1,-1,1\},  \{0,1,-1,-1\},\n    \{0,-1,1,1\}, \{0,-1,1,-1\}, \{0,-1,-1,1\}, \{0,-1,-1,-1\},\n    \{1,0,1,1\},  \{1,0,1,-1\},  \{1,0,-1,1\},  \{1,0,-1,-1\},\n    \{-1,0,1,1\}, \{-1,0,1,-1\}, \{-1,0,-1,1\}, \{-1,0,-1,-1\},\n    \{1,1,0,1\},  \{1,1,0,-1\},  \{1,-1,0,1\},  \{1,-1,0,-1\},\n    \{-1,1,0,1\}, \{-1,1,0,-1\}, \{-1,-1,0,1\}, \{-1,-1,0,-1\},\n    \{1,1,1,0\},  \{1,1,-1,0\},  \{1,-1,1,0\},  \{1,-1,-1,0\},\n    \{-1,1,1,0\}, \{-1,1,-1,0\}, \{-1,-1,1,0\}, \{-1,-1,-1,0\}\n   \};\n    float F4 = (sqrt(5.0f)-1.0f)/4.0f;\n    float G4 = (5.0f-sqrt(5.0f))/20.0f;\n    float n0, n1, n2, n3, n4;\n    float s = (x + y + z + w) * F4;\n    int i = fastfloor(x + s);\n    int j = fastfloor(y + s);\n    int k = fastfloor(z + s);\n    int l = fastfloor(w + s);\n    float t = (i + j + k + l) * G4;\n    float X0 = i - t;\n    float Y0 = j - t;\n    float Z0 = k - t;\n    float W0 = l - t;\n\n    float x0 = x - X0;\n    float y0 = y - Y0;\n    float z0 = z - Z0;\n    float w0 = w - W0;\n    int c1 = (x0 > y0) ? 32 : 0;\n    int c2 = (x0 > z0) ? 16 : 0;\n    int c3 = (y0 > z0) ? 8 : 0;\n    int c4 = (x0 > w0) ? 4 : 0;\n    int c5 = (y0 > w0) ? 2 : 0;\n    int c6 = (z0 > w0) ? 1 : 0;\n    int c = c1 + c2 + c3 + c4 + c5 + c6;\n\n    int i1, j1, k1, l1;\n    int i2, j2, k2, l2;\n    int i3, j3, k3, l3;\n    i1 = simplex\[c]\[0]>=3 ? 1 : 0;\n    j1 = simplex\[c]\[1]>=3 ? 1 : 0;\n    k1 = simplex\[c]\[2]>=3 ? 1 : 0;\n    l1 = simplex\[c]\[3]>=3 ? 1 : 0;\n    i2 = simplex\[c]\[0]>=2 ? 1 : 0;\n    j2 = simplex\[c]\[1]>=2 ? 1 : 0;\n    k2 = simplex\[c]\[2]>=2 ? 1 : 0;\n    l2 = simplex\[c]\[3]>=2 ? 1 : 0;\n    i3 = simplex\[c]\[0]>=1 ? 1 : 0;\n    j3 = simplex\[c]\[1]>=1 ? 1 : 0;\n    k3 = simplex\[c]\[2]>=1 ? 1 : 0;\n    l3 = simplex\[c]\[3]>=1 ? 1 : 0;\n    float x1 = x0 - i1 + G4;\n    float y1 = y0 - j1 + G4;\n    float z1 = z0 - k1 + G4;\n    float w1 = w0 - l1 + G4;\n    float x2 = x0 - i2 + 2.0*G4;\n    float y2 = y0 - j2 + 2.0*G4;\n    float z2 = z0 - k2 + 2.0*G4;\n    float w2 = w0 - l2 + 2.0*G4;\n    float x3 = x0 - i3 + 3.0*G4;\n    float y3 = y0 - j3 + 3.0*G4;\n    float z3 = z0 - k3 + 3.0*G4;\n    float w3 = w0 - l3 + 3.0*G4;\n    float x4 = x0 - 1.0 + 4.0*G4;\n    float y4 = y0 - 1.0 + 4.0*G4;\n    float z4 = z0 - 1.0 + 4.0*G4;\n    float w4 = w0 - 1.0 + 4.0*G4;\n    int ii = i & 255;\n    int jj = j & 255;\n    int kk = k & 255;\n    int ll = l & 255;\n    int gi0 = perm\[ii+perm\[jj+perm\[kk+perm\[ll]]]] % 32;\n    int gi1 = perm\[ii+i1+perm\[jj+j1+perm\[kk+k1+perm\[ll+l1]]]] % 32;\n    int gi2 = perm\[ii+i2+perm\[jj+j2+perm\[kk+k2+perm\[ll+l2]]]] % 32;\n    int gi3 = perm\[ii+i3+perm\[jj+j3+perm\[kk+k3+perm\[ll+l3]]]] % 32;\n    int gi4 = perm\[ii+1+perm\[jj+1+perm\[kk+1+perm\[ll+1]]]] % 32;\n    float t0 = 0.6 - x0*x0 - y0*y0 - z0*z0 - w0*w0;\n    if(t0<0) n0 = 0.0;\n    else \{\n        t0 *= t0;\n        n0 = t0 * t0 * dot(float4(grad4\[gi0]\[0],grad4\[gi0]\[2],grad4\[gi0]\[3],grad4\[gi0]\[3]), float4(x0, y0, z0, w0));\n    \}\n    float t1 = 0.6 - x1*x1 - y1*y1 - z1*z1 - w1*w1;\n    if(t1<0) n1 = 0.0;\n    else \{\n        t1 *= t1;\n        n1 = t1 * t1 * dot(float4(grad4\[gi1]\[0],grad4\[gi1]\[2],grad4\[gi1]\[3],grad4\[gi1]\[3]), float4(x1, y1, z1, w1));\n    \}\n    float t2 = 0.6 - x2*x2 - y2*y2 - z2*z2 - w2*w2;\n    if(t2<0) n2 = 0.0;\n    else \{\n        t2 *= t2;\n        n2 = t2 * t2 * dot(float4(grad4\[gi2]\[0],grad4\[gi2]\[2],grad4\[gi2]\[3],grad4\[gi2]\[3]), float4(x2, y2, z2, w2));\n    \}\n    float t3 = 0.6 - x3*x3 - y3*y3 - z3*z3 - w3*w3;\n    if(t3<0) n3 = 0.0;\n    else \{\n        t3 *= t3;\n        n3 = t3 * t3 * dot(float4(grad4\[gi3]\[0],grad4\[gi3]\[2],grad4\[gi3]\[3],grad4\[gi3]\[3]), float4(x3, y3, z3, w3));\n    \}\n    float t4 = 0.6 - x4*x4 - y4*y4 - z4*z4 - w4*w4;\n    if(t4<0) n4 = 0.0;\n    else \{\n        t4 *= t4;\n        n4 = t4 * t4 * dot(float4(grad4\[gi4]\[0],grad4\[gi4]\[2],grad4\[gi4]\[3],grad4\[gi4]\[3]), float4(x4, y4, z4, w4));\n    \}\n    return 27.0 * (n0 + n1 + n2 + n3 + n4);\n\}\n\n\n\n\nkernel Noise4D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> src;\n  Image<eWrite, eAccessPoint> dst;\nparam:\n    float2 whformat;\n    int startFrame;\n    float time; //Frame, but with subframe acturacy.\n    int partcilesPerFrame;\n    int particleLifeTime;\n    float particleDrag;\n    float particleDragRandom;\n    float3 particleInitialVelovity;\n    float particleInitialVelovityRandom;\n    float randomSeedDist;\n    float spawnerSize;\n    bool absNoise;\n    bool curveNoise;\n    bool curveInvert;\n    float curveGain;\n    float curveOffset;\n    int octaves;\n    float gain;\n    float lacunarity;\n    float gamma;\n    float amplitude;\n    float4 offset;\n    float4 scale;\n    float4 suboffset;\n    float4 topoffset;\n    float4 subscale;\n    float4 topscale;\n    float _fuel_amount,_fuel_consumption;\n    float3 sourceScale;\n    float sourceScaleRange;\n    float3 sourceCenter;\n    float3 forceDirection;\n    float forceRandomRange; //Add a bit of randomization to how force is being applied to each particle\n    float _flowspeed; //The speed at which the fractal \"flows\" / \"animates\"\n    float3 gravity;\n    float _velXflowMultiplier; //How much should the flow be multiplied by the velocity\n    float _velXflowCap; //Maximum cap on the velocity affecting the flow\n    bool _velXflowMultiply; //Should it be added or multiplied\n    bool enableFloor;\n    float floorHeight,floorDragMultiplier,floorBounce;\n    float3 grav_center;\n    bool sphericalGravity;\n    float noiseVelOffset;\n\n  void define() \{\n        defineParam (whformat, \"whformat\", float2(1920,1080));  \n        defineParam (absNoise, \"absNoise\", false);    \n        defineParam (curveNoise, \"curveNoise\", false);    \n        defineParam (curveInvert, \"curveInvert\", false);   \n        defineParam (curveGain, \"curveGain\", 1.0f);\n        defineParam (curveOffset, \"curveOffset\", 1.0f);\n        defineParam (octaves, \"Octaves\", 10);\n        defineParam (gain, \"Gain\", 0.5f);\n        defineParam (lacunarity, \"Lacunarity\", 2.0f);\n        defineParam (gamma, \"Gamma\", 0.5f);\n        defineParam (amplitude, \"amplitude\", 0.5f);\n        defineParam(offset, \"Offset\", float4(0.0f, 0.0f, 0.0f,0.0f));\n        defineParam(scale, \"Scale\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(suboffset, \"suboffset\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(topoffset, \"topoffset\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(subscale, \"subscale\", float4(1.0f, 1.0f, 1.0f,1.0f));\n        defineParam(topscale, \"topscale\", float4(1.0f, 1.0f, 1.0f,1.0f));    \n        defineParam(particleInitialVelovity, \"particleInitialVelovity\", float3(0.0f, 0.0f, 0.0f));\n        defineParam(particleInitialVelovityRandom, \"particleInitialVelovityRandom\", 0.8f);\n        defineParam(randomSeedDist, \"randomSeedDist\", 0.8f); \n\n        defineParam (_fuel_amount, \"fuel_amount\", 1.0f);     \n        defineParam (_fuel_consumption, \"fuel_consumption\", 0.1f);   \n\n        defineParam (sourceScale, \"sourceScale\", float3(1.0f)); \n        defineParam (sourceScaleRange, \"sourceScaleRange\", 0.0f);  \n        defineParam (sourceCenter, \"sourceCenter\", float3(0.0f,0.0f,0.0f));  \n\n        defineParam (forceDirection, \"forceDirection\", float3(0.0f,0.0f,0.0f));  \n        defineParam (forceRandomRange, \"forceRandomRange\", 0.0f);  \n        defineParam (_flowspeed, \"_flowspeed\", 0.0f);  \n        defineParam (gravity, \"gravity\", float3(0.0f,0.0f,0.0f));  \n        defineParam (_velXflowMultiplier, \"_velXflowMultiplier\", 0.0f);  \n        defineParam (_velXflowCap, \"_velXflowCap\", 0.0f);  \n        defineParam (_velXflowMultiply, \"_velXflowMultiply\", true);  \n\n        defineParam (enableFloor, \"enableFloor\", false);\n        defineParam (floorHeight, \"floorHeight\", -0.5f);   \n        defineParam (floorDragMultiplier, \"floorDragMultiplier\", 0.0f);   \n        defineParam (floorBounce, \"floorBounce\", 0.0f); \n        defineParam (grav_center, \"grav_center\", float3(0.0f, -0.3f, 0.0f));         \n        defineParam (sphericalGravity, \"sphericalGravity\", false); \n        defineParam (noiseVelOffset, \"noiseVelOffset\", 0.0f); \n\n  \}\n\nfloat octave_noise_4d( const float octaves, const float persistence, const float scale, const float x, const float y, const float z, const float w ) \n\{\n    float total = 0.0f;\n    float current;\n    float last = 1.0f;\n    float frequency = scale;\n    float amplitude = 1.0f;\n    float maxAmplitude = 0.0f;\n    float4 Tempoffset;\n    float4 Tempscale;\n    for( int i=0; i < octaves; i++ ) \{\n        /*\n        if (i == 0) \{\n            total += (float)raw_noise_4d( (x+suboffset.x) * frequency, (y+suboffset.y) * frequency, (z+suboffset.z) * frequency, (w+suboffset.w) * frequency ) * amplitude;\n        \}\n        else if (i == octaves-1) \{\n            total += (float)raw_noise_4d( (x+topoffset.x) * frequency, (y+topoffset.y) * frequency, (z+topoffset.z) * frequency, (w+topoffset.w) * frequency ) * amplitude;\n        \}\n        else \{\n            total += (float)raw_noise_4d( x * frequency, y * frequency, z * frequency, w * frequency ) * amplitude;\n        \}\n        */\n        Tempscale = (topscale * (i/(octaves-1.0f)))+(subscale * (1-(i/(octaves-1.0f))));       \n        Tempoffset = (topoffset * (i/(octaves-1.0f)))+(suboffset * (1-(i/(octaves-1.0f))));\n        current = (float)raw_noise_4d(   ((x*Tempscale.x)+Tempoffset.x) * frequency, \n                                        ((y*Tempscale.y)+Tempoffset.y) * frequency, \n                                        ((z*Tempscale.z)+Tempoffset.z) * frequency, \n                                        ((w*Tempscale.w)+Tempoffset.w) * frequency \n                                        ) * amplitude;\n        if (i == 0 && curveNoise)\{\n            if (curveInvert)\{\n                last = 0.5f-current;  \n            \}\n            else\{\n                last = current;  \n            \}  \n        \}\n        current = curveNoise?current*((last+curveOffset)*curveGain):current;\n        total += absNoise?fabs(current):current;\n        frequency *= 2.0f;\n        maxAmplitude += amplitude;\n        amplitude *= persistence;\n    \}\n    return float(total / maxAmplitude);\n\}\n\n \n\n\nfloat3 NoiseSample(float3 pos, float mod)\{\n    float sampleR = (float)octave_noise_4d(float(octaves), gain, lacunarity, ( pos.x * scale.x ) + offset.x, ( pos.y * scale.y ) + offset.y,  ( pos.z * scale.z ) + offset.z, ( mod * scale.w ) + offset.w) * amplitude;\n    float sampleG = (float)octave_noise_4d(float(octaves), gain, lacunarity, ( pos.x * scale.x ) + offset.x, ( pos.y * scale.y ) + offset.y,  ( pos.z  * scale.z ) + offset.z, ( mod * scale.w ) + offset.w + 10000.0f) * amplitude;\n    float sampleB = (float)octave_noise_4d(float(octaves), gain, lacunarity, ( pos.x * scale.x ) + offset.x, ( pos.y * scale.y ) + offset.y,  ( pos.z  * scale.z ) + offset.z, ( mod * scale.w ) + offset.w + 20000.0f) * amplitude;\n    return float3(sampleR,sampleG,sampleB);\n\}\n\nfloat3 RandomSample(float3 pos, float mod)\{\n    float sampleR = sin(cheap_noise(pos.x*randomSeedDist,pos.y*randomSeedDist,(mod*randomSeedDist))*100.0f);\n    float sampleG = cos(cheap_noise(pos.x*randomSeedDist,pos.y*randomSeedDist,(mod*randomSeedDist)+1000.0f)*100.0f);\n    float sampleB = sin(cheap_noise(pos.x*randomSeedDist,pos.y*randomSeedDist,(mod*randomSeedDist)+2000.0f)*100.0f);\n    return float3(sampleR,sampleG,sampleB);\n\}\n\n\nvoid applyForce( float3 &p_position, float3 &p_velocity, const float3 _force, const float spawntime, const float deltatime) \{\n\n    float3 l_gravity;\n    if (sphericalGravity)\{ //For spherical gravity we apply a gravity towards the grav center\n        l_gravity = (grav_center-p_position)*gravity.x;\n    \}\n    else\{\n        l_gravity = gravity;\n    \}\n\n    p_velocity += _force*spawntime;\n    p_velocity += l_gravity;\n    p_velocity *= (1.0f-(particleDrag));\n\n\n    if (enableFloor)\{ //If we have a ground floor, make sure that the points don't go below\n\n        if (sphericalGravity)\{\n            if (length((p_position + (p_velocity)) - grav_center) <=floorHeight)\{\n                p_velocity = p_velocity*(1.0f-(floorDragMultiplier));\n                p_velocity += float3(0.0f,-p_velocity.y,0.0f)*floorBounce;     \n                p_position += (p_velocity);\n                p_position = (normalize(p_position-grav_center)*floorHeight)+grav_center;\n            \}\n            else \{\n                p_position += (p_velocity);\n            \}\n        \}\n        else \{\n            if (p_position.y + p_velocity.y<=floorHeight)\{\n                p_velocity = p_velocity*(1.0f-(floorDragMultiplier));\n                p_velocity += float3(0.0f,-p_velocity.y,0.0f)*floorBounce;\n            \}\n            p_position += (p_velocity);\n            p_position.y = max(p_position.y,floorHeight);\n        \}\n    \}\n    else \{\n        p_position += (p_velocity);    \n    \}\n    \n\}\n\n\n\nvoid process(int2 pos) \{    \n    float2 fpos = float2(pos.x,pos.y); //---> Convert position to float.\n\n    //Temp Variables\n    float4 t_pos;\n    float4 t_posNex;\n    float4 t_posCur;\n    float4 t_vel;\n    float3 t_noise;\n    float _deltatime        = 1.0f;\n    float entryCount;\n\n    float fuel_amount = _fuel_amount;\n    float fuel_consumption = _fuel_consumption;\n\n\n    float xsample;\n\n    //Variable initialization\n    float randomSeed        = cheap_noise(fpos.x,fpos.y,fpos.x-fpos.y);\n    float3 internal_seed    = RandomSample(float3(fpos.x,fpos.y,fpos.x+(fpos.x*fpos.y)), randomSeed);\n\n    //ParticleSettings\n    float   P_age           = 0;\n    bool    p_alive         = false;\n    float3  p_lastPosition;\n    const float p_index       = pos.x+(whformat.x*pos.y); //Index of the particle\n    float p_spawntime;\n    //Here we define the initial position of the object (sort of the shape of the source emitter)\n    //You can modify this to make a custom source shape.\n    float3 _sourceCenter = sourceCenter;\n    float3 _particleInitialVelovity = particleInitialVelovity;\n\n    //new in 1.2:\n    bool useMap = true;\n    bool flowFromVelocity = true;\n    if (useMap)\{\n        float spawnedTime = min(float(p_index/partcilesPerFrame),400.0f);\n        float nonvaliue = 0.0f;\n        float4 srcSample = bilinear(src,spawnedTime,nonvaliue);\n        _sourceCenter=float3(srcSample.x,srcSample.y,srcSample.z);\n        nonvaliue = 1.0f;\n        srcSample = bilinear(src,spawnedTime,nonvaliue);\n        _particleInitialVelovity+=float3(srcSample.x,srcSample.y,srcSample.z);\n    \}\n\n    float3  p_position      = ((normalize(internal_seed)*sourceScale)*(1+(randomSeed*sourceScaleRange)))+_sourceCenter;//float3(0.0f);\n    float3  p_velocity      = _particleInitialVelovity+(_particleInitialVelovity*fabs(internal_seed.x)*particleInitialVelovityRandom);\n\n\n    //External Settings\n    float3 _force;\n\n    //Global Settings\n    float p_count             = 0.0f; //---> Keep track on the current number of particles  \n    int P_spawn_rate        = partcilesPerFrame;//int(data(0,D_SPAWNRATE,0));\n\n    //dst() = float4(0.0f); //Initialize to black (to avoid random garbage)\n    dst() = float4(p_position.x,p_position.y,p_position.z,0.0f);\n\n\n    //First we need to check if the particle is alive, so we don't do any unnesesary computation.\n    for( int x = startFrame; x <= int(time)+1 ; x++)\{\n        _deltatime = min(1.0f,(time)-float(x));\n        p_count=(P_spawn_rate*time);\n        if (p_index <= p_count )\{\n            p_alive=true;\n        \}\n    \}\n\n    //If the partilce is alive we can start solving...\n    if (p_alive)\{\n        float x_count = (p_count-p_index)/P_spawn_rate; //The \"count or index\" of the particle\n        float x_spawnTime = float(p_index/P_spawn_rate); //The frame that the particle was spawned at (including subframe)\n        for( int x = startFrame; x <= int(x_count) ; x++)\{\n            //_force = NoiseSample(float3(p_position.x+(-(x+x_spawnTime)/10.0f),p_position.y,p_position.z), internal_seed.x);\n            _force = NoiseSample(float3(p_position.x,p_position.y,p_position.z)+(p_velocity*noiseVelOffset), internal_seed.x+(_flowspeed*((x+x_spawnTime))));\n            _force = _force+(length(_force)*forceDirection);\n            _force = _force* (1-(internal_seed.y*forceRandomRange));\n            //Fuel_consumption\n            _force *= min(1.0f,fuel_amount);//The system will not multiply with more than one.\n            fuel_amount = max(0.0f,fuel_amount-fuel_consumption); //Reduce\n\n            if (_velXflowMultiply)\{\n              _force *= min(_velXflowCap,length(p_velocity)) * _velXflowMultiplier;  \n            \}\n            else\{\n              _force += min(_velXflowCap,length(p_velocity)) * _velXflowMultiplier;                  \n            \}\n            applyForce(p_position,p_velocity,_force,1.0f,_deltatime);    \n        \}\n\n        //p_lastPosition = p_position;\n        _force = NoiseSample(float3(p_position.x,p_position.y,p_position.z), internal_seed.x);\n        p_lastPosition = p_position;\n        applyForce(p_position,p_velocity,_force,1.0f,1.0f);         \n        p_position = _fc_lerp(p_lastPosition,p_position,(x_count-floor(x_count)));\n        dst() = float4(p_position.x,p_position.y,p_position.z,x_spawnTime+1.0f);\n    \}\n    \}\n\};\n"
+  useGPUIfAvailable {{parent.useGPU}}
+  rebuild ""
+  Noise4D_whformat {{parent.maxParticles} {parent.maxParticles}}
+  Noise4D_time {{(frame-parent.firstFrame)*parent.speed}}
+  Noise4D_partcilesPerFrame {{parent.p_pframe}}
+  Noise4D_particleLifeTime 12
+  Noise4D_particleDrag {{parent.Drag}}
+  Noise4D_particleInitialVelovity {{parent.initialVelocity} {parent.initialVelocity} {parent.initialVelocity}}
+  Noise4D_particleInitialVelovityRandom 0
+  Noise4D_randomSeedDist 1
+  Noise4D_spawnerSize 1
+  Noise4D_curveOffset 1.005
+  Noise4D_Octaves {{parent.octaves}}
+  Noise4D_Gain {{parent.gain}}
+  Noise4D_Lacunarity {{parent.lacunarity}}
+  Noise4D_Gamma 0
+  Noise4D_amplitude {{parent.amplitude}}
+  Noise4D_Scale {{parent.fractalScale}}
+  Noise4D_suboffset {0.5 1 1 0.9}
+  Noise4D_fuel_amount {{parent.fuelAmmount}}
+  Noise4D_fuel_consumption {{parent.fuelConsumption}}
+  Noise4D_sourceScale {{parent.sourceScale*parent.sourceUniformScale} {parent.sourceScale*parent.sourceUniformScale} {parent.sourceScale*parent.sourceUniformScale}}
+  Noise4D_sourceScaleRange {{parent.sourceEdgeWidth}}
+  Noise4D_sourceCenter {{parent.sourceCenter} {parent.sourceCenter} {parent.sourceCenter}}
+  Noise4D_forceDirection {{parent.forceDirection} {parent.forceDirection} {parent.forceDirection}}
+  Noise4D__flowspeed {{parent.flowSpeed}}
+  Noise4D_gravity {{parent.gravity} {parent.gravity} {parent.gravity}}
+  Noise4D__velXflowMultiplier {{AmplitudeFromVelocity*AmplitudeFromVelocities}}
+  Noise4D__velXflowCap {{VelocityCap}}
+  Noise4D__velXflowMultiply {{AmplitudeFromVelocities}}
+  Noise4D_enableFloor {{parent.EnableFloor}}
+  Noise4D_floorHeight {{parent.floorHeight}}
+  Noise4D_floorDragMultiplier {{parent.floorDrag}}
+  Noise4D_grav_center {0 -0.3000000119 0}
+  Noise4D_noiseVelOffset {{parent.fractalVelocityOffset}}
+  rebuild_finalise ""
+  name BlinkScript3
+  selected true
+  xpos 16
+  ypos -57
+ }
+set Ne471d000 [stack 0]
+ Expression {
+  expr3 frame-a
+  name Expression1
+  xpos 136
+  ypos -4
+ }
+add_layer {id id.r}
+ Shuffle {
+  red alpha
+  out id
+  name Shuffle1
+  xpos 136
+  ypos 20
+ }
+push $Ne471d000
+ Expression {
+  expr3 a>0?1:0
+  name Expression2
+  xpos 16
+  ypos 21
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  red white
+  green white
+  blue white
+  alpha white
+  black red
+  white green
+  red2 blue
+  green2 alpha
+  out2 pos
+  name Shuffle3
+  xpos 16
+  ypos 45
+ }
+ Merge2 {
+  inputs 2
+  operation copy
+  Achannels id
+  Bchannels id
+  output id
+  name Merge1
+  xpos 16
+  ypos 69
+ }
+ Output {
+  name Output1
+  xpos 16
+  ypos 147
+ }
+end_group

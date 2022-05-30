@@ -1,0 +1,197 @@
+Group {
+ inputs 0
+ name Point_Cylinder
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 version l "" +STARTLINE T "Cylinder Generator v1.1\n"}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {3 npointsX l "Numper of Points x"}
+ npointsX 200
+ addUserKnob {3 npointsY l y -STARTLINE}
+ npointsY 200
+ addUserKnob {7 Radius R 0 10}
+ Radius 0.4
+ addUserKnob {7 Height R 0 10}
+ Height 0.2
+ addUserKnob {26 divider_transform l "<b><font color=#7DADF9>Transform</font><b>"}
+ addUserKnob {4 Orientation M {XZ XY YZ}}
+ addUserKnob {41 translate l Translate T Axis1.translate}
+ addUserKnob {41 rotate l Rotate T Axis1.rotate}
+ addUserKnob {41 scaling l Scale T Axis1.scaling}
+ addUserKnob {41 uniform_scale l "Uniform scale" T Axis1.uniform_scale}
+ addUserKnob {26 devider_Tweak l "<b><font color=#7DADF9>Tweak</font><b>"}
+ addUserKnob {7 RadialCompletion l "Radial Completion"}
+ RadialCompletion 1
+ addUserKnob {7 OffsetX l "Offset X" R -1 1}
+ addUserKnob {7 OffsetY l "Offset Y" R -1 1}
+ addUserKnob {7 OffsetZ l "Offset Z" R -1 1}
+ addUserKnob {26 DeviderCreative l "<b><font color=#7DADF9>Creative</font><b>"}
+ addUserKnob {7 RollIn l "Roll In" R -10 10}
+ addUserKnob {14 funnel l Funnel R 0 100}
+ funnel 1
+ addUserKnob {12 Skew}
+}
+ Reformat {
+  inputs 0
+  type "to box"
+  format "256 256 0 0 256 256 1 square_256"
+  box_width {{parent.npointsX}}
+  box_height {{parent.npointsY}}
+  box_fixed true
+  name Reformat7
+  xpos 509
+  ypos -353
+ }
+ Expression {
+  expr0 ((x/width-.5)*2)*pi
+  expr1 ((y/height-.5)*2)*pi
+  expr2 0
+  expr3 1
+  name Expression4
+  xpos 509
+  ypos -310
+ }
+ Expression {
+  temp_name0 ofsA
+  temp_expr0 ga
+  temp_name1 ofsB
+  temp_expr1 gb
+  temp_name2 ofsC
+  temp_expr2 gc
+  temp_name3 ofsD
+  temp_expr3 gf
+  expr0 ((sin((r*re)*pi)+(r*ra)+(g*rb))*((1*rc)+(g*(1-rc))))*(1-min(1,abs(bd))+sin(r*bd))*ofsD
+  expr1 ((g*ofsA)+((r*re)*ofsB))*((1*ofsC)+(r*(1-ofsC)))
+  expr2 ((cos((r*re)*pi)+(r*ba)+(g*bb))*((1*bc)+(g*(1-bc))))*(1-min(1,abs(bd))+sin(r*bd))*ofsD
+  name Expression26
+  xpos 509
+  ypos -221
+  addUserKnob {20 User}
+  addUserKnob {7 ra}
+  ra {{parent.OffsetX}}
+  addUserKnob {7 rb}
+  rb {{parent.Skew.x}}
+  addUserKnob {7 rc}
+  rc {{parent.funnel.h}}
+  addUserKnob {7 rd}
+  rd 1
+  addUserKnob {7 ga}
+  ga {{parent.Height}}
+  addUserKnob {7 gb}
+  gb {{parent.OffsetY}}
+  addUserKnob {7 gc}
+  gc 1
+  addUserKnob {7 ba}
+  ba {{parent.OffsetZ}}
+  addUserKnob {7 bb}
+  bb {{parent.Skew.y}}
+  addUserKnob {7 bc}
+  bc {{parent.funnel.w}}
+  addUserKnob {7 bd}
+  bd {{parent.RollIn}}
+  addUserKnob {7 re}
+  re {{parent.RadialCompletion*0.3183051}}
+  addUserKnob {7 gf}
+  gf {{parent.Radius}}
+ }
+ Grade {
+  add {0 0 0 0}
+  add_panelDropped true
+  black_clamp false
+  name Grade11
+  xpos 509
+  ypos -185
+ }
+set N6175c800 [stack 0]
+ Shuffle {
+  red blue
+  green red
+  blue green
+  name Shuffle1
+  xpos 615
+  ypos -87
+ }
+push $N6175c800
+ Shuffle {
+  red green
+  green blue
+  blue red
+  name Shuffle5
+  xpos 392
+  ypos -109
+ }
+push $N6175c800
+ Switch {
+  inputs 3
+  which {{parent.Orientation}}
+  name Switch1
+  xpos 509
+  ypos -25
+ }
+ ColorMatrix {
+  matrix {
+      {{parent.Axis1.world_matrix.0} {parent.Axis1.world_matrix.1} {parent.Axis1.world_matrix.2}}
+      {{parent.Axis1.world_matrix.4} {parent.Axis1.world_matrix.5} {parent.Axis1.world_matrix.6}}
+      {{parent.Axis1.world_matrix.8} {parent.Axis1.world_matrix.9} {parent.Axis1.world_matrix.10}}
+    }
+  name ColorMatrix1
+  xpos 509
+  ypos 31
+ }
+ Grade {
+  add {{parent.Axis1.translate.x} {parent.Axis1.translate.y} {parent.Axis1.translate.z} 0}
+  add_panelDropped true
+  black_clamp false
+  name Grade1
+  xpos 509
+  ypos 59
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  black white
+  white white
+  red2 white
+  green2 white
+  out pos
+  out2 rgba
+  name Shuffle7
+  xpos 509
+  ypos 121
+ }
+ ModifyMetaData {
+  metadata {
+   {set pointrender/n_points "\[expr \[value parent.npointsX]*\[value parent.npointsY]]"}
+   {set pointrender/gen_type 4}
+  }
+  name SetMetaData
+  xpos 509
+  ypos 142
+ }
+ Grade {
+  white {{1/((parent.npointsX*parent.npointsY)/40000)}}
+  black_clamp false
+  name Grade9
+  xpos 509
+  ypos 192
+ }
+ Crop {
+  box {0 0 {parent.npointsX} {parent.npointsY}}
+  crop false
+  name Crop1
+  xpos 509
+  ypos 231
+ }
+ Output {
+  name Output1
+  xpos 509
+  ypos 306
+ }
+ Axis2 {
+  inputs 0
+  name Axis1
+  selected true
+  xpos 671
+  ypos 12
+ }
+end_group

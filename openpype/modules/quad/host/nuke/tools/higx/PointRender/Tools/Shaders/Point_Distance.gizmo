@@ -1,0 +1,88 @@
+Group {
+ name Point_Distance
+ tile_color 0x434343ff
+ note_font_color 0x7DADF9FF
+ selected true
+ addUserKnob {20 User}
+ addUserKnob {26 Info l "" +STARTLINE T "Point Distance v1.0\n\nDistance from the point set in \"position\" to the point position. \nThis is usefull for creating radial masks etc."}
+ addUserKnob {26 Devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {13 Position}
+ addUserKnob {7 Offset R -1 1}
+ addUserKnob {6 Absolute l Asbolute +STARTLINE}
+ addUserKnob {4 Method M {Normal "Compressed (0-1)"}}
+ addUserKnob {26 devider_noise l INVISIBLE +INVISIBLE}
+ addUserKnob {6 EnableFractalEdge l INVISIBLE +INVISIBLE +STARTLINE}
+ addUserKnob {7 EvolveFractal l INVISIBLE +INVISIBLE R 0 3}
+ EvolveFractal 0.12
+ addUserKnob {7 FractalDensity l INVISIBLE +INVISIBLE R 0 20}
+ FractalDensity 4.35
+ addUserKnob {7 FractalSize l INVISIBLE +INVISIBLE}
+ FractalSize 0.128
+}
+ Input {
+  inputs 0
+  name Input1
+  xpos -55
+  ypos -389
+ }
+ Expression {
+  temp_name0 xd
+  temp_expr0 pos.red-_position.x
+  temp_name1 yd
+  temp_expr1 pos.green-_position.y
+  temp_name2 zd
+  temp_expr2 pos.blue-_position.z
+  temp_name3 _distance
+  temp_expr3 "sqrt(xd*xd + yd*yd + zd*zd)"
+  expr0 absolute?abs(_distance+Offset):max(0,_distance+Offset)
+  name Expression2
+  xpos -55
+  ypos -302
+  addUserKnob {20 User}
+  addUserKnob {13 _position l Position}
+  _position {{parent.Position} {parent.Position} {parent.Position}}
+  addUserKnob {7 Offset R -10 10}
+  Offset {{parent.Offset}}
+  addUserKnob {6 absolute +STARTLINE}
+  absolute {{parent.Absolute}}
+ }
+ Expression {
+  expr0 1-(1/(1+r))
+  name Expression1
+  xpos -55
+  ypos -268
+  disable {{!parent.Method}}
+ }
+ Expression {
+  temp_name1 rnd
+  temp_expr1 ((_flatNoise?random((x/width)*_scale_rnd,(y/height)*_scale_rnd):random(pos.red*_scale_rnd,pos.green*_scale_rnd,pos.blue*_scale_rnd))*min(1,_scale_rnd))*_size_rnd
+  expr0 max(0,1/-((r+rnd)-_scale))
+  expr1 max(0,1/(max(0,(r+rnd)-_scale)-0.00001))
+  expr2 max(0,1/-((r+rnd)-_scale))
+  name Expression4
+  xpos -55
+  ypos -224
+  disable {{!parent.EnableFractalEdge}}
+  addUserKnob {20 User}
+  addUserKnob {7 _scale R 0 10}
+  _scale {{parent.EvolveFractal}}
+  addUserKnob {7 _scale_rnd}
+  _scale_rnd {{parent.FractalDensity}}
+  addUserKnob {7 _size_rnd}
+  _size_rnd {{parent.FractalSize}}
+  addUserKnob {6 _flatNoise +STARTLINE}
+ }
+ Shuffle {
+  green red
+  blue red
+  alpha blue
+  name Shuffle1
+  xpos -55
+  ypos -200
+ }
+ Output {
+  name Output1
+  xpos -55
+  ypos -116
+ }
+end_group

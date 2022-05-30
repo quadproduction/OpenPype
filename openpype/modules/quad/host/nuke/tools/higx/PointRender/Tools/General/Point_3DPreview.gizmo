@@ -1,0 +1,37 @@
+Group {
+ name Point_3DViewer
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ selected true
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "3D Preview v1.0\n"}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {41 pointSize l "point size" T PositionToPoints1.pointSize}
+ addUserKnob {41 detail l "point detail" T PositionToPoints1.detail}
+ addUserKnob {20 Help}
+ addUserKnob {26 info_1 l "" +STARTLINE T "This node allow you to view PointRender data in Nuke's 3d space.\n\nSimply connect this node anywhere in the stream\nand go into 3D space to view the points in 3D.\nIt's recommended that you disconnect this node from the stream \nwhen you are done using it as it can cause unnesesary processing."}
+}
+ Input {
+  inputs 0
+  name Input1
+  xpos 207
+  ypos -400
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ PositionToPoints2 {
+  display textured
+  render_mode textured
+  P_channel pos
+  detail 0.15
+  pointSize 0.6
+  name PositionToPoints1
+  selected true
+  xpos 207
+  ypos -331
+ }
+ Output {
+  name Output1
+  xpos 207
+  ypos -260
+ }
+end_group

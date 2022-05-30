@@ -1,0 +1,87 @@
+Group {
+ name Point_Transform
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Point Transform v1.1\n"}
+ addUserKnob {26 divider_transform l "<b><font color=#7DADF9>Transform</font><b>"}
+ addUserKnob {41 translate T Axis1.translate}
+ addUserKnob {41 rotate T Axis1.rotate}
+ addUserKnob {41 scaling l scale T Axis1.scaling}
+ addUserKnob {41 uniform_scale l "uniform scale" T Axis1.uniform_scale}
+ addUserKnob {41 skew T Axis1.skew}
+ addUserKnob {41 pivot T Axis1.pivot}
+}
+ Input {
+  inputs 0
+  name Transform
+  xpos 389
+  ypos -222
+ }
+ Dot {
+  name Dot1
+  xpos 423
+  ypos -182
+ }
+set N65ad5c00 [stack 0]
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle14
+  xpos 501
+  ypos -186
+ }
+ ColorMatrix {
+  matrix {
+      {{parent.Axis1.world_matrix.0} {parent.Axis1.world_matrix.1} {parent.Axis1.world_matrix.2}}
+      {{parent.Axis1.world_matrix.4} {parent.Axis1.world_matrix.5} {parent.Axis1.world_matrix.6}}
+      {{parent.Axis1.world_matrix.8} {parent.Axis1.world_matrix.9} {parent.Axis1.world_matrix.10}}
+    }
+  name ColorMatrix1
+  xpos 501
+  ypos -99
+ }
+ Grade {
+  add {{parent.Axis1.world_matrix.3} {parent.Axis1.world_matrix.7} {parent.Axis1.world_matrix.11} 0}
+  black_clamp false
+  name Grade5
+  selected true
+  xpos 501
+  ypos -60
+ }
+ Shuffle {
+  out pos
+  name Shuffle13
+  xpos 501
+  ypos 34
+ }
+push $N65ad5c00
+ Merge2 {
+  inputs 2
+  operation copy
+  bbox B
+  Achannels pos
+  Bchannels pos
+  output pos
+  name Merge1
+  xpos 389
+  ypos 30
+ }
+ Output {
+  name Output1
+  xpos 389
+  ypos 130
+ }
+ Input {
+  inputs 0
+  name InputAxis
+  xpos 629
+  ypos -189
+  number 1
+ }
+ Axis2 {
+  name Axis1
+  xpos 639
+  ypos -110
+ }
+end_group

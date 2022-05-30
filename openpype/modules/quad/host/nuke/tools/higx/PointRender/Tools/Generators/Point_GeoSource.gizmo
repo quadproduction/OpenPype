@@ -1,0 +1,151 @@
+Group {
+ name Point_GeoSource
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info_1 l "" +STARTLINE T "GeoSource v1.1\n"}
+ addUserKnob {26 divider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {4 method l Method t "<b>ParticleToGeo</b> - This will use the Nuke particle system to convert the geo into image data. If you don't have even UV's this is the recommended method.\n\n<b>UV</b> - This will use the nuke scanline render to render out the point position map in UV space. If your UV's are even and don't overlap this is the recommended method." M {ParticleToGeo UV "" "" "" "" ""}}
+ addUserKnob {26 divider_transform l "<b><font color=#7DADF9>Transform</font><b>"}
+ addUserKnob {41 translate l Translate T Axis1.translate}
+ addUserKnob {41 rotate l Rotate T Axis1.rotate}
+ addUserKnob {41 scaling l Scale T Axis1.scaling}
+ addUserKnob {41 uniform_scale l "Uniform scale" T Axis1.uniform_scale}
+ addUserKnob {41 skew l Skew T Axis1.skew}
+ addUserKnob {26 divider_particle l "<b><font color=#7DADF9>ParticleToGeo</font><b>"}
+ addUserKnob {4 PointPlacement l "Point Placement" M {points edges faces}}
+ PointPlacement faces
+ addUserKnob {6 Static l "Static Input" t "By default this node freezes vertex and texture animation at frame 1.\nThis is to reduce the overhead of the particle node.\nIf you need animated geo or textures, turn this option off." +STARTLINE}
+ Static true
+ addUserKnob {26 divider_uv l "<b><font color=#7DADF9>UV</font><b>"}
+ addUserKnob {14 PointDensity l "Point Density" R 0 100}
+ PointDensity 1100
+ addUserKnob {20 Help}
+ addUserKnob {26 info l "" +STARTLINE T ""}
+}
+ Input {
+  inputs 0
+  name InputGeo
+  xpos 389
+  ypos -279
+ }
+set N61560800 [stack 0]
+ Crop {
+  inputs 0
+  box {0 0 {parent.PointDensity.w} {parent.PointDensity.h}}
+  reformat true
+  crop false
+  name Crop1
+  xpos 158
+  ypos -197
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ ScanlineRender {
+  inputs 2
+  conservative_shader_sampling false
+  projection_mode uv
+  motion_vectors_type distance
+  output_shader_vectors true
+  P_channel pos
+  name ScanlineRender1
+  xpos 268
+  ypos -197
+ }
+ Shuffle {
+  in2 pos
+  red red2
+  green green2
+  blue blue2
+  out pos
+  name Shuffle1
+  xpos 268
+  ypos -135
+ }
+ Dot {
+  name Dot1
+  xpos 302
+  ypos -27
+ }
+push $N61560800
+ Group {
+  name Group1
+  xpos 389
+  ypos -194
+  disable {{parent.Switch1.which}}
+ }
+  Input {
+   inputs 0
+   name Input1
+   xpos 448
+   ypos -243
+  }
+push 0
+  ParticleEmitter {
+   inputs 2
+   emit_from {{parent.PointPlacement}}
+   emit_order uniformly
+   lifetime 1
+   velocity 0
+   color_from_texture true
+   name ParticleEmitter3
+   xpos 448
+   ypos -164
+  }
+  Output {
+   name Output1
+   xpos 448
+   ypos -74
+  }
+ end_group
+ ParticleToImage {
+  pos {pos.red pos.green pos.blue -pos.alpha}
+  active pos.alpha
+  name ParticleToImage1
+  xpos 389
+  ypos -133
+ }
+ FrameHold {
+  first_frame 1
+  name FrameHold1
+  xpos 389
+  ypos -82
+  disable {{!parent.Static}}
+ }
+ Switch {
+  inputs 2
+  which {{parent.method}}
+  name Switch1
+  xpos 389
+  ypos -30
+ }
+ ColorMatrix {
+  channels pos
+  matrix {
+      {{parent.Axis1.world_matrix.0} {parent.Axis1.world_matrix.1} {parent.Axis1.world_matrix.2}}
+      {{parent.Axis1.world_matrix.4} {parent.Axis1.world_matrix.5} {parent.Axis1.world_matrix.6}}
+      {{parent.Axis1.world_matrix.8} {parent.Axis1.world_matrix.9} {parent.Axis1.world_matrix.10}}
+    }
+  name ColorMatrix1
+  xpos 389
+  ypos 31
+ }
+ Grade {
+  channels pos
+  add {{parent.Axis1.translate} {parent.Axis1.translate} {parent.Axis1.translate} 0}
+  black_clamp false
+  name Grade1
+  xpos 389
+  ypos 63
+ }
+ Output {
+  name Output1
+  xpos 389
+  ypos 97
+ }
+ Axis2 {
+  inputs 0
+  name Axis1
+  xpos 533
+  ypos 12
+ }
+end_group

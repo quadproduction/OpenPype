@@ -1,0 +1,95 @@
+Group {
+ name Point_Twist
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 _info l "" +STARTLINE T "Point Twist v1.1\n"}
+ addUserKnob {6 useGPU l "Use GPU if available." t "Use GPU if available." +STARTLINE}
+ useGPU true
+ addUserKnob {26 _infoTwist l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {4 RotationAxis l "Rotation Axis" M {X Y Z "" ""}}
+ addUserKnob {7 Rotation R 0 10}
+ Rotation 4
+ addUserKnob {7 Offset}
+ Offset 0.2
+ addUserKnob {13 RotationCenter l "Rotation Center"}
+}
+ Input {
+  inputs 0
+  name InputAxis
+  xpos 629
+  ypos -189
+  number 1
+ }
+ Axis2 {
+  name Axis1
+  xpos 639
+  ypos -109
+ }
+ Input {
+  inputs 0
+  name Twist
+  xpos 389
+  ypos -222
+ }
+ Dot {
+  name Dot1
+  xpos 423
+  ypos -182
+ }
+set N8a584c00 [stack 0]
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle14
+  xpos 501
+  ypos -186
+ }
+ BlinkScript {
+  kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Modify/PointRender_Twist.cpp
+  recompileCount 3
+  ProgramGroup 1
+  KernelDescription "2 \"SaturationKernel\" iterate pixelWise 92df5a63fa0ffd38bbd041f6630b4f152590d671836d9a38d5cdaf3f4af1cfe6 2 \"src\" Read Point \"dst\" Write Point 5 \"Rotation\" Float 1 AADgQA== \"Offset\" Float 1 AAAAAA== \"AxisCenter\" Float 3 AAAAPwAAAD8AAAA/AAAAAA== \"RotationAxis\" Int 1 AAAAAA== \"cam_Matrix\" Float 16 AACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPw== 5 \"inputRot\" 1 1 \"pOffset\" 1 1 \"AxisCenter\" 3 1 \"pRotateAxis\" 1 1 \"rm\" 16 1 0"
+  kernelSource "kernel SaturationKernel : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessPoint, eEdgeClamped> src; // the input image\n  Image<eWrite> dst; // the output image\n\n  param:\n    float inputRot; // This parameter is made available to the user.\n    float pOffset;\n    float3 AxisCenter;\n    int pRotateAxis;\n    float4x4 rm;\n\n  void define() \{\n    defineParam(inputRot, \"Rotation\", 7.0f);\n    defineParam(pOffset, \"Offset\", 0.0f);\n    defineParam(AxisCenter, \"AxisCenter\", float3(0.5f,0.5f,0.5f));\n    defineParam(pRotateAxis, \"RotationAxis\", 0);\n    defineParam(rm, \"cam_Matrix\", float4x4( 1.0f,0.0f,0.0f,0.0f,\n                                                    0.0f,1.0f,0.0f,0.0f,\n                                                    0.0f,0.0f,1.0f,0.0f,\n                                                    0.0f,0.0f,0.0f,1.0f));    \n  \}\n\n  void process() \{\n    // Read the input image\n    float percent = inputRot / (2*PI) ;\n    float4 sample = src();\n    float3 Input = float3(sample.x,sample.y,sample.z);\n    float4x4 rotMatrix;\n    rotMatrix.setIdentity();\n    rotMatrix.setElements(rm\[0]\[0],rm\[0]\[1],rm\[0]\[2],rm\[0]\[3],rm\[1]\[0],rm\[1]\[1],rm\[1]\[2],rm\[1]\[3],rm\[2]\[0],rm\[2]\[1],rm\[2]\[2],rm\[2]\[3],rm\[3]\[0],rm\[3]\[1],rm\[3]\[2],rm\[3]\[3]);\n    rotMatrix.translate(float4(-AxisCenter.x,-AxisCenter.y,-AxisCenter.z,1.0f));\n    if (pRotateAxis == 1) \{\n      rotMatrix.rotateY((sample.y-.5+pOffset)*-inputRot); //\n    \}\n    else if (pRotateAxis == 2) \{\n      rotMatrix.rotateZ((sample.z-.5+pOffset)*-inputRot); //\n    \}\n    else \{\n      rotMatrix.rotateX((sample.x-.5+pOffset)*-inputRot); //\n    \}\n\n    rotMatrix.translate(float4(AxisCenter.x,AxisCenter.y,AxisCenter.z,-1.0f));\n    sample.w = 1.0f;\n    float4 rotation = rotMatrix*sample;\n\n    dst() = float4(rotation.x, rotation.y, rotation.z, sample.w);\n  \}\n\};\n\n\n"
+  useGPUIfAvailable {{parent.useGPU}}
+  rebuild ""
+  SaturationKernel_Rotation {{parent.Rotation}}
+  SaturationKernel_Offset {{parent.Offset}}
+  SaturationKernel_AxisCenter {{parent.RotationCenter} {parent.RotationCenter} {parent.RotationCenter}}
+  SaturationKernel_RotationAxis {{parent.RotationAxis}}
+  SaturationKernel_cam_Matrix {
+      {{parent.Axis1.world_matrix} {parent.Axis1.world_matrix} {parent.Axis1.world_matrix} {parent.Axis1.world_matrix}}
+      {{parent.Axis1.world_matrix} {parent.Axis1.world_matrix} {parent.Axis1.world_matrix} {parent.Axis1.world_matrix}}
+      {{parent.Axis1.world_matrix} {parent.Axis1.world_matrix} {parent.Axis1.world_matrix} {parent.Axis1.world_matrix}}
+      {{parent.Axis1.world_matrix} {parent.Axis1.world_matrix} {parent.Axis1.world_matrix} {parent.Axis1.world_matrix}}
+    }
+  rebuild_finalise ""
+  name BlinkScript1
+  selected true
+  xpos 501
+  ypos -96
+ }
+ Shuffle {
+  out pos
+  name Shuffle13
+  xpos 501
+  ypos 34
+ }
+push $N8a584c00
+ Merge2 {
+  inputs 2
+  operation copy
+  bbox B
+  Achannels pos
+  Bchannels pos
+  output pos
+  name Merge1
+  xpos 389
+  ypos 30
+ }
+ Output {
+  name Output1
+  xpos 389
+  ypos 130
+ }
+end_group
