@@ -1,0 +1,63 @@
+Group {
+ name Point_Normal
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Point Normal v1.0"}
+ addUserKnob {6 useGPU l "Use GPU if available" +STARTLINE}
+ useGPU true
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {26 info_1 l "" +STARTLINE T "well, not much to do here =)"}
+}
+ Input {
+  inputs 0
+  name Input1
+  xpos 389
+  ypos 207
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle1
+  xpos 389
+  ypos 294
+ }
+ BlinkScript {
+  kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Modify/BasicLight.cpp
+  recompileCount 69
+  ProgramGroup 1
+  KernelDescription "2 \"PointRender3D\" iterate pixelWise d5452fe7b684561fcfa5182d0c789025a037cc4fe4474c24e065e3fa53fcd8ce 2 \"ppos\" Read Random \"dst\" Write Point 9 \"cam_Matrix\" Float 16 AACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPw== \"focallength\" Float 1 AAA4QQ== \"hapeture\" Float 1 ppvEQQ== \"format\" Int 2 AAgAAAAIAAA= \"Zoom\" Float 1 AACAPw== \"half Lambert\" Bool 1 AQ== \"light Mode\" Int 1 AAAAAA== \"light_position\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"light_color\" Float 3 AACAPwAAgD8AAIA/AAAAAA== 9 \"cam_Matrix\" 16 1 \"cam_Focal\" 1 1 \"cam_Hapeture\" 1 1 \"WHformat\" 2 1 \"zoom\" 1 1 \"halfLambert\" 1 1 \"lightMode\" 1 1 \"lightPos\" 3 1 \"lightcolor\" 3 1 10 \"vRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"pRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"tRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"vWorld\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"canvasWidth\" Float 1 1 AAAAAA== \"canvasHeight\" Float 1 1 AAAAAA== \"matrixData\" Float 1 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"cameraToWorld\" Float 16 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"worldToCamera\" Float 16 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"namount\" Float 1 1 AAAAAA=="
+  kernelSource "inline float Frac(float a_X)\n\{\n    return a_X-floor(a_X);\n\}\n\ninline float Fmax(float a_X,float b_X,float c_X)\n\{\n    return max(c_X,max(a_X,b_X));\n\}\ninline float Fmin(float a_X,float b_X,float c_X)\n\{\n    return min(c_X,min(a_X,b_X));\n\}\n\ninline float saturate(float _in)\n\{\n    return max(0.0f,min(1.0f,_in));\n\}\n\ninline float3 reflect(float3 incidence,float3 normal)\n\{\n  return incidence - 2.f * dot(incidence, normal) * normal;\n\}\n\n//This function is used to multiply a float3 by a matrix4x4\ninline float3 multVecMatrix( float3 src, float4x4 matrix)\n\{\n    float   x,y,z,w;\n    \n    x = src\[0]*matrix\[0]\[0] + src\[1]*matrix\[1]\[0] +\n    src\[2]*matrix\[2]\[0] + matrix\[3]\[0];\n    y = src\[0]*matrix\[0]\[1] + src\[1]*matrix\[1]\[1] +\n    src\[2]*matrix\[2]\[1] + matrix\[3]\[1];\n    z = src\[0]*matrix\[0]\[2] + src\[1]*matrix\[1]\[2] +\n    src\[2]*matrix\[2]\[2] + matrix\[3]\[2];\n    w = src\[0]*matrix\[0]\[3] + src\[1]*matrix\[1]\[3] +\n    src\[2]*matrix\[2]\[3] + matrix\[3]\[3];\n    \n    return float3(x/w, y/w, z/w);\n\}\n\n//This function is used to calculate the screenspace coordinates.\ninline bool computePixelCoordinates( \n    const float3 pWorld, \n    float3 &pRaster, \n    const float4x4 &worldToCamera, \n    const float &canvasWidth, \n    const float &canvasHeight, \n    const int &imageWidth, \n    const int &imageHeight\n) \n\{ \n    float3 pCamera; \n    pCamera = multVecMatrix(pWorld, worldToCamera); \n    float2 pScreen; \n    pScreen.x = pCamera.x / -pCamera.z; \n    pScreen.y = pCamera.y / -pCamera.z; \n    if (fabs(pScreen.x) > canvasWidth || fabs(pScreen.y) > canvasHeight) \n         return false; \n    float2 pNDC; \n    pNDC.x = (pScreen.x + canvasWidth * 0.5f) / canvasWidth; \n    pNDC.y = (pScreen.y + canvasHeight * 0.5f) / canvasHeight; \n    pRaster.x = (pNDC.x * imageWidth); \n    pRaster.y = ((pNDC.y) * imageHeight); \n    pRaster.z = -pCamera.z; \n    if (pRaster.x < 0.0f || pRaster.x > imageWidth || \n       pRaster.y < 0.0f || pRaster.y > imageHeight) \{\n       return false;  \n    \}\n    return true;\n\} \n\n\n\nkernel PointRender3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> ppos;    //The point position map\n  Image<eWrite> dst;                 //the output image\n\n  param: //Parameters available to the user\n    float4x4 cam_Matrix;    //The world matrix of the camera\n    float cam_Focal;        //The focal length of the camera\n    float cam_Hapeture;     //The horizontal apeture of the camera\n    int2 WHformat;          //The format of the output image\n    float zoom;             //A \"post\" zoom function\n    bool halfLambert;\n    int lightMode;\n    float3 lightPos;\n    float3 lightcolor;\n\n\n  local: //Local variables\n    float3 vRaster;\n    float3 pRaster;\n    float3 tRaster;    \n    float3 vWorld;\n    float canvasWidth;\n    float canvasHeight; \n    float matrixData\[4]\[4];\n    float4x4 cameraToWorld;\n    float4x4 worldToCamera;\n    float namount; //dither amount\n\n\n  void define() \{\n    defineParam(cam_Matrix, \"cam_Matrix\", float4x4( 1.0f,0.0f,0.0f,0.0f,\n                                                    0.0f,1.0f,0.0f,0.0f,\n                                                    0.0f,0.0f,1.0f,0.0f,\n                                                    0.0f,0.0f,0.0f,1.0f));\n    defineParam(cam_Focal,      \"focallength\", 11.5f);\n    defineParam(cam_Hapeture,      \"hapeture\", 24.576f);\n    defineParam(WHformat,      \"format\", int2(2048,2048));\n    defineParam(zoom, \"Zoom\", 1.0f);\n    defineParam(halfLambert, \"half Lambert\", true);\n    defineParam(lightMode, \"light Mode\", 0);\n    defineParam(lightPos,      \"light_position\", float3(0,0,0));  \n    defineParam(lightcolor,      \"light_color\", float3(1.0,1.0,1.0)); \n  \}\n\n\n  //The init() function is run before any calls to process().\n  void init() \{\n    canvasWidth = ((cam_Hapeture)/cam_Focal);\n    canvasHeight = ((cam_Hapeture)/cam_Focal)*float(float(WHformat.y)/float(WHformat.x)); \n    float matrixData\[] = \{cam_Matrix\[0]\[0], cam_Matrix\[1]\[0], cam_Matrix\[2]\[0], cam_Matrix\[3]\[0], \n                          cam_Matrix\[0]\[1], cam_Matrix\[1]\[1], cam_Matrix\[2]\[1], cam_Matrix\[3]\[1], \n                          cam_Matrix\[0]\[2], cam_Matrix\[1]\[2], cam_Matrix\[2]\[2], cam_Matrix\[3]\[2], \n                          cam_Matrix\[0]\[3], cam_Matrix\[1]\[3], cam_Matrix\[2]\[3], cam_Matrix\[3]\[3]\};\n    cameraToWorld.setArray(matrixData); //This is a workaround. Due to the buggy matrix implementation, we pass the matrix on from another structure.\n    worldToCamera = cameraToWorld.invert();\n    namount = 0.0001; //dither amount\n  \}\n\n\n\nfloat3 Reconsile3D(float3 _PointPos)\{\n    vWorld = float3(_PointPos.x,_PointPos.y,_PointPos.z)*(zoom);\n    int ret = computePixelCoordinates(vWorld, tRaster, worldToCamera, canvasWidth, canvasHeight, WHformat\[0], WHformat\[1]);\n    return tRaster;\n\}\n\n\n\n//-------------------------------------\n// Facet_Render\n//-------------------------------------\n//This function is used to calculate what triangels to draw\nfloat3 facet_render(int2 pos, float3 _vWorld)\{\n\n    float3 screen_pos = Reconsile3D(_vWorld);\n    bool insideX = ppos.bounds.inside(pos.x+1,pos.y );\n    bool insideY = ppos.bounds.inside(pos.x,pos.y-1 );\n    bool insideYtop = ppos.bounds.inside(pos.x,pos.y+1);\n    float2 fpos = float2(pos.x,pos.y);\n    float3 V1_Pos,V2_Pos,V1_wPos,V2_wPos;\n    float4 V0_Sample,V1_Sample,V2_Sample;\n    float3 normal0,normal1,normal2;\n\n    //for area calculation\n    float area;\n    float3 V0,V1,V2;\n    float3 output = float3(0.0f);\n  if (insideX) \{\n    V2_Sample = ppos(pos.x+1,pos.y);\n    V2_wPos = float3(V2_Sample.x,V2_Sample.y,V2_Sample.z);\n    V2_Pos = Reconsile3D(V2_wPos);\n    if (V2_Sample.w != 0.0f) \{ \n\n      if (insideY) \{\n        V1_Sample = ppos(pos.x+1,pos.y-1);\n        V1_wPos = float3(V1_Sample.x,V1_Sample.y,V1_Sample.z);\n        V1_Pos = Reconsile3D(V1_wPos);\n        if (V1_Sample.w != 0.0f) \{ \n            float3 Normal = CalculateVertexNormals(_vWorld,V2_wPos,V1_wPos);\n\n            //Calculate Area for density:\n            V0 = screen_pos;\n            V1 = V1_Pos;\n            V2 = V2_Pos;\n            V0.z = 1.0f / V0.z, V1.z = 1.0f / V1.z, V2.z = 1.0f / V2.z; \n            area = length(V0-V1)+length(V0-V2)+length(V1-V2);\n\n          //write output\n          output +=  float3(Normal.x,Normal.y,Normal.z);\n        \}\n      \}\n      if (insideYtop) \{\n        V1_Sample = ppos(pos.x,pos.y+1);\n        V1_wPos = float3(V1_Sample.x,V1_Sample.y,V1_Sample.z);\n        V1_Pos = Reconsile3D(V1_wPos);\n        if (V1_Sample.w != 0.0f) \{ \n          float3 Normal = CalculateVertexNormals(_vWorld,V1_wPos,V2_wPos);\n\n            //Calculate Area for density:\n            V0 = screen_pos;\n            V1 = V1_Pos;\n            V2 = V2_Pos;\n            V0.z = 1.0f / V0.z, V1.z = 1.0f / V1.z, V2.z = 1.0f / V2.z; \n            area = length(V0-V1)+length(V0-V2)+length(V1-V2);\n\n          output += float3(Normal.x,Normal.y,Normal.z);\n\n        \}\n      \}\n    \}\n  \}\n  return output;\n\}\n\n\n\nfloat3 CalculateSurfaceNormals(float3 V0, float3 V1, float3 V2)\n\{\n        float3 v0 = V0; \n        float3 v1 = V1; \n        float3 v2 = V2; \n        float3 hitNormal = cross((v1 - v0),(v2 - v0)); \n        return normalize(hitNormal);\n\}\n\nfloat3 CalculateVertexNormals(float3 V0, float3 V1, float3 V2)\n\{\n        float3 hitNormal = cross((V1 - V0),(V2 - V0)); \n        return hitNormal;\n\}\n\n\n\n//-------------------------------------\n// Process\n//-------------------------------------\n  void process(int2 pos) \{\n    float3 output = float3(0.0f);\n    float4 _sample = ppos(pos.x,pos.y); //Get the XYZ Coordinates\n    float3 point_pos = float3(_sample.x,_sample.y,_sample.z);\n    if (_sample.w != 0.0f) \{  //No need to process if there is no data.\n      dst() = float4(0.0f);\n      output+=facet_render(pos,float3(_sample.x,_sample.y,_sample.z))*2.0f;\n      _sample = ppos(pos.x-1,pos.y); //Get the XYZ Coordinates\n      output+=facet_render(int2(pos.x-1,pos.y),float3(_sample.x,_sample.y,_sample.z));\n\n      _sample = ppos(pos.x-1,pos.y+1); //Get the XYZ Coordinates\n      output+=facet_render(int2(pos.x-1,pos.y+1),float3(_sample.x,_sample.y,_sample.z));\n\n      _sample = ppos(pos.x,pos.y-1); //Get the XYZ Coordinates\n      output+=facet_render(int2(pos.x,pos.y-1),float3(_sample.x,_sample.y,_sample.z));\n\n      output = normalize(output);\n      float3 normal = -output;\n\n      \n\n\n      dst() = float4(normal.x,normal.y,normal.z,1.0f);\n    \}\n  \} //----> process\n\};\n"
+  useGPUIfAvailable {{parent.useGPU}}
+  rebuild ""
+  "PointRender3D_half Lambert" false
+  PointRender3D_light_position {{parent.Axis1.translate} {parent.Axis1.translate} {parent.Axis1.translate}}
+  PointRender3D_light_color {0 0 0}
+  rebuild_finalise ""
+  name BlinkScript1
+  selected true
+  xpos 389
+  ypos 338
+ }
+ Grade {
+  multiply 0.5
+  add 0.5
+  black_clamp false
+  name Grade1
+  xpos 389
+  ypos 376
+  disable true
+ }
+ Output {
+  name Output1
+  xpos 389
+  ypos 459
+ }
+ Axis2 {
+  inputs 0
+  translate {0.5 0.5 0.5}
+  name Axis1
+  xpos 593
+  ypos 325
+ }
+end_group

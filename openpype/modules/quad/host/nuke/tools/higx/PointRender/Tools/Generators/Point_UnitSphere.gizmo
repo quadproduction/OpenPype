@@ -1,0 +1,138 @@
+Group {
+ inputs 0
+ name Point_UnitSphere
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Unit Sphere Generator v1.2\n"}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {3 FormatX l "Number of Points²"}
+ FormatX 200
+ addUserKnob {26 divider_translate l "<b><font color=#7DADF9>Transform</font><b>"}
+ addUserKnob {13 offset l Translate}
+ addUserKnob {41 rotate l Rotate T Axis1.rotate}
+ addUserKnob {41 scaling l Scale T Axis1.scaling}
+ addUserKnob {41 uniform_scale l "Uniform scale" T Axis1.uniform_scale}
+ addUserKnob {41 skew l Skew T Axis1.skew}
+ addUserKnob {26 ""}
+ addUserKnob {7 cubify l Sphere/Cube}
+ addUserKnob {7 Seed R 0 100}
+}
+ Crop {
+  inputs 0
+  box {0 0 {parent.FormatX} {parent.FormatX}}
+  reformat true
+  crop false
+  name Format
+  xpos 384
+  ypos -363
+ }
+ Expression {
+  expr0 random(x,y,parent.Seed)*2-1
+  expr1 random(x+4000,y,parent.Seed)*2-1
+  expr2 random(x+8000,y,parent.Seed)*2-1
+  name Expression4
+  xpos 384
+  ypos -326
+ }
+ Expression {
+  expr0 r/cos(r)
+  expr1 g/cos(g)
+  expr2 b/cos(b)
+  mix {{1-parent.cubify}}
+  name Expression3
+  xpos 384
+  ypos -277
+ }
+ Expression {
+  temp_name3 Length
+  temp_expr3 "sqrt((Red*Red) + (Green*Green) + (Blue*Blue))+0.00000001"
+  expr0 Red/(Length*2)
+  expr1 Green/(Length*2)
+  expr2 Blue/(Length*2)
+  expr3 Length
+  name Normalize_Vector_out
+  xpos 384
+  ypos -227
+ }
+ Expression {
+  temp_name0 d
+  temp_expr0 max(abs(r),abs(g),abs(b),0)
+  expr0 r/d*.5
+  expr1 g/d*.5
+  expr2 b/d*.5
+  mix {{parent.cubify}}
+  name Expression1
+  selected true
+  xpos 383
+  ypos -178
+ }
+ ColorMatrix {
+  matrix {
+      {{parent.Axis1.world_matrix.0} {parent.Axis1.world_matrix.1} {parent.Axis1.world_matrix.2}}
+      {{parent.Axis1.world_matrix.4} {parent.Axis1.world_matrix.5} {parent.Axis1.world_matrix.6}}
+      {{parent.Axis1.world_matrix.8} {parent.Axis1.world_matrix.9} {parent.Axis1.world_matrix.10}}
+    }
+  name ColorMatrix1
+  xpos 383
+  ypos -125
+ }
+ Add {
+  value {{parent.offset} {parent.offset} {parent.offset} {curve}}
+  name Add1
+  xpos 384
+  ypos -38
+ }
+ Shuffle {
+  alpha white
+  name Shuffle4
+  xpos 384
+  ypos 7
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  black white
+  white white
+  red2 white
+  green2 white
+  out pos
+  out2 rgba
+  name Shuffle5
+  xpos 384
+  ypos 47
+ }
+ ModifyMetaData {
+  metadata {
+   {set pointrender/n_points "\[expr \[value parent.FormatX]*\[value parent.FormatX]]"}
+   {set pointrender/gen_type 2}
+  }
+  name SetMetaData
+  xpos 384
+  ypos 71
+ }
+ Grade {
+  white {{1/((parent.FormatX*parent.FormatX)/40000)}}
+  black_clamp false
+  name Grade9
+  xpos 384
+  ypos 95
+ }
+ Crop {
+  box {0 0 {parent.FormatX} {parent.FormatX}}
+  crop false
+  name Format1
+  xpos 384
+  ypos 119
+ }
+ Output {
+  name Output1
+  xpos 384
+  ypos 262
+ }
+ Axis2 {
+  inputs 0
+  name Axis1
+  xpos 512
+  ypos -142
+ }
+end_group

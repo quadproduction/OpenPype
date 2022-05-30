@@ -1,0 +1,1072 @@
+Group {
+ name Point_Render
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User l "Point Render" t dd}
+ addUserKnob {26 info_header l "" +STARTLINE T "Point Render v1.2"}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {4 RenderMode l "Render Mode" t "Some generators support multiple render modes other than just point rendering. This should be considered a experimental feature, but can be used to great effect.\n\nIn the Render Settings tab you can find more controls relating to Wire and Facet rendering modes.\n\nNote that Facet Render can be slow when really close to a object. " M {"Point Render" "Wire Render" "Facet Render (experimental)" "" "" ""}}
+ RenderMode "Point Render"
+ addUserKnob {7 FocalLength l "Focal Length" t "The point render does not take the focal length from the input camera, so if you want to match it to a camera you should link the focal length from the camera to this." +INVISIBLE R 0 200}
+ FocalLength 40
+ addUserKnob {7 horizontalApeture l "Horiz Apeture" +INVISIBLE R 0 100}
+ horizontalApeture 24.576
+ addUserKnob {14 overscan l Overscan R 0 100}
+ addUserKnob {7 AlphaMultiplier l Exposure t "This is a general exposure modifier that lets you adjust the overall brightness of the render." R 0 2}
+ AlphaMultiplier 1
+ addUserKnob {6 OutputZdepth l "Output Z-depth" t "Will output a Z-depth channel. This will cause reduced rendering performence." +STARTLINE}
+ addUserKnob {6 UseOcclusionMap l "Use Occlusion Map" t "Enable the Occlusion map input. This lets you use a depth map as a holdout.\n\nNote:\nThe Red channal should contain the depth (absolute distance, not 1/depth)\nThe Alpha channal must be 1 for the areas that you want to holdout." +STARTLINE}
+ addUserKnob {4 occ_method l "" t "Real Depth - input RGB should be the distance to the camera, and A should be the alpha (White occlude, Black ingore).\n\n1/depth.z (Scanline Render) - Will use the depth.Z channal from the scanline render and convert to real depth internally. Alpha is still required." -STARTLINE M {"Real Depth" "1/depth.z (Scanline Render)" ""}}
+ occ_method "1/depth.z (Scanline Render)"
+ addUserKnob {26 devider_cc l "<b><font color=#7DADF9>Preview</font><b>"}
+ addUserKnob {6 FastPreview l "Fast Preview" t "Reduce the number of points for a quick preview of the final render." +STARTLINE}
+ addUserKnob {6 HighlightCompression l "Hilight Compression" t "Compresses the highlights to make it easier to see bright details." +STARTLINE}
+ addUserKnob {7 HighlightCeiling l "Highlight Ceiling" t "Adjust the cealing for the highlight compression." R 1 10}
+ HighlightCeiling 1.15
+ addUserKnob {7 Compression t "The compression amount." -STARTLINE R 0 5}
+ Compression 1
+ addUserKnob {26 devider_format l "<b><font color=#7DADF9>Format</font><b>"}
+ addUserKnob {41 format l "output format" T Settings_Format.format}
+ addUserKnob {20 WireRender l "Render Settings"}
+ addUserKnob {26 devider_wirerender l "<b><font color=#7DADF9>Wire Rendering</font><b>"}
+ addUserKnob {4 wire_type l "Connection Mode" t "*Normal\nConnect lines between the local neigbours of the 2d position map\n\n*Nearest\nConnect lines to the nearest points (in 3D space). This mode is limited to 100x100 points for performence reasons!" M {Normal Nearest "" "" "" "" "" "" "" ""}}
+ addUserKnob {26 text l "Normal Mode Wires" T " "}
+ addUserKnob {6 connect_x l x t "Connect wires in the (uv) X axis." -STARTLINE}
+ connect_x true
+ addUserKnob {6 connect_xy l xy t "Connect wires in the (uv) XY axis." -STARTLINE}
+ connect_xy true
+ addUserKnob {6 connect_y l y t "Connect wires in the (uv) Y axis." -STARTLINE}
+ connect_y true
+ addUserKnob {6 connect_aux l aux t "If you input a vector map into the Aux input for this node, and enable this option, you will get a wire from each point along that vector." -STARTLINE}
+ addUserKnob {7 wire_maxdistance l "Max Distance" t "The maximum distance that the wires connect." R 0 10}
+ wire_maxdistance 6
+ addUserKnob {7 wire_Threshold l "Distance Threshold" t "Control the max distance threshold" R 0 2}
+ wire_Threshold 0.5
+ addUserKnob {3 wire_connections l "Max Connections" t "The maximum number of connections (Not Yet Implemented)"}
+ wire_connections 4
+ addUserKnob {7 maxSamples l "Max Line Samples" t "The maximum length of a line. Once a line is longer than this, it will start break up. \nThis can also be used as a creative effect if you set it low, try setting it to 10 in wire mode to get dotted lines" R 0 10000}
+ maxSamples 10000
+ addUserKnob {7 lineoffset l "Line Offset" t "Expand or contract the lines."}
+ lineoffset 1
+ addUserKnob {7 inGain l "In Gain" t "Gain the brightness of the in-point of the lines"}
+ inGain 1
+ addUserKnob {7 outGain l "Out Gain" t "Gain the brightness of the out-point of the lines" -STARTLINE}
+ outGain 1
+ addUserKnob {26 devider_facet l "<b><font color=#7DADF9>Facet Rendering</font><b>"}
+ addUserKnob {4 renderMode l "Render Mode" t "Pick the desidered render mode." M {Diffuse "Local ST" Normal "Facing Ratio" UV ST "View Normal" "World Position" "" ""}}
+ addUserKnob {6 facet_flatShading l "Flat Shading" t "Flat shading" +STARTLINE}
+ addUserKnob {6 facet_depth l "Depth Buffer" t "Enable depth sorting to avoid additive surfaces." -STARTLINE}
+ addUserKnob {6 facet_front l "Front Face" t "Render front facing facets" +STARTLINE}
+ facet_front true
+ addUserKnob {6 facet_backface l "Back Face" t "Render backfacing faces" -STARTLINE}
+ facet_backface true
+ addUserKnob {26 _1 l "<b><font color=#7DADF9>Other</font><b>"}
+ addUserKnob {6 CloseX l "Close X" t "On spheres or round objects this closes the loop" +STARTLINE}
+ addUserKnob {6 CloseY l "Close Y" t "On spheres or round objects this closes the loop" -STARTLINE}
+ addUserKnob {20 Fog_1 l Fog}
+ addUserKnob {26 Devider_Fog l "<b><font color=#7DADF9>Fog</font><b>"}
+ addUserKnob {6 Fog t "Fog reduces the brightness of poins far from the camera." +STARTLINE}
+ addUserKnob {7 FogNear l "Fog Near" R 0 200}
+ FogNear 3
+ addUserKnob {7 FogFar l "Fog Far" R 0 200}
+ FogFar 10
+ addUserKnob {7 FogExponent l "Fog Exponent" R 0 8}
+ FogExponent 8
+ addUserKnob {20 DepthOfField l "Depth of Field"}
+ addUserKnob {26 devider_dof l "<b><font color=#7DADF9>Depth Of Field</font><b>"}
+ addUserKnob {6 dof_enable l Enable +STARTLINE}
+ addUserKnob {7 dof_focaldepth l "Focal Depth" R 0 40}
+ dof_focaldepth 5
+ addUserKnob {7 dof_dof l "Depth of Field" R 0 10}
+ dof_dof 2
+ addUserKnob {7 dof_maxSize l "Max Size"}
+ dof_maxSize 0.5
+ addUserKnob {7 dof_Aspect l "Aspect Ratio"}
+ dof_Aspect 1
+ addUserKnob {7 dof_bias l Bias R -3 3}
+ dof_bias -0.2
+ addUserKnob {4 Dof_Quality l Quality M {Low Medium High Extreme}}
+ addUserKnob {20 MotionBlur}
+ addUserKnob {26 devider_MotionBlur l "<b><font color=#7DADF9>Motion Blur</font><b>"}
+ addUserKnob {6 mb_enable l Enable +STARTLINE}
+ addUserKnob {6 Fast l "Fast (Interpolated)" -STARTLINE}
+ Fast true
+ addUserKnob {3 Samples}
+ Samples 4
+ addUserKnob {7 Shutter R 0 2}
+ Shutter 0.5
+ addUserKnob {4 pulldown l "Shutter Offset" M {Centered Start End ""}}
+ addUserKnob {20 preview_3d l "3D Preview"}
+ addUserKnob {6 Enable3DPreview l "Enable 3D Preview" t "Display a preview of the points in the Nuke 3D view." +STARTLINE}
+ Enable3DPreview true
+ addUserKnob {41 pointSize l "point size" T PreviewNode.pointSize}
+ addUserKnob {41 detail l "point detail" T PreviewNode.detail}
+}
+ BackdropNode {
+  inputs 0
+  name BackdropNode1
+  tile_color 0x388e8e00
+  label "Output Format Manager"
+  note_font_size 22
+  xpos -1079
+  ypos 117
+  bdwidth 260
+  bdheight 198
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode10
+  tile_color 0x388e8e00
+  label "AUX Input"
+  note_font_size 22
+  xpos -385
+  ypos 178
+  bdwidth 207
+  bdheight 178
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode11
+  tile_color 0x388e8e00
+  label "Point Render"
+  note_font_size 22
+  xpos -96
+  ypos 99
+  bdwidth 203
+  bdheight 131
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode12
+  tile_color 0x388e8e00
+  label "Normal Generator\nFor Vertex Normals"
+  note_font_size 22
+  xpos -616
+  ypos 243
+  bdwidth 191
+  bdheight 122
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode13
+  tile_color 0x388e8e00
+  label "Ensure output format"
+  note_font_size 22
+  xpos -622
+  ypos -41
+  bdwidth 198
+  bdheight 135
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode14
+  tile_color 0x388e8e00
+  label "Motion Blur"
+  note_font_size 22
+  xpos -85
+  ypos 255
+  bdwidth 264
+  bdheight 96
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode15
+  tile_color 0x388e8e00
+  label "Soft Preview"
+  note_font_size 22
+  xpos -83
+  ypos 601
+  bdwidth 191
+  bdheight 94
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode16
+  tile_color 0x388e8e00
+  label "Final format"
+  note_font_size 22
+  xpos -84
+  ypos 482
+  bdwidth 192
+  bdheight 95
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode17
+  tile_color 0x388e8e00
+  label "No Clue =)"
+  note_font_size 22
+  xpos -385
+  ypos -41
+  bdwidth 160
+  bdheight 87
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode18
+  tile_color 0x388e8e00
+  label "Z-Depth Shuffle"
+  note_font_size 22
+  xpos -85
+  ypos 367
+  bdwidth 264
+  bdheight 96
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode2
+  tile_color 0x388e8e00
+  label Motionblur
+  note_font_size 22
+  xpos -672
+  ypos -781
+  bdwidth 258
+  bdheight 246
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode3
+  tile_color 0x388e8e00
+  label "Fast Preview"
+  note_font_size 22
+  xpos -669
+  ypos -971
+  bdwidth 254
+  bdheight 138
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode4
+  tile_color 0x388e8e00
+  label "Nearest Wire Mode Clamp"
+  note_font_size 22
+  xpos -666
+  ypos -1184
+  bdwidth 253
+  bdheight 111
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode5
+  tile_color 0x388e8e00
+  label Occlusion
+  note_font_size 22
+  xpos 208
+  ypos 27
+  bdwidth 260
+  bdheight 198
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode6
+  tile_color 0x388e8e00
+  label "Input Camera Container"
+  note_font_size 22
+  xpos -1357
+  ypos 121
+  bdwidth 260
+  bdheight 198
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode7
+  tile_color 0x388e8e00
+  label "3D Preview"
+  note_font_size 22
+  xpos -88
+  ypos -45
+  bdwidth 207
+  bdheight 102
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode8
+  tile_color 0x388e8e00
+  label "Input Format Manager"
+  note_font_size 22
+  xpos -526
+  ypos -459
+  bdwidth 208
+  bdheight 97
+ }
+ BackdropNode {
+  inputs 0
+  name BackdropNode9
+  tile_color 0x388e8e00
+  label FOG
+  note_font_size 22
+  xpos -602
+  ypos -253
+  bdwidth 370
+  bdheight 152
+ }
+ Input {
+  inputs 0
+  name InputPointData
+  xpos -584
+  ypos -1321
+ }
+ Dot {
+  name Dot4
+  xpos -550
+  ypos -1234
+ }
+set N8982cc00 [stack 0]
+ Reformat {
+  type "to box"
+  box_width 100
+  box_height 100
+  box_fixed true
+  scale 0.1
+  resize fill
+  filter Impulse
+  black_outside true
+  name Reformat5
+  xpos -584
+  ypos -906
+  disable {{!parent.FastPreview==1}}
+ }
+ Grade {
+  white 10
+  name Grade2
+  xpos -584
+  ypos -874
+  disable {{!parent.FastPreview}}
+ }
+ Dot {
+  name Dot2
+  xpos -550
+  ypos -712
+ }
+set N8982dc00 [stack 0]
+ Group {
+  name FrameHold3
+  tile_color 0xb0a45dff
+  label "(frame \[value first_frames])"
+  xpos -501
+  ypos -719
+  disable {{1-parent.mb_enable}}
+  addUserKnob {20 User}
+  addUserKnob {3 first_frames l "first frame"}
+  first_frames {{frame+1}}
+  addUserKnob {41 increment T FrameHold2.increment}
+  addUserKnob {22 SetCurrentFrame l "Set This Frame" T "nuke.thisNode()\[\"first_frames\"].setValue(nuke.frame())" +STARTLINE}
+ }
+  Input {
+   inputs 0
+   name Input1
+   xpos -7
+   ypos -154
+  }
+  FrameHold {
+   first_frame {{parent.knob.first_frames}}
+   name FrameHold2
+   xpos -7
+   ypos -114
+  }
+  Output {
+   name Output1
+   xpos -7
+   ypos -14
+  }
+ end_group
+ Dot {
+  name Dot6
+  xpos -467
+  ypos -659
+ }
+set N7c4ba800 [stack 0]
+push $N8982dc00
+ Group {
+  name FrameHold2
+  tile_color 0xb0a45dff
+  label "(frame \[value first_frames])"
+  xpos -660
+  ypos -719
+  disable {{1-parent.mb_enable}}
+  addUserKnob {20 User}
+  addUserKnob {3 first_frames l "first frame"}
+  first_frames {{frame}}
+  addUserKnob {41 increment T FrameHold2.increment}
+  addUserKnob {22 SetCurrentFrame l "Set This Frame" T "nuke.thisNode()\[\"first_frames\"].setValue(nuke.frame())" +STARTLINE}
+ }
+  Input {
+   inputs 0
+   name Input1
+   xpos -7
+   ypos -154
+  }
+  FrameHold {
+   first_frame {{parent.knob.first_frames}}
+   name FrameHold2
+   xpos -7
+   ypos -114
+  }
+  Output {
+   name Output1
+   xpos -7
+   ypos -14
+  }
+ end_group
+ Dot {
+  name Dot5
+  xpos -626
+  ypos -659
+ }
+set N7c4bb400 [stack 0]
+ Dissolve {
+  inputs 2
+  which {{frame-floor(frame)}}
+  name Dissolve1
+  xpos -582
+  ypos -666
+  disable {{1-parent.mb_enable}}
+ }
+set N7c4bb800 [stack 0]
+push $N8982dc00
+ Switch {
+  inputs 2
+  which {{parent.Fast}}
+  name Switch2
+  xpos -584
+  ypos -567
+ }
+ Dot {
+  name DataFetch
+  label "data fetch\t"
+  note_font_color 0xff21ff
+  xpos -550
+  ypos -513
+  addUserKnob {20 User}
+  addUserKnob {3 n_particles l "Number of Particles"}
+  addUserKnob {3 gentype l "Type Of Generator"}
+  addUserKnob {26 info l "" -STARTLINE T "0 = unknown, 1 = Card, 2 = Sphere, 3 = Grid"}
+ }
+set N7c4bbc00 [stack 0]
+ Dot {
+  name Dot3
+  xpos -635
+  ypos -513
+ }
+ Dot {
+  name Dot1
+  xpos -635
+  ypos 863
+ }
+ Reformat {
+  inputs 0
+  format "1920 1080 0 0 1920 1080 1 HD_1080"
+  resize distort
+  center false
+  black_outside true
+  name Settings_Format
+  xpos -992
+  ypos 209
+ }
+ AdjBBox {
+  numpixels {{parent.overscan} {parent.overscan}}
+  name AdjBBox2
+  xpos -992
+  ypos 241
+ }
+ Input {
+  inputs 0
+  name InputOcclusion
+  xpos 238
+  ypos 75
+  number 2
+ }
+ Expression {
+  expr0 depth.Z>0?1/depth.Z:0
+  name Expression2
+  xpos 238
+  ypos 104
+  disable {{!parent.occ_method}}
+ }
+ Constant {
+  inputs 0
+  channels rgb
+  color 1
+  format {{{parent.Settings_Format.format}}}
+  name Empty
+  xpos 371
+  ypos 139
+ }
+ Switch {
+  inputs 2
+  which {{parent.UseOcclusionMap}}
+  name Switch1
+  xpos 238
+  ypos 163
+ }
+ AdjBBox {
+  numpixels {{parent.overscan} {parent.overscan}}
+  name AdjBBox1
+  xpos 118
+  ypos 163
+ }
+set N88f86000 [stack 0]
+ Input {
+  inputs 0
+  name Aux
+  xpos -324
+  ypos 214
+  number 3
+ }
+ Reformat {
+  type "to box"
+  format "1280 720 0 0 1280 720 1 HD_720"
+  box_width {{input.width>Settings_Format.format.width?input.width:Settings_Format.format.width}}
+  box_height {{input.height>Settings_Format.format.height?input.height:Settings_Format.format.height}}
+  box_fixed true
+  resize none
+  center false
+  filter Impulse
+  black_outside true
+  name Reformat2
+  xpos -324
+  ypos 238
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  name Crop1
+  xpos -324
+  ypos 462
+ }
+push $N7c4bbc00
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle1
+  xpos -584
+  ypos -192
+ }
+set N88f87800 [stack 0]
+ Reformat {
+  type "to box"
+  format "1280 720 0 0 1280 720 1 HD_720"
+  box_width {{input.width>Settings_Format.format.width?input.width:Settings_Format.format.width}}
+  box_height {{input.height>Settings_Format.format.height?input.height:Settings_Format.format.height}}
+  box_fixed true
+  resize none
+  center false
+  filter Impulse
+  black_outside true
+  name Reformat4
+  xpos -584
+  ypos 18
+ }
+ Crop {
+  box {0 0 {input.width} {input.height}}
+  name Crop2
+  xpos -584
+  ypos 48
+ }
+ Dot {
+  name Dot8
+  xpos -550
+  ypos 166
+ }
+set N8f950400 [stack 0]
+ Group {
+  name Point_Normal2
+  tile_color 0x434343ff
+  note_font_color 0x55ffffff
+  xpos -584
+  ypos 498
+  disable {{!(renderMode==2&&RenderMode==2)}}
+  addUserKnob {20 User}
+  addUserKnob {26 info l "" +STARTLINE T "Point Normal v1.0"}
+  addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+  addUserKnob {26 info_1 l "" +STARTLINE T "well, not much to do here =)"}
+ }
+  Input {
+   inputs 0
+   name Input1
+   xpos 389
+   ypos 207
+  }
+  Shuffle {
+   in pos
+   name Shuffle1
+   xpos 389
+   ypos 294
+  }
+  BlinkScript {
+   kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Modify/BasicLight.cpp
+   recompileCount 69
+   ProgramGroup 1
+   KernelDescription "2 \"PointRender3D\" iterate pixelWise d5452fe7b684561fcfa5182d0c789025a037cc4fe4474c24e065e3fa53fcd8ce 2 \"ppos\" Read Random \"dst\" Write Point 9 \"cam_Matrix\" Float 16 AACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPw== \"focallength\" Float 1 AAA4QQ== \"hapeture\" Float 1 ppvEQQ== \"format\" Int 2 AAgAAAAIAAA= \"Zoom\" Float 1 AACAPw== \"half Lambert\" Bool 1 AQ== \"light Mode\" Int 1 AAAAAA== \"light_position\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"light_color\" Float 3 AACAPwAAgD8AAIA/AAAAAA== 9 \"cam_Matrix\" 16 1 \"cam_Focal\" 1 1 \"cam_Hapeture\" 1 1 \"WHformat\" 2 1 \"zoom\" 1 1 \"halfLambert\" 1 1 \"lightMode\" 1 1 \"lightPos\" 3 1 \"lightcolor\" 3 1 10 \"vRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"pRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"tRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"vWorld\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"canvasWidth\" Float 1 1 AAAAAA== \"canvasHeight\" Float 1 1 AAAAAA== \"matrixData\" Float 1 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"cameraToWorld\" Float 16 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"worldToCamera\" Float 16 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"namount\" Float 1 1 AAAAAA=="
+   kernelSource "inline float Frac(float a_X)\n\{\n    return a_X-floor(a_X);\n\}\n\ninline float Fmax(float a_X,float b_X,float c_X)\n\{\n    return max(c_X,max(a_X,b_X));\n\}\ninline float Fmin(float a_X,float b_X,float c_X)\n\{\n    return min(c_X,min(a_X,b_X));\n\}\n\ninline float saturate(float _in)\n\{\n    return max(0.0f,min(1.0f,_in));\n\}\n\ninline float3 reflect(float3 incidence,float3 normal)\n\{\n  return incidence - 2.f * dot(incidence, normal) * normal;\n\}\n\n//This function is used to multiply a float3 by a matrix4x4\ninline float3 multVecMatrix( float3 src, float4x4 matrix)\n\{\n    float   x,y,z,w;\n    \n    x = src\[0]*matrix\[0]\[0] + src\[1]*matrix\[1]\[0] +\n    src\[2]*matrix\[2]\[0] + matrix\[3]\[0];\n    y = src\[0]*matrix\[0]\[1] + src\[1]*matrix\[1]\[1] +\n    src\[2]*matrix\[2]\[1] + matrix\[3]\[1];\n    z = src\[0]*matrix\[0]\[2] + src\[1]*matrix\[1]\[2] +\n    src\[2]*matrix\[2]\[2] + matrix\[3]\[2];\n    w = src\[0]*matrix\[0]\[3] + src\[1]*matrix\[1]\[3] +\n    src\[2]*matrix\[2]\[3] + matrix\[3]\[3];\n    \n    return float3(x/w, y/w, z/w);\n\}\n\n//This function is used to calculate the screenspace coordinates.\ninline bool computePixelCoordinates( \n    const float3 pWorld, \n    float3 &pRaster, \n    const float4x4 &worldToCamera, \n    const float &canvasWidth, \n    const float &canvasHeight, \n    const int &imageWidth, \n    const int &imageHeight\n) \n\{ \n    float3 pCamera; \n    pCamera = multVecMatrix(pWorld, worldToCamera); \n    float2 pScreen; \n    pScreen.x = pCamera.x / -pCamera.z; \n    pScreen.y = pCamera.y / -pCamera.z; \n    if (fabs(pScreen.x) > canvasWidth || fabs(pScreen.y) > canvasHeight) \n         return false; \n    float2 pNDC; \n    pNDC.x = (pScreen.x + canvasWidth * 0.5f) / canvasWidth; \n    pNDC.y = (pScreen.y + canvasHeight * 0.5f) / canvasHeight; \n    pRaster.x = (pNDC.x * imageWidth); \n    pRaster.y = ((pNDC.y) * imageHeight); \n    pRaster.z = -pCamera.z; \n    if (pRaster.x < 0.0f || pRaster.x > imageWidth || \n       pRaster.y < 0.0f || pRaster.y > imageHeight) \{\n       return false;  \n    \}\n    return true;\n\} \n\n\n\nkernel PointRender3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> ppos;    //The point position map\n  Image<eWrite> dst;                 //the output image\n\n  param: //Parameters available to the user\n    float4x4 cam_Matrix;    //The world matrix of the camera\n    float cam_Focal;        //The focal length of the camera\n    float cam_Hapeture;     //The horizontal apeture of the camera\n    int2 WHformat;          //The format of the output image\n    float zoom;             //A \"post\" zoom function\n    bool halfLambert;\n    int lightMode;\n    float3 lightPos;\n    float3 lightcolor;\n\n\n  local: //Local variables\n    float3 vRaster;\n    float3 pRaster;\n    float3 tRaster;    \n    float3 vWorld;\n    float canvasWidth;\n    float canvasHeight; \n    float matrixData\[4]\[4];\n    float4x4 cameraToWorld;\n    float4x4 worldToCamera;\n    float namount; //dither amount\n\n\n  void define() \{\n    defineParam(cam_Matrix, \"cam_Matrix\", float4x4( 1.0f,0.0f,0.0f,0.0f,\n                                                    0.0f,1.0f,0.0f,0.0f,\n                                                    0.0f,0.0f,1.0f,0.0f,\n                                                    0.0f,0.0f,0.0f,1.0f));\n    defineParam(cam_Focal,      \"focallength\", 11.5f);\n    defineParam(cam_Hapeture,      \"hapeture\", 24.576f);\n    defineParam(WHformat,      \"format\", int2(2048,2048));\n    defineParam(zoom, \"Zoom\", 1.0f);\n    defineParam(halfLambert, \"half Lambert\", true);\n    defineParam(lightMode, \"light Mode\", 0);\n    defineParam(lightPos,      \"light_position\", float3(0,0,0));  \n    defineParam(lightcolor,      \"light_color\", float3(1.0,1.0,1.0)); \n  \}\n\n\n  //The init() function is run before any calls to process().\n  void init() \{\n    canvasWidth = ((cam_Hapeture)/cam_Focal);\n    canvasHeight = ((cam_Hapeture)/cam_Focal)*float(float(WHformat.y)/float(WHformat.x)); \n    float matrixData\[] = \{cam_Matrix\[0]\[0], cam_Matrix\[1]\[0], cam_Matrix\[2]\[0], cam_Matrix\[3]\[0], \n                          cam_Matrix\[0]\[1], cam_Matrix\[1]\[1], cam_Matrix\[2]\[1], cam_Matrix\[3]\[1], \n                          cam_Matrix\[0]\[2], cam_Matrix\[1]\[2], cam_Matrix\[2]\[2], cam_Matrix\[3]\[2], \n                          cam_Matrix\[0]\[3], cam_Matrix\[1]\[3], cam_Matrix\[2]\[3], cam_Matrix\[3]\[3]\};\n    cameraToWorld.setArray(matrixData); //This is a workaround. Due to the buggy matrix implementation, we pass the matrix on from another structure.\n    worldToCamera = cameraToWorld.invert();\n    namount = 0.0001; //dither amount\n  \}\n\n\n\nfloat3 Reconsile3D(float3 _PointPos)\{\n    vWorld = float3(_PointPos.x,_PointPos.y,_PointPos.z)*(zoom);\n    int ret = computePixelCoordinates(vWorld, tRaster, worldToCamera, canvasWidth, canvasHeight, WHformat\[0], WHformat\[1]);\n    return tRaster;\n\}\n\n\n\n//-------------------------------------\n// Facet_Render\n//-------------------------------------\n//This function is used to calculate what triangels to draw\nfloat3 facet_render(int2 pos, float3 _vWorld)\{\n\n    float3 screen_pos = Reconsile3D(_vWorld);\n    bool insideX = ppos.bounds.inside(pos.x+1,pos.y );\n    bool insideY = ppos.bounds.inside(pos.x,pos.y-1 );\n    bool insideYtop = ppos.bounds.inside(pos.x,pos.y+1);\n    float2 fpos = float2(pos.x,pos.y);\n    float3 V1_Pos,V2_Pos,V1_wPos,V2_wPos;\n    float4 V0_Sample,V1_Sample,V2_Sample;\n    float3 normal0,normal1,normal2;\n\n    //for area calculation\n    float area;\n    float3 V0,V1,V2;\n    float3 output = float3(0.0f);\n  if (insideX) \{\n    V2_Sample = ppos(pos.x+1,pos.y);\n    V2_wPos = float3(V2_Sample.x,V2_Sample.y,V2_Sample.z);\n    V2_Pos = Reconsile3D(V2_wPos);\n    if (V2_Sample.w != 0.0f) \{ \n\n      if (insideY) \{\n        V1_Sample = ppos(pos.x+1,pos.y-1);\n        V1_wPos = float3(V1_Sample.x,V1_Sample.y,V1_Sample.z);\n        V1_Pos = Reconsile3D(V1_wPos);\n        if (V1_Sample.w != 0.0f) \{ \n            float3 Normal = CalculateVertexNormals(_vWorld,V2_wPos,V1_wPos);\n\n            //Calculate Area for density:\n            V0 = screen_pos;\n            V1 = V1_Pos;\n            V2 = V2_Pos;\n            V0.z = 1.0f / V0.z, V1.z = 1.0f / V1.z, V2.z = 1.0f / V2.z; \n            area = length(V0-V1)+length(V0-V2)+length(V1-V2);\n\n          //write output\n          output +=  float3(Normal.x,Normal.y,Normal.z);\n        \}\n      \}\n      if (insideYtop) \{\n        V1_Sample = ppos(pos.x,pos.y+1);\n        V1_wPos = float3(V1_Sample.x,V1_Sample.y,V1_Sample.z);\n        V1_Pos = Reconsile3D(V1_wPos);\n        if (V1_Sample.w != 0.0f) \{ \n          float3 Normal = CalculateVertexNormals(_vWorld,V1_wPos,V2_wPos);\n\n            //Calculate Area for density:\n            V0 = screen_pos;\n            V1 = V1_Pos;\n            V2 = V2_Pos;\n            V0.z = 1.0f / V0.z, V1.z = 1.0f / V1.z, V2.z = 1.0f / V2.z; \n            area = length(V0-V1)+length(V0-V2)+length(V1-V2);\n\n          output += float3(Normal.x,Normal.y,Normal.z);\n\n        \}\n      \}\n    \}\n  \}\n  return output;\n\}\n\n\n\nfloat3 CalculateSurfaceNormals(float3 V0, float3 V1, float3 V2)\n\{\n        float3 v0 = V0; \n        float3 v1 = V1; \n        float3 v2 = V2; \n        float3 hitNormal = cross((v1 - v0),(v2 - v0)); \n        return normalize(hitNormal);\n\}\n\nfloat3 CalculateVertexNormals(float3 V0, float3 V1, float3 V2)\n\{\n        float3 hitNormal = cross((V1 - V0),(V2 - V0)); \n        return hitNormal;\n\}\n\n\n\n//-------------------------------------\n// Process\n//-------------------------------------\n  void process(int2 pos) \{\n    float3 output = float3(0.0f);\n    float4 _sample = ppos(pos.x,pos.y); //Get the XYZ Coordinates\n    float3 point_pos = float3(_sample.x,_sample.y,_sample.z);\n    if (_sample.w != 0.0f) \{  //No need to process if there is no data.\n      dst() = float4(0.0f);\n      output+=facet_render(pos,float3(_sample.x,_sample.y,_sample.z))*2.0f;\n      _sample = ppos(pos.x-1,pos.y); //Get the XYZ Coordinates\n      output+=facet_render(int2(pos.x-1,pos.y),float3(_sample.x,_sample.y,_sample.z));\n\n      _sample = ppos(pos.x-1,pos.y+1); //Get the XYZ Coordinates\n      output+=facet_render(int2(pos.x-1,pos.y+1),float3(_sample.x,_sample.y,_sample.z));\n\n      _sample = ppos(pos.x,pos.y-1); //Get the XYZ Coordinates\n      output+=facet_render(int2(pos.x,pos.y-1),float3(_sample.x,_sample.y,_sample.z));\n\n      output = normalize(output);\n      float3 normal = -output;\n\n      \n\n\n      dst() = float4(normal.x,normal.y,normal.z,1.0f);\n    \}\n  \} //----> process\n\};\n"
+   rebuild ""
+   "PointRender3D_half Lambert" false
+   PointRender3D_light_position {{parent.Axis1.translate} {parent.Axis1.translate} {parent.Axis1.translate}}
+   PointRender3D_light_color {0 0 0}
+   rebuild_finalise ""
+   name BlinkScript1
+   xpos 389
+   ypos 344
+  }
+  Grade {
+   multiply 0.5
+   add 0.5
+   black_clamp false
+   name Grade1
+   xpos 389
+   ypos 376
+   disable true
+  }
+  Output {
+   name Output1
+   xpos 389
+   ypos 459
+  }
+  Axis2 {
+   inputs 0
+   translate {0.5 0.5 0.5}
+   name Axis1
+   xpos 661
+   ypos 318
+  }
+ end_group
+ Switch {
+  inputs 2
+  which {{parent.connect_aux}}
+  name Switch3
+  xpos -324
+  ypos 498
+ }
+set N8fd85a80 [stack 0]
+push $N88f87800
+ Expression {
+  temp_name0 xd
+  temp_expr0 red-Camera1.world_matrix.3
+  temp_name1 yd
+  temp_expr1 green-Camera1.world_matrix.7
+  temp_name2 zd
+  temp_expr2 blue-Camera1.world_matrix.11
+  temp_name3 Distance
+  temp_expr3 "sqrt(xd*xd + yd*yd + zd*zd)"
+  expr0 Distance
+  expr1 Distance
+  expr2 Distance
+  expr3 Distance
+  name Expression1
+  xpos -456
+  ypos -192
+ }
+ Grade {
+  channels rgba
+  blackpoint {{parent.FogFar}}
+  whitepoint {{parent.FogNear}}
+  gamma {{1/(parent.FogExponent+0.000000001)}}
+  white_clamp true
+  name Grade1
+  xpos -456
+  ypos -168
+ }
+push $N7c4bbc00
+ Dot {
+  name Dot7
+  xpos -307
+  ypos -513
+ }
+ Merge2 {
+  inputs 2
+  operation multiply
+  name Merge1
+  xpos -341
+  ypos -168
+  disable {{!parent.Fog}}
+ }
+ Shuffle {
+  name Shuffle3
+  xpos -341
+  ypos 8
+ }
+set N8e8ed400 [stack 0]
+ Shuffle {
+  red white
+  green white
+  blue white
+  name Shuffle2
+  xpos -28
+  ypos 76
+ }
+push $N8f950400
+ BlinkScript {
+  inputs 4
+  kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Render/3D_PointRender_v18.cpp
+  recompileCount 806
+  ProgramGroup 1
+  KernelDescription "2 \"PointRender3D\" iterate pixelWise b6c79b641c58390f32c944e2b5792a8702107f9cfc926636430288e7e0e1b392 5 \"ppos\" Read Random \"src\" Read Random \"normals\" Read Random \"occlusion\" Read Random \"dst\" Write Random 50 \"cam_Matrix\" Float 16 AACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPw== \"focallength\" Float 1 AAA4QQ== \"hapeture\" Float 1 ppvEQQ== \"format\" Int 2 AAgAAAAIAAA= \"vertexformat\" Int 2 CgAAAAoAAAA= \"Zoom\" Float 1 AACAPw== \"Filtering Method\" Int 1 AQAAAA== \"_alphaMultiplier\" Float 1 AACAPw== \"_pointRender\" Bool 1 AQ== \"_wireRender\" Bool 1 AQ== \"_facetRender\" Bool 1 AQ== \"_maxLDistance\" Float 1 AACAPw== \"_maxLConnections\" Int 1 AQAAAA== \"_maxPlexType\" Int 1 AAAAAA== \"_plexLinedefXY\" Bool 1 AA== \"_plexLinedefX\" Bool 1 AA== \"_plexLinedefY\" Bool 1 AA== \"_plexLinedefXtoY\" Bool 1 AA== \"_plexLinedefAUX\" Bool 1 AA== \"_plexConnectX\" Bool 1 AA== \"_plexConnectY\" Bool 1 AA== \"_L_gamma\" Float 1 AACAPw== \"Enable Depth of Field\" Bool 1 AA== \"samples\" Int 1 AwAAAA== \"rings\" Int 1 BQAAAA== \"focalDepth\" Float 1 AACAPw== \"_depthOfField\" Float 1 AACAQA== \"_depthMult\" Float 1 zczMPQ== \"_maxDofSize\" Float 1 AAAAQQ== \"dof_aspect\" Float 1 AACAPw== \"dof_threshold\" Float 1 AACAPw== \"dof_gain\" Float 1 AAAAAA== \"dof_bias\" Float 1 AAAAwA== \"dof_fringe\" Float 1 AAAAAA== \"_flatshading\" Bool 1 AQ== \"_backfacing\" Bool 1 AQ== \"_frontfacing\" Bool 1 AQ== \"_vertexMode\" Int 1 AAAAAA== \"_depthBuffer\" Bool 1 AQ== \"_texoffset\" Float 2 AAAAPwAAAD8= \"_pointSize\" Int 1 AQAAAA== \"_gaussigma\" Float 1 AACAPw== \"_depthOcclusion\" Bool 1 AQ== \"depthMultiplier\" Float 1 AACAPw== \"_maxLineSteps\" Float 1 AAB6RQ== \"_lineOffset\" Float 1 AACAPw== \"_lineInMultiplier\" Float 1 AACAPw== \"_lineOutMultiplier\" Float 1 AACAPw== \"_overscan\" Float 2 AAAAAAAAAAA= \"isDepth\" Bool 1 AA== 50 \"cam_Matrix\" 16 1 \"cam_Focal\" 1 1 \"cam_Hapeture\" 1 1 \"WHformat\" 2 1 \"Vformat\" 2 1 \"zoom\" 1 1 \"_filtering\" 1 1 \"_alphaMultiplier\" 1 1 \"_pointRender\" 1 1 \"_wireRender\" 1 1 \"_facetRender\" 1 1 \"_maxPlexDistance\" 1 1 \"_maxPlexConnections\" 1 1 \"_maxPlexType\" 1 1 \"_plexLinedefXY\" 1 1 \"_plexLinedefX\" 1 1 \"_plexLinedefY\" 1 1 \"_plexLinedefXtoY\" 1 1 \"_plexLinedefAUX\" 1 1 \"_plexConnectX\" 1 1 \"_plexConnectY\" 1 1 \"_plex_gamma\" 1 1 \"_dof_enable\" 1 1 \"_dof_samples\" 1 1 \"_dof_rings\" 1 1 \"focalDepth\" 1 1 \"_depthOfField\" 1 1 \"_depthMult\" 1 1 \"_maxDofSize\" 1 1 \"dof_aspect\" 1 1 \"dof_threshold\" 1 1 \"dof_gain\" 1 1 \"dof_bias\" 1 1 \"dof_fringe\" 1 1 \"_flatshading\" 1 1 \"_backfacing\" 1 1 \"_frontfacing\" 1 1 \"_vertexMode\" 1 1 \"_depthBuffer\" 1 1 \"_texoffset\" 2 1 \"_pointSize\" 1 1 \"_gaussigma\" 1 1 \"_depthOcclusion\" 1 1 \"depthMultiplier\" 1 1 \"_maxLineSteps\" 1 1 \"_lineOffset\" 1 1 \"_lineInMultiplier\" 1 1 \"_lineOutMultiplier\" 1 1 \"_overscan\" 2 1 \"isDepth\" 1 1 10 \"max_line_connections\" Int 1 1 AAAAAA== \"vRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"pRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"tRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"vWorld\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"canvasWidth\" Float 1 1 AAAAAA== \"canvasHeight\" Float 1 1 AAAAAA== \"matrixData\" Float 1 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"cameraToWorld\" Float 16 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"worldToCamera\" Float 16 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  kernelSource "//Some basic generic functions.\ninline float Frac(float a_X)\n\{\n    return a_X-floor(a_X);\n\}\n\ninline float3 Cross(float3 A,float3 B)\n\{\n    return float3(A.y*B.z - A.z*B.y,A.z*B.x - A.x*B.z,A.x*B.y - A.y*B.x);\n\}\n\ninline float Fmax(float a_X,float b_X,float c_X)\n\{\n    return max(c_X,max(a_X,b_X));\n\}\ninline float Fmin(float a_X,float b_X,float c_X)\n\{\n    return min(c_X,min(a_X,b_X));\n\}     \n\ninline float3 mix(float3 _X,float3 _Y,float _A)\{\n  return _X*(1.0f-_A)+_Y*_A;\n\}\ninline float mix(float _X,float _Y,float _A)\{\n  return _X*(1.0f-_A)+_Y*_A;\n\}                                                                                              \n\n//This function is used to multiply a float3 by a matrix4x4\ninline float3 multVecMatrix( float3 src, float4x4 matrix)\n\{\n    float   x,y,z,w;\n\n    x = src\[0]*matrix\[0]\[0] + src\[1]*matrix\[1]\[0] +\n    src\[2]*matrix\[2]\[0] + matrix\[3]\[0];\n    y = src\[0]*matrix\[0]\[1] + src\[1]*matrix\[1]\[1] +\n    src\[2]*matrix\[2]\[1] + matrix\[3]\[1];\n    z = src\[0]*matrix\[0]\[2] + src\[1]*matrix\[1]\[2] +\n    src\[2]*matrix\[2]\[2] + matrix\[3]\[2];\n    w = src\[0]*matrix\[0]\[3] + src\[1]*matrix\[1]\[3] +\n    src\[2]*matrix\[2]\[3] + matrix\[3]\[3];\n    \n    return float3(x/w, y/w, z/w);\n\}\n\n//This function is used to calculate the screenspace coordinates.\ninline bool computePixelCoordinates( \n    const float3 pWorld, \n    float3 &pRaster, \n    const float4x4 &worldToCamera, \n    const float &canvasWidth, \n    const float &canvasHeight, \n    const int &imageWidth, \n    const int &imageHeight,\n    float2 overscan\n) \n\{ \n    float3 pCamera; \n    pCamera = multVecMatrix(pWorld, worldToCamera); \n    float2 pScreen; \n    pScreen.x = pCamera.x / -pCamera.z; \n    pScreen.y = pCamera.y / -pCamera.z; \n    float2 pNDC; \n    pNDC.x = (pScreen.x + canvasWidth * 0.5f) / canvasWidth; \n    pNDC.y = (pScreen.y + canvasHeight * 0.5f) / canvasHeight; \n    pRaster.x = (pNDC.x * imageWidth); \n    pRaster.y = ((pNDC.y) * imageHeight); \n    pRaster.z = -pCamera.z; \n    if (pRaster.x < 0.0f-overscan.x || pRaster.x > imageWidth+overscan.x || \n       pRaster.y < 0.0f-overscan.y || pRaster.y > imageHeight+overscan.y || pRaster.z < 0.0f) \{\n       return false;  \n    \}\n    return true;\n\} \n\n\nkernel PointRender3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> ppos;    //The point position map\n  Image<eRead, eAccessRandom, eEdgeClamped> src;     //The texture map\n  Image<eRead, eAccessRandom, eEdgeClamped> normals;     //The texture map  \n  Image<eRead, eAccessRandom, eEdgeClamped> occlusion;     //The texture map \n  Image<eWrite, eAccessRandom> dst;                 //the output image\n\n  param: //Parameters available to the user\n    float4x4 cam_Matrix;    //The world matrix of the camera\n    float cam_Focal;        //The focal length of the camera\n    float cam_Hapeture;     //The horizontal apeture of the camera\n    int2 WHformat,Vformat;          //The format of the output image\n    float zoom;             //A \"post\" zoom function\n    int _filtering;        //Filter method\n    float _alphaMultiplier; //Additive multiplier\n    bool _pointRender,_wireRender,_facetRender;\n    float _maxPlexDistance; //Additive multiplier\n    int _maxPlexConnections;\n    int _maxPlexType; // 0==Grid, -1==Nearest\n    bool _plexLinedefXY,_plexLinedefX,_plexLinedefY,_plexLinedefXtoY,_plexLinedefAUX; // Define what connections NOT to include\n    bool _plexConnectX,_plexConnectY; //Connect from the edge of x to 0, or edge of y to 0, usually for spheres\n    float _plex_gamma; //The threshold making shorter paths bright and longer paths dark\n    bool _dof_enable; // Enable DOF\n    int _dof_samples; // How many samples per DOF ring\n    int _dof_rings; // How many rings \n    float focalDepth,_depthOfField,_depthMult,_maxDofSize; //DOF Settings\n    float dof_aspect; //Pixel aspect ratio\n    float dof_threshold;\n    float dof_gain;\n    float dof_bias; //bokeh edge bias\n    float dof_fringe; //bokeh chromatic aberration/fringing\n    bool _flatshading,_backfacing,_frontfacing; //Vertex rendering settings\n    int _vertexMode;  //The rendering output mode, (think AOV)\n    bool _depthBuffer; //Non-additive, only render front most pixel\n    float2 _texoffset;\n    int _pointSize;\n    float _gaussigma;\n    bool _depthOcclusion;\n    float depthMultiplier;\n    float _maxLineSteps; //cap the line length to avoid process lock\n    float _lineOffset; //Alow you to shrink or extend the lines\n    float _lineInMultiplier,_lineOutMultiplier; //Control the brightness of the wires at the tips.\n    float2 _overscan; //This will allow you to render some extra outside the bounds of the image.\n    bool isDepth; //This will allow you to render some extra outside the bounds of the image.\n\n  local: //Local variables\n    int max_line_connections;\n    float3 vRaster;\n    float3 pRaster;\n    float3 tRaster;    \n    float3 vWorld;\n    float canvasWidth;\n    float canvasHeight; \n    float matrixData\[4]\[4];\n    float4x4 cameraToWorld;\n    float4x4 worldToCamera;\n\n  void define() \{\n    defineParam(cam_Matrix, \"cam_Matrix\", float4x4( 1.0f,0.0f,0.0f,0.0f,\n                                                    0.0f,1.0f,0.0f,0.0f,\n                                                    0.0f,0.0f,1.0f,0.0f,\n                                                    0.0f,0.0f,0.0f,1.0f));\n    defineParam(cam_Focal,      \"focallength\", 11.5f);\n    defineParam(cam_Hapeture,      \"hapeture\", 24.576f);\n    defineParam(WHformat,      \"format\", int2(2048,2048));\n    defineParam(Vformat,      \"vertexformat\", int2(10,10));\n    defineParam(zoom, \"Zoom\", 1.0f);\n    defineParam(_filtering, \"Filtering Method\", 1); \n    defineParam(_alphaMultiplier, \"_alphaMultiplier\", 1.0f);     \n    defineParam(_pointRender, \"_pointRender\", true);  \n    defineParam(_wireRender, \"_wireRender\", true);\n    defineParam(_facetRender, \"_facetRender\", true);\n    defineParam(_maxPlexDistance, \"_maxLDistance\", 1.0f);    \n    defineParam(_maxPlexConnections, \"_maxLConnections\", 1);    \n    defineParam(_maxPlexType, \"_maxPlexType\", 0); \n    defineParam(_plexLinedefXY, \"_plexLinedefXY\", false);      \n    defineParam(_plexLinedefXtoY, \"_plexLinedefXtoY\", false); //NYI\n    defineParam(_plexLinedefAUX, \"_plexLinedefAUX\", false); \n    defineParam(_plexLinedefX, \"_plexLinedefX\", false);  \n    defineParam(_plexLinedefY, \"_plexLinedefY\", false);  \n    defineParam(_plexConnectX, \"_plexConnectX\", false);      \n    defineParam(_plexConnectY, \"_plexConnectY\", false);   \n    defineParam(_plex_gamma, \"_L_gamma\", 1.0f);\n    //DOF SETTINGS   \n    defineParam(_dof_enable, \"Enable Depth of Field\", false);   \n    defineParam(_dof_samples, \"samples\", 3);    \n    defineParam(_dof_rings, \"rings\", 5);   \n    defineParam(focalDepth, \"focalDepth\", 1.0f);  \n    defineParam(_depthOfField, \"_depthOfField\", 4.0f);  \n    defineParam(_depthMult, \"_depthMult\", 0.1f);  \n    defineParam(_maxDofSize, \"_maxDofSize\", 8.0f);  \n    defineParam(dof_aspect, \"dof_aspect\", 1.0f);  \n    defineParam(dof_threshold, \"dof_threshold\", 1.0f);  \n    defineParam(dof_gain, \"dof_gain\", 0.0f);  \n    defineParam(dof_bias, \"dof_bias\", -2.0f);  \n    defineParam(dof_fringe, \"dof_fringe\", 0.0f); \n    //SHADING SETTINGS \n    defineParam(_flatshading, \"_flatshading\", true);  \n    defineParam(_vertexMode, \"_vertexMode\", 0);  \n    defineParam(_backfacing, \"_backfacing\", true);    \n    defineParam(_frontfacing, \"_frontfacing\", true);        \n    defineParam(_depthBuffer, \"_depthBuffer\", true);  \n    defineParam(_texoffset, \"_texoffset\", float2(0.5f,0.5f)); \n    defineParam(_pointSize, \"_pointSize\", 1); \n    defineParam(_gaussigma, \"_gaussigma\", 1.0f); \n    defineParam(_depthOcclusion, \"_depthOcclusion\", true); \n    defineParam(depthMultiplier, \"depthMultiplier\", 1.0f); \n    defineParam(_maxLineSteps, \"_maxLineSteps\", 4000.0f); \n    defineParam(_lineOffset, \"_lineOffset\", 1.0f); \n    defineParam(_lineInMultiplier, \"_lineInMultiplier\", 1.0f);   \n    defineParam(_lineOutMultiplier, \"_lineOutMultiplier\", 1.0f);     \n    defineParam(_overscan, \"_overscan\",float2(0.0f,0.0f));    \n\n  \}\n\n  //The init() function is run before any calls to process().\n  void init() \{\n    max_line_connections = 80;\n    canvasWidth = ((cam_Hapeture)/cam_Focal);\n    canvasHeight = ((cam_Hapeture)/cam_Focal)*float(float(WHformat.y)/float(WHformat.x)); \n    float matrixData\[] = \{cam_Matrix\[0]\[0], cam_Matrix\[1]\[0], cam_Matrix\[2]\[0], cam_Matrix\[3]\[0], \n                          cam_Matrix\[0]\[1], cam_Matrix\[1]\[1], cam_Matrix\[2]\[1], cam_Matrix\[3]\[1], \n                          cam_Matrix\[0]\[2], cam_Matrix\[1]\[2], cam_Matrix\[2]\[2], cam_Matrix\[3]\[2], \n                          cam_Matrix\[0]\[3], cam_Matrix\[1]\[3], cam_Matrix\[2]\[3], cam_Matrix\[3]\[3]\};\n    cameraToWorld.setArray(matrixData); //This is a workaround. Due to the buggy matrix implementation, we pass the matrix on from another structure.\n    worldToCamera = cameraToWorld.invert();\n  \}\n\n  //Convert a 3d point position into a 2d raster position.\n  float3 Reconsile3D(float3 _PointPos)\{\n      vWorld = float3(_PointPos.x,_PointPos.y,_PointPos.z)*(zoom);\n      int ret = computePixelCoordinates(vWorld, tRaster, worldToCamera, canvasWidth, canvasHeight, WHformat\[0], WHformat\[1],_overscan);\n      return tRaster;\n  \}\n\n//------------------------------\n//-------DRAW FUNCTIONS---------\n//------------------------------\n  //Write pixels to output.\n  void writepixel(float posx,float posy, float4 color,int index,float weight=1.0f)\n  \{ \n      if (_depthOcclusion)\{\n        float4 depthSample = occlusion(posx,posy);\n        if (depthSample.x<=vRaster.z && depthSample.w>0.0f)\{\n\n          float depth = (vRaster.z-depthSample.x);\n          color = color*(1.0f-depthSample.w);\n          color = color / (((depth*depth)*depthMultiplier)+1.0f);\n          //return;\n        \}\n      \}\n      float4 finalOutput; //This is used to store the final output\n      float4 dstSample; //This is used to store a sample of the destination\n      if ( dst.bounds.inside( posx, posy ) ) \{ //Test if the pixel written to is inside the output image. \n        if (_depthBuffer) \{\n          dstSample = (float4)dst(posx,posy); //Sample the destination image\n          if ((dstSample.w>color.w)||dstSample.w==0.0f) \{\n            dst(posx,posy) = color;\n          \}\n        \}\n        else \{\n          dstSample = (float4)dst(posx,posy); //Sample the destination image\n          finalOutput = dstSample + (color*_alphaMultiplier*weight);\n          finalOutput.w = dstSample.w + ((color.w*_alphaMultiplier*weight));\n\n          finalOutput.w = (dstSample.w + ((color.w*_alphaMultiplier*weight)))-(dstSample.w * ((color.w*_alphaMultiplier*weight)));\n\n          dst(posx,posy) = finalOutput;\n        \}\n      \} \n  \}\n\n  //Calculate a Bilinear Plot\n  void bilinear_Plot(float2 temppos,float4 color,int index)\n  \{\n    float2 p;\n    p.x=Frac(temppos.x);\n    p.y=Frac(temppos.y);\n    float weights\[] = \{(1.0f-p.x)*(1.0f-p.y), p.x*(1.0f-p.y), (1.0f-p.x)*p.y, p.x*p.y\};\n    int2 _position = int2(floor(temppos.x)-0,floor(temppos.y)-0); \n    writepixel(_position.x,_position.y,color,index,weights\[0]);\n    writepixel(_position.x+1,_position.y,color,index,weights\[1]);\n    writepixel(_position.x,_position.y+1,color,index,weights\[2]);\n    writepixel(_position.x+1,_position.y+1,color,index,weights\[3]);\n  \}\n\n  //NYI, unused!\n  void gaussian(float2 temppos,float4 color,int index)\{\n    float in_x = temppos.x;\n    float in_y = temppos.y;\n    int kernelSize = (_pointSize+1)*2;\n    int subsize = (kernelSize /2)-1;\n    float gKernel\[64]\[64];\n    float sigma = _gaussigma;\n    float intSigma = float(_pointSize);\n    float r, s = intSigma * sigma * sigma;\n\n    float sum = 0.0f;\n\n    // generate 5x5 kernel\n    for (int x = -subsize; x <= subsize; x++)\n    \{\n        for(int y = -subsize; y <= subsize; y++)\n        \{\n            r = float(sqrt(x*x + y*y));\n            gKernel\[x + subsize]\[y + subsize] = (exp(-(r*r)/s))/(3.141592654f * s);\n            sum += gKernel\[x + subsize]\[y + subsize];\n        \}\n    \}\n\n    // normalize the Kernel\n    for (int x = -subsize; x <= subsize; x++)\n    \{\n        for(int y = -subsize; y <= subsize; y++)\n        \{\n            gKernel\[x + subsize]\[y + subsize] /= sum;\n            writepixel(in_x+x,in_y+y,color,index,gKernel\[x + subsize]\[y + subsize]);\n        \}\n    \}\n  \}\n\n//-------------------------------------\n// DrawLine\n// ----------\n// Draw a line between two points, \n// x,y being 2d screenspace pos and z being depth.\n//-------------------------------------\n  void DrawLine(float3 origin, float3 endpoint,float4 _colorA,float4 _colorB) \{\n    float4 _color;\n    float3 delta = origin-endpoint;\n    float3 curPoint = origin;\n    float mag = sqrt(delta.x*delta.x+delta.y*delta.y);\n    mag = min(mag,_maxLineSteps); //Lets not go crazy, we cap it at 10.000 to avoid insane unwated processing time \n    for( float a = 0; a < mag*_lineOffset; a = a + 1.0f )\{\n      curPoint -= (delta/mag);\n      _color = (_colorA*(1.0f-(a/mag*1.0f)))+(_colorB*(a/mag*1.00f));\n      if (_dof_enable)\{\n        Bokeh(curPoint,_color);\n      \}\n      else \{\n        if (_depthBuffer && isDepth) \{_color = float4(1.0f,1.0f,1.0f,curPoint.z);\} //Added\n        bilinear_Plot(float2(curPoint.x,curPoint.y),_color,1);\n      \}\n      \n    \}\n  \}\n\n//-------------------------------------\n// Point_Render\n//-------------------------------------\nvoid point_render(int2 pos, float3 screen_pos)\{\n  float4 color = src(pos.x,pos.y);\n\n  if (_filtering == 1)\{\n      if (_dof_enable)\{\n        Bokeh(screen_pos,color);\n      \}\n      else \{\n        if (_depthBuffer) \{color.w = screen_pos.z;\} //Added\n        bilinear_Plot(float2(screen_pos.x,screen_pos.y),color,1);\n      \}\n  \}\n  /*\n  //THIS PART NEEDS TO BE RE-WRITTEN.\n  else if (_filtering == 2)\{ \n      if (_dof_enable)\{\n        Bokeh(screen_pos,color);\n      \}\n      else \{\n        gaussian(float2(screen_pos.x,screen_pos.y),color,1);\n      \}\n  \}\n  */\n  else \{\n      int2 _position = int2(floor(screen_pos.x),floor(screen_pos.y)); \n      if (_depthBuffer) \{color.w = screen_pos.z;\}\n      writepixel(_position.x,_position.y, color,1,1.0f); //OutputSample\n  \}\n\n\}\n\n//-------------------------------------\n// Facet_Render\n//-------------------------------------\n//This function is used to calculate what triangels to draw\nvoid facet_render(int2 pos, float3 _vWorld)\{\n\n    float3 screen_pos = Reconsile3D(_vWorld);\n\n    bool insideX = ppos.bounds.inside(pos.x+1,pos.y );\n    bool insideY = ppos.bounds.inside(pos.x+1,pos.y-1 );\n    bool insideYtop = ppos.bounds.inside(pos.x,pos.y+1);\n    float2 fpos = float2(pos.x,pos.y);\n    float3 V1_Pos,V2_Pos,V1_wPos,V2_wPos,V0_N,V1_N,V2_N;\n    float2 V0_ST,V1_ST,V2_ST;\n    float4 V1_Sample,V2_Sample;\n    float4 _tn;\n    float3 normal0,normal1,normal2;\n    float2 UV_Format = float2(Vformat.x,Vformat.y);\n\n\n    int2 P0 = int2(pos.x-1,pos.y-1);\n    int2 P1 = int2(pos.x+1,pos.y+1);\n    if (_plexConnectX && pos.x == int(Vformat.x))\{\n      insideX == true;\n      P1 = int2(0.0f,pos.y+1);\n    \}\n    if (_plexConnectY && pos.y == int(Vformat.y))\{\n      insideYtop == true;\n      P1 = int2(pos.x+1,0);\n    \} \n\n    if (_plexConnectY && pos.y == 0)\{\n      insideY == true;\n      P0 = int2(pos.x-1,int(UV_Format.y));\n    \} \n\n    if (!_flatshading) \{\n      _tn = normals(pos.x,pos.y);\n      V0_N =float3(_tn.x,_tn.y,_tn.z);\n    \}\n    V0_ST = float2(pos.x,pos.y)/UV_Format;\n\n  if (insideX) \{\n    V2_Sample = ppos(P1.x,pos.y);\n    V2_ST = float2(P1.x,pos.y)/UV_Format;\n    V2_wPos = float3(V2_Sample.x,V2_Sample.y,V2_Sample.z);\n    V2_Pos = Reconsile3D(V2_wPos);\n    if (!_flatshading) \{\n      _tn = normals(P1.x,pos.y);\n      V2_N =float3(_tn.x,_tn.y,_tn.z);\n    \}\n        \n\n    if (V2_Sample.w != 0.0f) \{ \n\n      if (insideY) \{\n        V1_Sample = ppos(P1.x,P0.y);\n        V1_ST = float2(P1.x,P0.y)/UV_Format;\n        V1_wPos = float3(V1_Sample.x,V1_Sample.y,V1_Sample.z);\n        V1_Pos = Reconsile3D(V1_wPos);\n        if (!_flatshading) \{\n          _tn = normals(P1.x,P0.y);\n          V1_N =float3(_tn.x,_tn.y,_tn.z);\n        \}\n        if (V1_Sample.w != 0.0f) \{ \n          DrawTriangle(screen_pos,V2_Pos,V1_Pos,_vWorld,V2_wPos,V1_wPos,V0_N,V2_N,V1_N,V0_ST,V2_ST,V1_ST);\n        \}\n      \}\n      if (insideYtop) \{\n        V1_Sample = ppos(pos.x,P1.y);\n        V1_ST = float2(pos.x,P1.y)/UV_Format;        \n        V1_wPos = float3(V1_Sample.x,V1_Sample.y,V1_Sample.z);\n        V1_Pos = Reconsile3D(V1_wPos);\n        if (!_flatshading) \{\n          _tn = normals(pos.x,P1.y);\n          V1_N =float3(_tn.x,_tn.y,_tn.z);\n        \}        \n        if (V1_Sample.w != 0.0f) \{ \n          DrawTriangle(screen_pos,V1_Pos,V2_Pos,_vWorld,V1_wPos,V2_wPos,V0_N,V1_N,V2_N,V0_ST,V1_ST,V2_ST);\n        \}\n      \}\n    \}\n  \}\n\}\n\n\n\n//This function will calculate if pixel C is inside the triangle\nfloat edgeFunction(float3 a, float3 b, float3 c) \n\{ \n    return ((c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x)); \n\} \n\nfloat3 CalculateSurfaceNormals(float3 V0, float3 V1, float3 V2)\n\{\n        float3 v0 = V0; \n        float3 v1 = V1; \n        float3 v2 = V2; \n        float3 hitNormal = cross((v1 - v0),(v2 - v0)); \n        return normalize(hitNormal);\n\}\n\nfloat3 CalculateVertexNormals(float3 V0, float3 V1, float3 V2)\n\{\n        float3 v0 = V0; \n        float3 v1 = V1; \n        float3 v2 = V2; \n        float3 hitNormal = cross((v1 - v0),(v2 - v0)); \n        return normalize(hitNormal);\n\}\n\nfloat Distance(float3 _a,float3 _b)\n\{\n          float xd = _a.x - _b.x;\n          float yd = _a.y - _b.y;\n          float zd = _a.z - _b.z;\n          return sqrt(xd*xd + yd*yd + zd*zd);\n\}\n\nvoid DrawTriangle(float3 V0, float3 V1, float3 V2,float3 WP0, float3 WP1, float3 WP2,float3 N0, float3 N1, float3 N2, float2 st0,float2 st1,float2 st2) \{\n\n  // Precompute reciprocal of vertex z-coordinate \n  V0.z = 1.0f / V0.z, V1.z = 1.0f / V1.z, V2.z = 1.0f / V2.z; \n\n  float2 st0n = st0 * V0.z;\n  float2 st1n = st1 * V1.z; \n  float2 st2n = st2 * V2.z; //Normal version of ST\n\n  bool inside; \n  float X0 = Fmin(V0.x,V1.x,V2.x)-1.0f;\n  float X1 = Fmax(V0.x,V1.x,V2.x)+1.0f;\n  float Y0 = Fmin(V0.y,V1.y,V2.y)-1.0f;\n  float Y1 = Fmax(V0.y,V1.y,V2.y)+1.0f;\n  float area = edgeFunction(V2, V1, V0);\n\n\n  float2 sampos = float2(st0.x*float(Vformat.x),st0.y*float(Vformat.y));\n  float4 text0 = src(sampos.x,sampos.y);\n  sampos = float2(st1.x*float(Vformat.x),st1.y*float(Vformat.y));\n  float4 text1 = src(sampos.x,sampos.y);\n  sampos = float2(st2.x*float(Vformat.x),st2.y*float(Vformat.y));  //Why do we have to do this? =(\n  float4 text2 = src(sampos.x,sampos.y);\n  sampos = float2(min(min(st0.x,st1.x),st2.x)*float(Vformat.x),min(min(st0.y,st1.y),st2.y)*float(Vformat.y));\n  float4 text3 = src(sampos.x,sampos.y);\n\n\n  for( int x = X0; x < X1 ; x++) \{\n    for( int y = Y0; y < Y1 ; y++) \{\n      float3 pixelSample(x + _texoffset.x, y + _texoffset.y,0.0f); \n\n      //This is the part where we test if the current pixel is inside the triangle\n      //We check both for front facing and back faing options\n      float w0 = edgeFunction(V1, V0, pixelSample); //Front Facing\n      float w1 = edgeFunction(V2, V1, pixelSample); \n      float w2 = edgeFunction(V0, V2, pixelSample); \n      float w3 = edgeFunction(V0, V1, pixelSample); //Back Facing\n      float w4 = edgeFunction(V1, V2, pixelSample); \n      float w5 = edgeFunction(V2, V0, pixelSample);\n\n      //writepixel(x,y, float4(w1),1,1.0f);\n      if ((w0 >= 0 && w1 >= 0 && w2 >= 0 && _frontfacing) || (w3 >= 0 && w4 >= 0 && w5 >= 0 && _backfacing)) \{ //The curent pixel is inside the triangle\n\n       // calculate vectors from point f to vertices p1, p2 and p3:\n       float3 f1 = V0-pixelSample;\n       float3 f2 = V1-pixelSample;\n       float3 f3 = V2-pixelSample;\n       // calculate the areas and factors (order of parameters doesn't matter):\n       float a = length(cross(V0-V1,V0-V2 )); // main triangle area a\n       area = length(V0-V1)+length(V0-V2)+length(V1-V2);\n\n        w0 /= area; \n        w1 /= area; \n        w2 /= area; \n\n        w3 /= area; \n        w4 /= area; \n        w5 /= area; \n\n       float a1 = length(cross(f2, f3)) / a; // p1's triangle area / a\n       float a2 = length(cross(f3, f1)) / a; // p2's triangle area / a \n       float a3 = length(cross(f1, f2)) / a; // p3's triangle area / a\n       float a_magnitude = a1+a2+a3;\n       a1 = a1/a_magnitude;\n       a2 = a2/a_magnitude;\n       a3 = a3/a_magnitude;\n       float z = 1.0f / (V0.z * a1 + V1.z * a2 + V2.z * a3); \n\n\n        // find the uv corresponding to point f (uv1/uv2/uv3 are associated to p1/p2/p3):\n        float2 uv = st0 * a1 + st1 * a2 + st2 * a3;\n        float2 st = st0 * w0 + st1 * w1 + st2 * w2; \n        st *= z;      \n\n\n        //Calculate normals. Eighter we have flat shading, else we calculate a normal per pixel\n        float3 normalB;\n        if (_flatshading) \{\n          normalB = CalculateSurfaceNormals(WP0,WP1,WP2);\n\n        \}\n        else \{\n          float3 c0 = N2/float3(V0.z); \n          float3 c1 = N0/float3(V1.z); \n          float3 c2 = N1/float3(V2.z);  \n\n          normalB.x = w0 * c0.x + w1 * c1.x + w2 * c2.x; \n          normalB.y = w0 * c0.y + w1 * c1.y + w2 * c2.y; \n          normalB.z = w0 * c0.z + w1 * c1.z + w2 * c2.z; \n\n          normalB.x *= z, normalB.y *= z, normalB.z *= z; \n        \}\n        normalB = normalize(normalB);\n\n        //CALCULATE THE OBJECT TEXTURE COORDINATES\n        float zn = 1.0f / (V0.z * w0 + V1.z * w1 + V2.z * w2); \n        st = st0n * w0 + st1n * w1 + st2n * w2; \n        st *= zn;   \n        //--END \n\n        float3 Wpos = WP0*a1 + WP1*a2 + WP2*a3; //World Position.\n        float3 ViewNormal = normalize(float3(cameraToWorld\[3]\[0],cameraToWorld\[3]\[1],cameraToWorld\[3]\[2])-Wpos);\n\n        float nDotView =  dot(normalB,ViewNormal);\n        nDotView = 1.0f-fabs(nDotView); //make sure that the view normal ramps back around when doing backface\n        float4 tempout;\n\n        //Flatshading or regular?\n        if (!_flatshading) \{\n          tempout = text0 * a1 + text1 * a2 + text2 * a3; \n        \}\n        else\{\n          tempout = text3;\n        \}\n\n        //Additional Render Modes\n        if (_vertexMode == 1)\{\n          tempout = float4(a1,a2,a3,1.0f);\n        \}\n        else if (_vertexMode == 2)\{\n          tempout = float4(normalB.x,normalB.y,normalB.z,1.0f);\n        \}\n        else if (_vertexMode == 3)\{\n          tempout = float4(nDotView,nDotView,nDotView,1.0f);\n        \}\n        else if (_vertexMode == 4)\{\n          tempout = float4(uv.x,uv.y,0.0f,1.0f);\n        \}       \n        else if (_vertexMode == 5)\{\n          tempout = float4(st.x,st.y,0.0f,1.0f);\n        \}               \n        else if (_vertexMode == 6)\{\n          tempout = float4(ViewNormal.x,ViewNormal.y,ViewNormal.z,1.0f);\n        \}             \n        else if (_vertexMode == 7)\{\n          tempout = float4(Wpos.x,Wpos.y,Wpos.z,1.0f);\n        \}   \n\n        if (_depthBuffer)\{\n          writepixel(x,y, float4(tempout.x,tempout.y,tempout.z,z),1,1.0f);  \n        \}\n        else \{\n          if (_dof_enable)\{\n            Bokeh(float3(x,y,z),float4(tempout.x,tempout.y,tempout.z,z));\n          \}\n          else \{\n            bilinear_Plot(float2(x,y),float4(tempout.x,tempout.y,tempout.z,z),1);\n          \}\n        \}\n\n      \}  \n\n    \}\n  \}\n\}\n\n//-------------------------------------\n// Wire_Render\n//-------------------------------------\nvoid wire_render(int2 pos) \{\n  float4 temp = float4(0.0f,0.0f,0.0f,FLT_MAX);\n  float4 wire_ref_sample;\n  int2 tempXY = int2(0,0);\n  float4 plexlist\[11] = \{temp,temp,temp,temp,temp,temp,temp,temp,temp,temp,temp\}; \n  int2 plexlistXY\[11] = \{tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY\};\n  int plex_count = 0; //We use this to figure how many points that should connect.\n  float plex_dist;\n  float3 plex_position,plex_position_b;\n  float4 temp_pos, temp_pos_b; //Temporary Position Containers\n  if (_maxPlexType == -1) \{ //Used for random connection types\n    for( int x = 0; x < max_line_connections ; x++)\{ //THIS 80 NUMBER IS THE LIMIT TO AVOID TOO SLOW PROCESSING!\n      for( int y = 0; y < max_line_connections ; y++)\{\n        wire_ref_sample = ppos(x,y);\n        if (wire_ref_sample.w != 0.0f && pos.x!=x && pos.y != y) \{ \n          plex_position = float3(wire_ref_sample.x,wire_ref_sample.y,wire_ref_sample.z)*(zoom);\n          float xd = plex_position.x - vWorld.x;\n          float yd = plex_position.y - vWorld.y;\n          float zd = plex_position.z - vWorld.z;\n          float plex_dist = sqrt(xd*xd + yd*yd + zd*zd);\n          if (plex_dist<_maxPlexDistance)\{\n            plex_count = min(10,plex_count+1); //Add one to the count\n            for( int h = 0; h < plex_count+1 ; h++) \{ //Loop thought all the points. If the distance is shorter then insert it into the array and push the rest of the array down\n              if (plex_dist < plexlist\[h].w) \{                  \n                for( int i = plex_count+1; i > h ; i--) \{\n                  plexlist\[i] = plexlist\[i-1];\n                  plexlistXY\[i] = plexlistXY\[i-1];\n                \}\n                plexlist\[h] = float4(plex_position.x,plex_position.y,plex_position.z,plex_dist);\n                plexlistXY\[h] = int2(x,y);\n                break;        \n              \}\n            \}\n          \} \n        \}\n      \}\n    \}\n  \}\n  else\{ //Used for standard connection types\n    float4 temp_pos;\n    bool insideX = !(Vformat.x < pos.x+1);\n    bool insideY = !(Vformat.y < pos.y+1);\n\n\n    if (!_plexLinedefAUX)\{\n      temp_pos = normals(pos.x,pos.y);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,vWorld+plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n\n    if ( insideX && !_plexLinedefX) \{\n      temp_pos = ppos(pos.x+1,pos.y );\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n    else if ( _plexConnectX && !_plexLinedefX) \{\n      temp_pos = ppos(0,pos.y);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n\n    if ( insideY && !_plexLinedefY) \{\n      temp_pos = ppos(pos.x,pos.y+1);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\}                          \n    \}\n    else if ( _plexConnectY  && !_plexLinedefY) \{\n      temp_pos = ppos(pos.x,0);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n\n    //_plexConnect\n    if ( insideX && insideY && !_plexLinedefXY) \{              \n      temp_pos = ppos(pos.x+1,pos.y+1);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n    else if ( _plexConnectX && _plexConnectY && !_plexLinedefXY) \{\n      temp_pos = ppos((pos.x+1)*insideX,(pos.y+1)*insideY);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n    else if ( _plexConnectX && insideY && !_plexLinedefXY) \{\n      temp_pos = ppos((pos.x+1)*insideX,(pos.y+1)*insideY);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n    else if ( _plexConnectY && insideX && !_plexLinedefXY) \{\n      temp_pos = ppos((pos.x+1)*insideX,(pos.y+1)*insideY);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n  \}   \n\n  //now that all the connections have been sorted by distance then we connect the dots.\n  for( int x = 0; x < min(_maxPlexConnections,plex_count) ; x++)\{\n    plex_position = float3(plexlist\[x].x,plexlist\[x].y,plexlist\[x].z);\n    plex_dist = plexlist\[x].w;\n\n\n    float plex_distribution = 1.0f-((plexlist\[x].w-plexlist\[0].w)/((plexlist\[min(_maxPlexConnections,plex_count)].w-plexlist\[0].w)+0.00001f)); //Where does it lie between the best and the worst distance?\n    //plexlistXY\n\n    float4 plex_col = float4(pow(1.0f-(plex_dist/_maxPlexDistance),1.0f/_plex_gamma))*float4(plex_distribution); //This one is quite cool aswell, but does leave the center ones a bit too focused \n    float4 plex_colorA = src(pos.x,pos.y);\n    float4 plex_colorB = src( plexlistXY\[x].x,plexlistXY\[x].y);\n    plex_col *= 0.1f;\n\n    computePixelCoordinates(plex_position, pRaster, worldToCamera, canvasWidth, canvasHeight, WHformat\[0], WHformat\[1],_overscan);\n    if (dst.bounds.inside(int(vRaster.x),int(vRaster.y)) || dst.bounds.inside(int(pRaster.x),int(pRaster.y)))\{\n        DrawLine(vRaster,pRaster,(plex_colorA*plex_col)*_lineInMultiplier,(plex_colorB*plex_col)*_lineOutMultiplier);\n    \}\n  \}\n\}\n\nvoid wire_connection(float3 p_source,float3 p_target, float4 (&p_plexlist)\[11], int2 (&p_plexlistXY)\[11],int &p_plexcount,int2 position) \{\n  float xd = p_target.x - p_source.x;\n  float yd = p_target.y - p_source.y;\n  float zd = p_target.z - p_source.z;\n  float plex_dist = sqrt(xd*xd + yd*yd + zd*zd);\n  if (plex_dist<_maxPlexDistance)\{\n    p_plexcount = min(11,p_plexcount+1); //Add one to the count\n    for( int h = 0; h < p_plexcount+1 ; h++) \{ //Loop thought all the points. If the distance is shorter then insert it into the array and push the rest of the array down\n      if (plex_dist < p_plexlist\[h].w) \{                  \n        for( int i = p_plexcount+1; i > h ; i--) \{\n          p_plexlist\[i] = p_plexlist\[i-1];\n          p_plexlistXY\[i] = p_plexlistXY\[i-1];\n        \}\n        p_plexlist\[h] = float4(p_target.x,p_target.y,p_target.z,plex_dist);\n        p_plexlistXY\[h] = int2(position.x,position.y);\n        break;        \n      \}\n    \}  \n  \}\n\}\n//-------END OF WIRE RENDER FUNCTIONS---------\n\n\n\n\n//-------------------------------\n//-------BOKEH FUNCTIONS---------\n//thanks to: http://devlog-martinsh.blogspot.dk/2011/11/glsl-depth-of-field-with-bokeh-v21.html\nfloat2 rand(float2 coord) //generating noise/pattern texture for dithering\n\{\n  float noiseX = ((Frac(1.0-coord.x*(WHformat\[0]/2.0))*0.25)+(Frac(coord.y*(WHformat\[1]/2.0))*0.75))*2.0-1.0;\n  float noiseY = ((Frac(1.0-coord.x*(WHformat\[0]/2.0))*0.75)+(Frac(coord.y*(WHformat\[1]/2.0))*0.25))*2.0-1.0;\n  noiseX = clamp(Frac(sin(dot(coord ,float2(12.9898f,78.233f))) * 43758.5453f),0.0f,1.0f)*2.0f-1.0f;\n  noiseY = clamp(Frac(sin(dot(coord ,float2(12.9898f,78.233f)*2.0f)) * 43758.5453f),0.0f,1.0f)*2.0-1.0f;\n  return float2(noiseX,noiseY);\n\}\n//-------------------------------------\n// Bokeh\n//-------------------------------------\nvoid Bokeh(float3 pos,float4 color)\{\n  float blur = 0.0;\n  blur = clamp((fabs(pos.z - focalDepth)/_depthOfField)*100.0f,-_maxDofSize,_maxDofSize);\n  \n  float w = (1.0/WHformat.x)*blur;//+noise.x;\n  float h = (1.0/(WHformat.x*dof_aspect))*blur;//+noise.y;\n  float3 v3_col = float3(color.x,color.y,color.z);\n  int ringsamples;\n  float s = 1.0;  \n\n  for (int i = 1; i <= _dof_rings; i += 1)\n  \{   \n    ringsamples = i * _dof_samples; \n    for (int j = 0 ; j < ringsamples ; j += 1)  \n    \{ \n      s += (1.0f*mix(1.0f,(float(i))/(float(_dof_rings)),dof_bias)*1.0f); //No need to do this in the loop\n    \}\n  \}\n\n  for (int i = 1; i <= _dof_rings; i += 1)\n  \{   \n    ringsamples = i * _dof_samples;\n     \n    for (int j = 0 ; j < ringsamples ; j += 1)   \n    \{\n      float step = PI*2.0 / float(ringsamples);\n      float pw = (cos(float(j)*step)*(float(i)/_dof_rings));\n      float ph = (sin(float(j)*step)*(float(i)/_dof_rings));\n      float p = 1.0;\n\n      float posx = pos.x+((pw*w)*blur);\n      float posy = pos.y+((ph*h)*blur);\n\n\n      float3 lumcoeff = float3(0.299,0.587,0.114);\n      float lum = dot(v3_col, lumcoeff);\n      float thresh = max((lum-dof_threshold)*dof_gain, 0.0f);\n      v3_col+mix(float3(0.0),v3_col,thresh*blur);\n\n      float3 col = (v3_col*mix(1.0,(float(i))/(float(_dof_rings)),dof_bias)*p)/s; \n      bilinear_Plot(float2(posx,posy),float4(col.x,col.y,col.z,color.w/(_dof_rings*_dof_rings)),1);\n    \}\n  \}\n\}\n//-------END OF BOKEH FUNCTIONS---------\n\n\n\n//-------------------------------------\n// Process\n//-------------------------------------\n  void process(int2 pos) \{\n    float4 _sample = ppos(pos.x,pos.y); //Get the XYZ Coordinates\n    float2 posf = float2(pos.x,pos.y);\n\n    if (_sample.w != 0.0f) \{  //No need to process if there is no data.\n\n      //Convert worldspace coordinates to screenspcace coordinates.\n      vWorld = float3(_sample.x,_sample.y,_sample.z)*(zoom);\n      int ret = computePixelCoordinates(vWorld, vRaster, worldToCamera, canvasWidth, canvasHeight, WHformat\[0], WHformat\[1],_overscan);\n      if (ret) \{ //Only create points that are visible on screen\n        if (_pointRender)\{\n          point_render(pos,vRaster);\n        \}\n      \} //Pointrender over\n\n      if (_wireRender && _maxPlexConnections>=1) \{\n        if (max(pos.x,pos.y)<=max_line_connections || (_maxPlexType==0))\{ // Don't process more wires than allowed in nearest mode.\n          wire_render(pos);\n        \}\n      \} //WireRender over\n\n      if (_facetRender) \{\n        facet_render(pos,float3(_sample.x,_sample.y,_sample.z));\n      \}  //FacetRender over\n      \n    \}\n  \} //----> process\n\};\n"
+  useGPUIfAvailable false
+  rebuild ""
+  PointRender3D_cam_Matrix {
+      {{parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix}}
+      {{parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix}}
+      {{parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix}}
+      {{parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix}}
+    }
+  PointRender3D_focallength {{parent.Camera1.focal}}
+  PointRender3D_hapeture {{parent.Camera1.haperture}}
+  PointRender3D_format {{!proxy?Settings_Format.width:Settings_Format.width*proxy_scale} {!proxy?Settings_Format.height:Settings_Format.height*proxy_scale}}
+  PointRender3D_vertexformat {{parent.InputFormat.box.r-1} {parent.InputFormat.box.t-1}}
+  PointRender3D__alphaMultiplier {{parent.AlphaMultiplier}}
+  PointRender3D__pointRender {{parent.RenderMode==0}}
+  PointRender3D__wireRender {{parent.RenderMode==1}}
+  PointRender3D__facetRender {{parent.RenderMode==2}}
+  PointRender3D__maxLDistance {{parent.wire_maxdistance}}
+  PointRender3D__maxLConnections {{parent.wire_connections}}
+  PointRender3D__maxPlexType {{-parent.wire_type}}
+  PointRender3D__plexLinedefXY {{!parent.connect_xy}}
+  PointRender3D__plexLinedefX {{!parent.connect_x}}
+  PointRender3D__plexLinedefY {{!parent.connect_y}}
+  PointRender3D__plexLinedefAUX {{!connect_aux}}
+  PointRender3D__plexConnectX {{parent.CloseX}}
+  PointRender3D__plexConnectY {{parent.CloseY}}
+  PointRender3D__L_gamma {{parent.wire_Threshold}}
+  "PointRender3D_Enable Depth of Field" {{parent.dof_enable}}
+  PointRender3D_samples {{3*(parent.Dof_Quality*parent.Dof_Quality+1)}}
+  PointRender3D_rings {{3*(parent.Dof_Quality*parent.Dof_Quality+1)}}
+  PointRender3D_focalDepth {{parent.dof_focaldepth}}
+  PointRender3D__depthOfField {{parent.dof_dof}}
+  PointRender3D__depthMult 0
+  PointRender3D__maxDofSize {{parent.dof_maxSize*400}}
+  PointRender3D_dof_aspect {{parent.dof_Aspect}}
+  PointRender3D_dof_bias {{parent.dof_bias}}
+  PointRender3D__flatshading {{parent.facet_flatShading}}
+  PointRender3D__backfacing {{parent.facet_backface}}
+  PointRender3D__frontfacing {{parent.facet_front}}
+  PointRender3D__vertexMode {{parent.renderMode}}
+  PointRender3D__texoffset {-0.5 0.5}
+  PointRender3D__pointSize 0
+  PointRender3D__depthOcclusion {{parent.UseOcclusionMap}}
+  PointRender3D__maxLineSteps {{parent.maxSamples}}
+  PointRender3D__lineOffset {{parent.lineoffset}}
+  PointRender3D__lineInMultiplier {{parent.inGain}}
+  PointRender3D__lineOutMultiplier {{parent.outGain}}
+  PointRender3D__overscan {{parent.overscan} {parent.overscan}}
+  PointRender3D_isDepth true
+  format "1280 720 0 0 1280 720 1 HD_720"
+  rebuild_finalise ""
+  name BlinkScriptZdepth
+  label Zdepth
+  xpos -28
+  ypos 100
+ }
+ Dot {
+  name Dot10
+  xpos 97
+  ypos 112
+ }
+ TimeBlur {
+  divisions {{parent.Samples}}
+  shutter {{parent.Shutter}}
+  shutteroffset centred
+  shuttercustomoffset 0
+  name MotionBlur1
+  xpos 63
+  ypos 300
+  disable {{1-parent.mb_enable x89 0}}
+ }
+ Expression {
+  expr3 a!=0?a/r:0
+  name Expression3
+  selected true
+  xpos 63
+  ypos 324
+ }
+ Dot {
+  name Dot9
+  xpos 97
+  ypos 414
+ }
+push $N88f86000
+push $N8fd85a80
+push $N8e8ed400
+push $N8f950400
+ BlinkScript {
+  inputs 4
+  kernelSourceFile /Users/madshagbarth/Github/Nuke-Private/Blink/PointRender/Render/3D_PointRender_v17.cpp
+  recompileCount 803
+  ProgramGroup 1
+  KernelDescription "2 \"PointRender3D\" iterate pixelWise 0c100cf8a634aa2c2e18f544ec8abfd6d5d138cc25ae8f7d7127230910c2e91f 5 \"ppos\" Read Random \"src\" Read Random \"normals\" Read Random \"occlusion\" Read Random \"dst\" Write Random 49 \"cam_Matrix\" Float 16 AACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPw== \"focallength\" Float 1 AAA4QQ== \"hapeture\" Float 1 ppvEQQ== \"format\" Int 2 AAgAAAAIAAA= \"vertexformat\" Int 2 CgAAAAoAAAA= \"Zoom\" Float 1 AACAPw== \"Filtering Method\" Int 1 AQAAAA== \"_alphaMultiplier\" Float 1 AACAPw== \"_pointRender\" Bool 1 AQ== \"_wireRender\" Bool 1 AQ== \"_facetRender\" Bool 1 AQ== \"_maxLDistance\" Float 1 AACAPw== \"_maxLConnections\" Int 1 AQAAAA== \"_maxPlexType\" Int 1 AAAAAA== \"_plexLinedefXY\" Bool 1 AA== \"_plexLinedefX\" Bool 1 AA== \"_plexLinedefY\" Bool 1 AA== \"_plexLinedefXtoY\" Bool 1 AA== \"_plexLinedefAUX\" Bool 1 AA== \"_plexConnectX\" Bool 1 AA== \"_plexConnectY\" Bool 1 AA== \"_L_gamma\" Float 1 AACAPw== \"Enable Depth of Field\" Bool 1 AA== \"samples\" Int 1 AwAAAA== \"rings\" Int 1 BQAAAA== \"focalDepth\" Float 1 AACAPw== \"_depthOfField\" Float 1 AACAQA== \"_depthMult\" Float 1 zczMPQ== \"_maxDofSize\" Float 1 AAAAQQ== \"dof_aspect\" Float 1 AACAPw== \"dof_threshold\" Float 1 AACAPw== \"dof_gain\" Float 1 AAAAAA== \"dof_bias\" Float 1 AAAAwA== \"dof_fringe\" Float 1 AAAAAA== \"_flatshading\" Bool 1 AQ== \"_backfacing\" Bool 1 AQ== \"_frontfacing\" Bool 1 AQ== \"_vertexMode\" Int 1 AAAAAA== \"_depthBuffer\" Bool 1 AQ== \"_texoffset\" Float 2 AAAAPwAAAD8= \"_pointSize\" Int 1 AQAAAA== \"_gaussigma\" Float 1 AACAPw== \"_depthOcclusion\" Bool 1 AQ== \"depthMultiplier\" Float 1 AACAPw== \"_maxLineSteps\" Float 1 AAB6RQ== \"_lineOffset\" Float 1 AACAPw== \"_lineInMultiplier\" Float 1 AACAPw== \"_lineOutMultiplier\" Float 1 AACAPw== \"_overscan\" Float 2 AAAAAAAAAAA= 49 \"cam_Matrix\" 16 1 \"cam_Focal\" 1 1 \"cam_Hapeture\" 1 1 \"WHformat\" 2 1 \"Vformat\" 2 1 \"zoom\" 1 1 \"_filtering\" 1 1 \"_alphaMultiplier\" 1 1 \"_pointRender\" 1 1 \"_wireRender\" 1 1 \"_facetRender\" 1 1 \"_maxPlexDistance\" 1 1 \"_maxPlexConnections\" 1 1 \"_maxPlexType\" 1 1 \"_plexLinedefXY\" 1 1 \"_plexLinedefX\" 1 1 \"_plexLinedefY\" 1 1 \"_plexLinedefXtoY\" 1 1 \"_plexLinedefAUX\" 1 1 \"_plexConnectX\" 1 1 \"_plexConnectY\" 1 1 \"_plex_gamma\" 1 1 \"_dof_enable\" 1 1 \"_dof_samples\" 1 1 \"_dof_rings\" 1 1 \"focalDepth\" 1 1 \"_depthOfField\" 1 1 \"_depthMult\" 1 1 \"_maxDofSize\" 1 1 \"dof_aspect\" 1 1 \"dof_threshold\" 1 1 \"dof_gain\" 1 1 \"dof_bias\" 1 1 \"dof_fringe\" 1 1 \"_flatshading\" 1 1 \"_backfacing\" 1 1 \"_frontfacing\" 1 1 \"_vertexMode\" 1 1 \"_depthBuffer\" 1 1 \"_texoffset\" 2 1 \"_pointSize\" 1 1 \"_gaussigma\" 1 1 \"_depthOcclusion\" 1 1 \"depthMultiplier\" 1 1 \"_maxLineSteps\" 1 1 \"_lineOffset\" 1 1 \"_lineInMultiplier\" 1 1 \"_lineOutMultiplier\" 1 1 \"_overscan\" 2 1 10 \"max_line_connections\" Int 1 1 AAAAAA== \"vRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"pRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"tRaster\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"vWorld\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"canvasWidth\" Float 1 1 AAAAAA== \"canvasHeight\" Float 1 1 AAAAAA== \"matrixData\" Float 1 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"cameraToWorld\" Float 16 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"worldToCamera\" Float 16 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  kernelSource "//Some basic generic functions.\ninline float Frac(float a_X)\n\{\n    return a_X-floor(a_X);\n\}\n\ninline float3 Cross(float3 A,float3 B)\n\{\n    return float3(A.y*B.z - A.z*B.y,A.z*B.x - A.x*B.z,A.x*B.y - A.y*B.x);\n\}\n\ninline float Fmax(float a_X,float b_X,float c_X)\n\{\n    return max(c_X,max(a_X,b_X));\n\}\ninline float Fmin(float a_X,float b_X,float c_X)\n\{\n    return min(c_X,min(a_X,b_X));\n\}     \n\ninline float3 mix(float3 _X,float3 _Y,float _A)\{\n  return _X*(1.0f-_A)+_Y*_A;\n\}\ninline float mix(float _X,float _Y,float _A)\{\n  return _X*(1.0f-_A)+_Y*_A;\n\}                                                                                              \n\n//This function is used to multiply a float3 by a matrix4x4\ninline float3 multVecMatrix( float3 src, float4x4 matrix)\n\{\n    float   x,y,z,w;\n\n    x = src\[0]*matrix\[0]\[0] + src\[1]*matrix\[1]\[0] +\n    src\[2]*matrix\[2]\[0] + matrix\[3]\[0];\n    y = src\[0]*matrix\[0]\[1] + src\[1]*matrix\[1]\[1] +\n    src\[2]*matrix\[2]\[1] + matrix\[3]\[1];\n    z = src\[0]*matrix\[0]\[2] + src\[1]*matrix\[1]\[2] +\n    src\[2]*matrix\[2]\[2] + matrix\[3]\[2];\n    w = src\[0]*matrix\[0]\[3] + src\[1]*matrix\[1]\[3] +\n    src\[2]*matrix\[2]\[3] + matrix\[3]\[3];\n    \n    return float3(x/w, y/w, z/w);\n\}\n\n//This function is used to calculate the screenspace coordinates.\ninline bool computePixelCoordinates( \n    const float3 pWorld, \n    float3 &pRaster, \n    const float4x4 &worldToCamera, \n    const float &canvasWidth, \n    const float &canvasHeight, \n    const int &imageWidth, \n    const int &imageHeight,\n    float2 overscan\n) \n\{ \n    float3 pCamera; \n    pCamera = multVecMatrix(pWorld, worldToCamera); \n    float2 pScreen; \n    pScreen.x = pCamera.x / -pCamera.z; \n    pScreen.y = pCamera.y / -pCamera.z; \n    float2 pNDC; \n    pNDC.x = (pScreen.x + canvasWidth * 0.5f) / canvasWidth; \n    pNDC.y = (pScreen.y + canvasHeight * 0.5f) / canvasHeight; \n    pRaster.x = (pNDC.x * imageWidth); \n    pRaster.y = ((pNDC.y) * imageHeight); \n    pRaster.z = -pCamera.z; \n    if (pRaster.x < 0.0f-overscan.x || pRaster.x > imageWidth+overscan.x || \n       pRaster.y < 0.0f-overscan.y || pRaster.y > imageHeight+overscan.y || pRaster.z < 0.0f) \{\n       return false;  \n    \}\n    return true;\n\} \n\n\nkernel PointRender3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> ppos;    //The point position map\n  Image<eRead, eAccessRandom, eEdgeClamped> src;     //The texture map\n  Image<eRead, eAccessRandom, eEdgeClamped> normals;     //The texture map  \n  Image<eRead, eAccessRandom, eEdgeClamped> occlusion;     //The texture map \n  Image<eWrite, eAccessRandom> dst;                 //the output image\n\n  param: //Parameters available to the user\n    float4x4 cam_Matrix;    //The world matrix of the camera\n    float cam_Focal;        //The focal length of the camera\n    float cam_Hapeture;     //The horizontal apeture of the camera\n    int2 WHformat,Vformat;          //The format of the output image\n    float zoom;             //A \"post\" zoom function\n    int _filtering;        //Filter method\n    float _alphaMultiplier; //Additive multiplier\n    bool _pointRender,_wireRender,_facetRender;\n    float _maxPlexDistance; //Additive multiplier\n    int _maxPlexConnections;\n    int _maxPlexType; // 0==Grid, -1==Nearest\n    bool _plexLinedefXY,_plexLinedefX,_plexLinedefY,_plexLinedefXtoY,_plexLinedefAUX; // Define what connections NOT to include\n    bool _plexConnectX,_plexConnectY; //Connect from the edge of x to 0, or edge of y to 0, usually for spheres\n    float _plex_gamma; //The threshold making shorter paths bright and longer paths dark\n    bool _dof_enable; // Enable DOF\n    int _dof_samples; // How many samples per DOF ring\n    int _dof_rings; // How many rings \n    float focalDepth,_depthOfField,_depthMult,_maxDofSize; //DOF Settings\n    float dof_aspect; //Pixel aspect ratio\n    float dof_threshold;\n    float dof_gain;\n    float dof_bias; //bokeh edge bias\n    float dof_fringe; //bokeh chromatic aberration/fringing\n    bool _flatshading,_backfacing,_frontfacing; //Vertex rendering settings\n    int _vertexMode;  //The rendering output mode, (think AOV)\n    bool _depthBuffer; //Non-additive, only render front most pixel\n    float2 _texoffset;\n    int _pointSize;\n    float _gaussigma;\n    bool _depthOcclusion;\n    float depthMultiplier;\n    float _maxLineSteps; //cap the line length to avoid process lock\n    float _lineOffset; //Alow you to shrink or extend the lines\n    float _lineInMultiplier,_lineOutMultiplier; //Control the brightness of the wires at the tips.\n    float2 _overscan; //This will allow you to render some extra outside the bounds of the image.\n\n  local: //Local variables\n    int max_line_connections;\n    float3 vRaster;\n    float3 pRaster;\n    float3 tRaster;    \n    float3 vWorld;\n    float canvasWidth;\n    float canvasHeight; \n    float matrixData\[4]\[4];\n    float4x4 cameraToWorld;\n    float4x4 worldToCamera;\n\n  void define() \{\n    defineParam(cam_Matrix, \"cam_Matrix\", float4x4( 1.0f,0.0f,0.0f,0.0f,\n                                                    0.0f,1.0f,0.0f,0.0f,\n                                                    0.0f,0.0f,1.0f,0.0f,\n                                                    0.0f,0.0f,0.0f,1.0f));\n    defineParam(cam_Focal,      \"focallength\", 11.5f);\n    defineParam(cam_Hapeture,      \"hapeture\", 24.576f);\n    defineParam(WHformat,      \"format\", int2(2048,2048));\n    defineParam(Vformat,      \"vertexformat\", int2(10,10));\n    defineParam(zoom, \"Zoom\", 1.0f);\n    defineParam(_filtering, \"Filtering Method\", 1); \n    defineParam(_alphaMultiplier, \"_alphaMultiplier\", 1.0f);     \n    defineParam(_pointRender, \"_pointRender\", true);  \n    defineParam(_wireRender, \"_wireRender\", true);\n    defineParam(_facetRender, \"_facetRender\", true);\n    defineParam(_maxPlexDistance, \"_maxLDistance\", 1.0f);    \n    defineParam(_maxPlexConnections, \"_maxLConnections\", 1);    \n    defineParam(_maxPlexType, \"_maxPlexType\", 0); \n    defineParam(_plexLinedefXY, \"_plexLinedefXY\", false);      \n    defineParam(_plexLinedefXtoY, \"_plexLinedefXtoY\", false); //NYI\n    defineParam(_plexLinedefAUX, \"_plexLinedefAUX\", false); \n    defineParam(_plexLinedefX, \"_plexLinedefX\", false);  \n    defineParam(_plexLinedefY, \"_plexLinedefY\", false);  \n    defineParam(_plexConnectX, \"_plexConnectX\", false);      \n    defineParam(_plexConnectY, \"_plexConnectY\", false);   \n    defineParam(_plex_gamma, \"_L_gamma\", 1.0f);\n    //DOF SETTINGS   \n    defineParam(_dof_enable, \"Enable Depth of Field\", false);   \n    defineParam(_dof_samples, \"samples\", 3);    \n    defineParam(_dof_rings, \"rings\", 5);   \n    defineParam(focalDepth, \"focalDepth\", 1.0f);  \n    defineParam(_depthOfField, \"_depthOfField\", 4.0f);  \n    defineParam(_depthMult, \"_depthMult\", 0.1f);  \n    defineParam(_maxDofSize, \"_maxDofSize\", 8.0f);  \n    defineParam(dof_aspect, \"dof_aspect\", 1.0f);  \n    defineParam(dof_threshold, \"dof_threshold\", 1.0f);  \n    defineParam(dof_gain, \"dof_gain\", 0.0f);  \n    defineParam(dof_bias, \"dof_bias\", -2.0f);  \n    defineParam(dof_fringe, \"dof_fringe\", 0.0f); \n    //SHADING SETTINGS \n    defineParam(_flatshading, \"_flatshading\", true);  \n    defineParam(_vertexMode, \"_vertexMode\", 0);  \n    defineParam(_backfacing, \"_backfacing\", true);    \n    defineParam(_frontfacing, \"_frontfacing\", true);        \n    defineParam(_depthBuffer, \"_depthBuffer\", true);  \n    defineParam(_texoffset, \"_texoffset\", float2(0.5f,0.5f)); \n    defineParam(_pointSize, \"_pointSize\", 1); \n    defineParam(_gaussigma, \"_gaussigma\", 1.0f); \n    defineParam(_depthOcclusion, \"_depthOcclusion\", true); \n    defineParam(depthMultiplier, \"depthMultiplier\", 1.0f); \n    defineParam(_maxLineSteps, \"_maxLineSteps\", 4000.0f); \n    defineParam(_lineOffset, \"_lineOffset\", 1.0f); \n    defineParam(_lineInMultiplier, \"_lineInMultiplier\", 1.0f);   \n    defineParam(_lineOutMultiplier, \"_lineOutMultiplier\", 1.0f);     \n    defineParam(_overscan, \"_overscan\",float2(0.0f,0.0f));    \n\n  \}\n\n  //The init() function is run before any calls to process().\n  void init() \{\n    max_line_connections = 80;\n    canvasWidth = ((cam_Hapeture)/cam_Focal);\n    canvasHeight = ((cam_Hapeture)/cam_Focal)*float(float(WHformat.y)/float(WHformat.x)); \n    float matrixData\[] = \{cam_Matrix\[0]\[0], cam_Matrix\[1]\[0], cam_Matrix\[2]\[0], cam_Matrix\[3]\[0], \n                          cam_Matrix\[0]\[1], cam_Matrix\[1]\[1], cam_Matrix\[2]\[1], cam_Matrix\[3]\[1], \n                          cam_Matrix\[0]\[2], cam_Matrix\[1]\[2], cam_Matrix\[2]\[2], cam_Matrix\[3]\[2], \n                          cam_Matrix\[0]\[3], cam_Matrix\[1]\[3], cam_Matrix\[2]\[3], cam_Matrix\[3]\[3]\};\n    cameraToWorld.setArray(matrixData); //This is a workaround. Due to the buggy matrix implementation, we pass the matrix on from another structure.\n    worldToCamera = cameraToWorld.invert();\n  \}\n\n  //Convert a 3d point position into a 2d raster position.\n  float3 Reconsile3D(float3 _PointPos)\{\n      vWorld = float3(_PointPos.x,_PointPos.y,_PointPos.z)*(zoom);\n      int ret = computePixelCoordinates(vWorld, tRaster, worldToCamera, canvasWidth, canvasHeight, WHformat\[0], WHformat\[1],_overscan);\n      return tRaster;\n  \}\n\n//------------------------------\n//-------DRAW FUNCTIONS---------\n//------------------------------\n  //Write pixels to output.\n  void writepixel(float posx,float posy, float4 color,int index,float weight=1.0f)\n  \{ \n      if (_depthOcclusion)\{\n        float4 depthSample = occlusion(posx,posy);\n        if (depthSample.x<=vRaster.z && depthSample.w>0.0f)\{\n\n          float depth = (vRaster.z-depthSample.x);\n          color = color*(1.0f-depthSample.w);\n          color = color / (((depth*depth)*depthMultiplier)+1.0f);\n          //return;\n        \}\n      \}\n      float4 finalOutput; //This is used to store the final output\n      float4 dstSample; //This is used to store a sample of the destination\n      if ( dst.bounds.inside( posx, posy ) ) \{ //Test if the pixel written to is inside the output image. \n        if (_depthBuffer) \{\n          dstSample = (float4)dst(posx,posy); //Sample the destination image\n          if ((dstSample.w>color.w)||dstSample.w==0.0f) \{\n            dst(posx,posy) = color;\n          \}\n        \}\n        else \{\n          dstSample = (float4)dst(posx,posy); //Sample the destination image\n          finalOutput = dstSample + (color*_alphaMultiplier*weight);\n          finalOutput.w = dstSample.w + ((color.w*_alphaMultiplier*weight));\n\n          finalOutput.w = (dstSample.w + ((color.w*_alphaMultiplier*weight)))-(dstSample.w * ((color.w*_alphaMultiplier*weight)));\n\n          dst(posx,posy) = finalOutput;\n        \}\n      \} \n  \}\n\n  //Calculate a Bilinear Plot\n  void bilinear_Plot(float2 temppos,float4 color,int index)\n  \{\n    float2 p;\n    p.x=Frac(temppos.x);\n    p.y=Frac(temppos.y);\n    float weights\[] = \{(1.0f-p.x)*(1.0f-p.y), p.x*(1.0f-p.y), (1.0f-p.x)*p.y, p.x*p.y\};\n    int2 _position = int2(floor(temppos.x)-0,floor(temppos.y)-0); \n    writepixel(_position.x,_position.y,color,index,weights\[0]);\n    writepixel(_position.x+1,_position.y,color,index,weights\[1]);\n    writepixel(_position.x,_position.y+1,color,index,weights\[2]);\n    writepixel(_position.x+1,_position.y+1,color,index,weights\[3]);\n  \}\n\n  //NYI, unused!\n  void gaussian(float2 temppos,float4 color,int index)\{\n    float in_x = temppos.x;\n    float in_y = temppos.y;\n    int kernelSize = (_pointSize+1)*2;\n    int subsize = (kernelSize /2)-1;\n    float gKernel\[64]\[64];\n    float sigma = _gaussigma;\n    float intSigma = float(_pointSize);\n    float r, s = intSigma * sigma * sigma;\n\n    float sum = 0.0f;\n\n    // generate 5x5 kernel\n    for (int x = -subsize; x <= subsize; x++)\n    \{\n        for(int y = -subsize; y <= subsize; y++)\n        \{\n            r = float(sqrt(x*x + y*y));\n            gKernel\[x + subsize]\[y + subsize] = (exp(-(r*r)/s))/(3.141592654f * s);\n            sum += gKernel\[x + subsize]\[y + subsize];\n        \}\n    \}\n\n    // normalize the Kernel\n    for (int x = -subsize; x <= subsize; x++)\n    \{\n        for(int y = -subsize; y <= subsize; y++)\n        \{\n            gKernel\[x + subsize]\[y + subsize] /= sum;\n            writepixel(in_x+x,in_y+y,color,index,gKernel\[x + subsize]\[y + subsize]);\n        \}\n    \}\n  \}\n\n//-------------------------------------\n// DrawLine\n// ----------\n// Draw a line between two points, \n// x,y being 2d screenspace pos and z being depth.\n//-------------------------------------\n  void DrawLine(float3 origin, float3 endpoint,float4 _colorA,float4 _colorB) \{\n    float4 _color;\n    float3 delta = origin-endpoint;\n    float3 curPoint = origin;\n    float mag = sqrt(delta.x*delta.x+delta.y*delta.y);\n    mag = min(mag,_maxLineSteps); //Lets not go crazy, we cap it at 10.000 to avoid insane unwated processing time \n    for( float a = 0; a < mag*_lineOffset; a = a + 1.0f )\{\n      curPoint -= (delta/mag);\n      _color = (_colorA*(1.0f-(a/mag*1.0f)))+(_colorB*(a/mag*1.00f));\n      if (_dof_enable)\{\n        Bokeh(curPoint,_color);\n      \}\n      else \{\n        bilinear_Plot(float2(curPoint.x,curPoint.y),_color,1);\n      \}\n      \n    \}\n  \}\n\n//-------------------------------------\n// Point_Render\n//-------------------------------------\nvoid point_render(int2 pos, float3 screen_pos)\{\n  float4 color = src(pos.x,pos.y);\n\n  if (_filtering == 1)\{\n      if (_dof_enable)\{\n        Bokeh(screen_pos,color);\n      \}\n      else \{\n        if (_depthBuffer) \{color.w = screen_pos.z;\} //Added\n        bilinear_Plot(float2(screen_pos.x,screen_pos.y),color,1);\n      \}\n  \}\n  /*\n  //THIS PART NEEDS TO BE RE-WRITTEN.\n  else if (_filtering == 2)\{ \n      if (_dof_enable)\{\n        Bokeh(screen_pos,color);\n      \}\n      else \{\n        gaussian(float2(screen_pos.x,screen_pos.y),color,1);\n      \}\n  \}\n  */\n  else \{\n      int2 _position = int2(floor(screen_pos.x),floor(screen_pos.y)); \n      if (_depthBuffer) \{color.w = screen_pos.z;\}\n      writepixel(_position.x,_position.y, color,1,1.0f); //OutputSample\n  \}\n\n\}\n\n//-------------------------------------\n// Facet_Render\n//-------------------------------------\n//This function is used to calculate what triangels to draw\nvoid facet_render(int2 pos, float3 _vWorld)\{\n\n    float3 screen_pos = Reconsile3D(_vWorld);\n\n    bool insideX = ppos.bounds.inside(pos.x+1,pos.y );\n    bool insideY = ppos.bounds.inside(pos.x+1,pos.y-1 );\n    bool insideYtop = ppos.bounds.inside(pos.x,pos.y+1);\n    float2 fpos = float2(pos.x,pos.y);\n    float3 V1_Pos,V2_Pos,V1_wPos,V2_wPos,V0_N,V1_N,V2_N;\n    float2 V0_ST,V1_ST,V2_ST;\n    float4 V1_Sample,V2_Sample;\n    float4 _tn;\n    float3 normal0,normal1,normal2;\n    float2 UV_Format = float2(Vformat.x,Vformat.y);\n\n\n    int2 P0 = int2(pos.x-1,pos.y-1);\n    int2 P1 = int2(pos.x+1,pos.y+1);\n    if (_plexConnectX && pos.x == int(Vformat.x))\{\n      insideX == true;\n      P1 = int2(0.0f,pos.y+1);\n    \}\n    if (_plexConnectY && pos.y == int(Vformat.y))\{\n      insideYtop == true;\n      P1 = int2(pos.x+1,0);\n    \} \n\n    if (_plexConnectY && pos.y == 0)\{\n      insideY == true;\n      P0 = int2(pos.x-1,int(UV_Format.y));\n    \} \n\n    if (!_flatshading) \{\n      _tn = normals(pos.x,pos.y);\n      V0_N =float3(_tn.x,_tn.y,_tn.z);\n    \}\n    V0_ST = float2(pos.x,pos.y)/UV_Format;\n\n  if (insideX) \{\n    V2_Sample = ppos(P1.x,pos.y);\n    V2_ST = float2(P1.x,pos.y)/UV_Format;\n    V2_wPos = float3(V2_Sample.x,V2_Sample.y,V2_Sample.z);\n    V2_Pos = Reconsile3D(V2_wPos);\n    if (!_flatshading) \{\n      _tn = normals(P1.x,pos.y);\n      V2_N =float3(_tn.x,_tn.y,_tn.z);\n    \}\n        \n\n    if (V2_Sample.w != 0.0f) \{ \n\n      if (insideY) \{\n        V1_Sample = ppos(P1.x,P0.y);\n        V1_ST = float2(P1.x,P0.y)/UV_Format;\n        V1_wPos = float3(V1_Sample.x,V1_Sample.y,V1_Sample.z);\n        V1_Pos = Reconsile3D(V1_wPos);\n        if (!_flatshading) \{\n          _tn = normals(P1.x,P0.y);\n          V1_N =float3(_tn.x,_tn.y,_tn.z);\n        \}\n        if (V1_Sample.w != 0.0f) \{ \n          DrawTriangle(screen_pos,V2_Pos,V1_Pos,_vWorld,V2_wPos,V1_wPos,V0_N,V2_N,V1_N,V0_ST,V2_ST,V1_ST);\n        \}\n      \}\n      if (insideYtop) \{\n        V1_Sample = ppos(pos.x,P1.y);\n        V1_ST = float2(pos.x,P1.y)/UV_Format;        \n        V1_wPos = float3(V1_Sample.x,V1_Sample.y,V1_Sample.z);\n        V1_Pos = Reconsile3D(V1_wPos);\n        if (!_flatshading) \{\n          _tn = normals(pos.x,P1.y);\n          V1_N =float3(_tn.x,_tn.y,_tn.z);\n        \}        \n        if (V1_Sample.w != 0.0f) \{ \n          DrawTriangle(screen_pos,V1_Pos,V2_Pos,_vWorld,V1_wPos,V2_wPos,V0_N,V1_N,V2_N,V0_ST,V1_ST,V2_ST);\n        \}\n      \}\n    \}\n  \}\n\}\n\n\n\n//This function will calculate if pixel C is inside the triangle\nfloat edgeFunction(float3 a, float3 b, float3 c) \n\{ \n    return ((c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x)); \n\} \n\nfloat3 CalculateSurfaceNormals(float3 V0, float3 V1, float3 V2)\n\{\n        float3 v0 = V0; \n        float3 v1 = V1; \n        float3 v2 = V2; \n        float3 hitNormal = cross((v1 - v0),(v2 - v0)); \n        return normalize(hitNormal);\n\}\n\nfloat3 CalculateVertexNormals(float3 V0, float3 V1, float3 V2)\n\{\n        float3 v0 = V0; \n        float3 v1 = V1; \n        float3 v2 = V2; \n        float3 hitNormal = cross((v1 - v0),(v2 - v0)); \n        return normalize(hitNormal);\n\}\n\nfloat Distance(float3 _a,float3 _b)\n\{\n          float xd = _a.x - _b.x;\n          float yd = _a.y - _b.y;\n          float zd = _a.z - _b.z;\n          return sqrt(xd*xd + yd*yd + zd*zd);\n\}\n\nvoid DrawTriangle(float3 V0, float3 V1, float3 V2,float3 WP0, float3 WP1, float3 WP2,float3 N0, float3 N1, float3 N2, float2 st0,float2 st1,float2 st2) \{\n\n  // Precompute reciprocal of vertex z-coordinate \n  V0.z = 1.0f / V0.z, V1.z = 1.0f / V1.z, V2.z = 1.0f / V2.z; \n\n  float2 st0n = st0 * V0.z;\n  float2 st1n = st1 * V1.z; \n  float2 st2n = st2 * V2.z; //Normal version of ST\n\n  bool inside; \n  float X0 = Fmin(V0.x,V1.x,V2.x)-1.0f;\n  float X1 = Fmax(V0.x,V1.x,V2.x)+1.0f;\n  float Y0 = Fmin(V0.y,V1.y,V2.y)-1.0f;\n  float Y1 = Fmax(V0.y,V1.y,V2.y)+1.0f;\n  float area = edgeFunction(V2, V1, V0);\n\n\n  float2 sampos = float2(st0.x*float(Vformat.x),st0.y*float(Vformat.y));\n  float4 text0 = src(sampos.x,sampos.y);\n  sampos = float2(st1.x*float(Vformat.x),st1.y*float(Vformat.y));\n  float4 text1 = src(sampos.x,sampos.y);\n  sampos = float2(st2.x*float(Vformat.x),st2.y*float(Vformat.y));  //Why do we have to do this? =(\n  float4 text2 = src(sampos.x,sampos.y);\n  sampos = float2(min(min(st0.x,st1.x),st2.x)*float(Vformat.x),min(min(st0.y,st1.y),st2.y)*float(Vformat.y));\n  float4 text3 = src(sampos.x,sampos.y);\n\n\n  for( int x = X0; x < X1 ; x++) \{\n    for( int y = Y0; y < Y1 ; y++) \{\n      float3 pixelSample(x + _texoffset.x, y + _texoffset.y,0.0f); \n\n      //This is the part where we test if the current pixel is inside the triangle\n      //We check both for front facing and back faing options\n      float w0 = edgeFunction(V1, V0, pixelSample); //Front Facing\n      float w1 = edgeFunction(V2, V1, pixelSample); \n      float w2 = edgeFunction(V0, V2, pixelSample); \n      float w3 = edgeFunction(V0, V1, pixelSample); //Back Facing\n      float w4 = edgeFunction(V1, V2, pixelSample); \n      float w5 = edgeFunction(V2, V0, pixelSample);\n\n      //writepixel(x,y, float4(w1),1,1.0f);\n      if ((w0 >= 0 && w1 >= 0 && w2 >= 0 && _frontfacing) || (w3 >= 0 && w4 >= 0 && w5 >= 0 && _backfacing)) \{ //The curent pixel is inside the triangle\n\n       // calculate vectors from point f to vertices p1, p2 and p3:\n       float3 f1 = V0-pixelSample;\n       float3 f2 = V1-pixelSample;\n       float3 f3 = V2-pixelSample;\n       // calculate the areas and factors (order of parameters doesn't matter):\n       float a = length(cross(V0-V1,V0-V2 )); // main triangle area a\n       area = length(V0-V1)+length(V0-V2)+length(V1-V2);\n\n        w0 /= area; \n        w1 /= area; \n        w2 /= area; \n\n        w3 /= area; \n        w4 /= area; \n        w5 /= area; \n\n       float a1 = length(cross(f2, f3)) / a; // p1's triangle area / a\n       float a2 = length(cross(f3, f1)) / a; // p2's triangle area / a \n       float a3 = length(cross(f1, f2)) / a; // p3's triangle area / a\n       float a_magnitude = a1+a2+a3;\n       a1 = a1/a_magnitude;\n       a2 = a2/a_magnitude;\n       a3 = a3/a_magnitude;\n       float z = 1.0f / (V0.z * a1 + V1.z * a2 + V2.z * a3); \n\n\n        // find the uv corresponding to point f (uv1/uv2/uv3 are associated to p1/p2/p3):\n        float2 uv = st0 * a1 + st1 * a2 + st2 * a3;\n        float2 st = st0 * w0 + st1 * w1 + st2 * w2; \n        st *= z;      \n\n\n        //Calculate normals. Eighter we have flat shading, else we calculate a normal per pixel\n        float3 normalB;\n        if (_flatshading) \{\n          normalB = CalculateSurfaceNormals(WP0,WP1,WP2);\n\n        \}\n        else \{\n          float3 c0 = N2/float3(V0.z); \n          float3 c1 = N0/float3(V1.z); \n          float3 c2 = N1/float3(V2.z);  \n\n          normalB.x = w0 * c0.x + w1 * c1.x + w2 * c2.x; \n          normalB.y = w0 * c0.y + w1 * c1.y + w2 * c2.y; \n          normalB.z = w0 * c0.z + w1 * c1.z + w2 * c2.z; \n\n          normalB.x *= z, normalB.y *= z, normalB.z *= z; \n        \}\n        normalB = normalize(normalB);\n\n        //CALCULATE THE OBJECT TEXTURE COORDINATES\n        float zn = 1.0f / (V0.z * w0 + V1.z * w1 + V2.z * w2); \n        st = st0n * w0 + st1n * w1 + st2n * w2; \n        st *= zn;   \n        //--END \n\n        float3 Wpos = WP0*a1 + WP1*a2 + WP2*a3; //World Position.\n        float3 ViewNormal = normalize(float3(cameraToWorld\[3]\[0],cameraToWorld\[3]\[1],cameraToWorld\[3]\[2])-Wpos);\n\n        float nDotView =  dot(normalB,ViewNormal);\n        nDotView = 1.0f-fabs(nDotView); //make sure that the view normal ramps back around when doing backface\n        float4 tempout;\n\n        //Flatshading or regular?\n        if (!_flatshading) \{\n          tempout = text0 * a1 + text1 * a2 + text2 * a3; \n        \}\n        else\{\n          tempout = text3;\n        \}\n\n        //Additional Render Modes\n        if (_vertexMode == 1)\{\n          tempout = float4(a1,a2,a3,1.0f);\n        \}\n        else if (_vertexMode == 2)\{\n          tempout = float4(normalB.x,normalB.y,normalB.z,1.0f);\n        \}\n        else if (_vertexMode == 3)\{\n          tempout = float4(nDotView,nDotView,nDotView,1.0f);\n        \}\n        else if (_vertexMode == 4)\{\n          tempout = float4(uv.x,uv.y,0.0f,1.0f);\n        \}       \n        else if (_vertexMode == 5)\{\n          tempout = float4(st.x,st.y,0.0f,1.0f);\n        \}               \n        else if (_vertexMode == 6)\{\n          tempout = float4(ViewNormal.x,ViewNormal.y,ViewNormal.z,1.0f);\n        \}             \n        else if (_vertexMode == 7)\{\n          tempout = float4(Wpos.x,Wpos.y,Wpos.z,1.0f);\n        \}   \n\n        if (_depthBuffer)\{\n          writepixel(x,y, float4(tempout.x,tempout.y,tempout.z,z),1,1.0f);  \n        \}\n        else \{\n          if (_dof_enable)\{\n            Bokeh(float3(x,y,z),float4(tempout.x,tempout.y,tempout.z,z));\n          \}\n          else \{\n            bilinear_Plot(float2(x,y),float4(tempout.x,tempout.y,tempout.z,z),1);\n          \}\n        \}\n\n      \}  \n\n    \}\n  \}\n\}\n\n//-------------------------------------\n// Wire_Render\n//-------------------------------------\nvoid wire_render(int2 pos) \{\n  float4 temp = float4(0.0f,0.0f,0.0f,FLT_MAX);\n  float4 wire_ref_sample;\n  int2 tempXY = int2(0,0);\n  float4 plexlist\[11] = \{temp,temp,temp,temp,temp,temp,temp,temp,temp,temp,temp\}; \n  int2 plexlistXY\[11] = \{tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY,tempXY\};\n  int plex_count = 0; //We use this to figure how many points that should connect.\n  float plex_dist;\n  float3 plex_position,plex_position_b;\n  float4 temp_pos, temp_pos_b; //Temporary Position Containers\n  if (_maxPlexType == -1) \{ //Used for random connection types\n    for( int x = 0; x < max_line_connections ; x++)\{ //THIS 80 NUMBER IS THE LIMIT TO AVOID TOO SLOW PROCESSING!\n      for( int y = 0; y < max_line_connections ; y++)\{\n        wire_ref_sample = ppos(x,y);\n        if (wire_ref_sample.w != 0.0f && pos.x!=x && pos.y != y) \{ \n          plex_position = float3(wire_ref_sample.x,wire_ref_sample.y,wire_ref_sample.z)*(zoom);\n          float xd = plex_position.x - vWorld.x;\n          float yd = plex_position.y - vWorld.y;\n          float zd = plex_position.z - vWorld.z;\n          float plex_dist = sqrt(xd*xd + yd*yd + zd*zd);\n          if (plex_dist<_maxPlexDistance)\{\n            plex_count = min(10,plex_count+1); //Add one to the count\n            for( int h = 0; h < plex_count+1 ; h++) \{ //Loop thought all the points. If the distance is shorter then insert it into the array and push the rest of the array down\n              if (plex_dist < plexlist\[h].w) \{                  \n                for( int i = plex_count+1; i > h ; i--) \{\n                  plexlist\[i] = plexlist\[i-1];\n                  plexlistXY\[i] = plexlistXY\[i-1];\n                \}\n                plexlist\[h] = float4(plex_position.x,plex_position.y,plex_position.z,plex_dist);\n                plexlistXY\[h] = int2(x,y);\n                break;        \n              \}\n            \}\n          \} \n        \}\n      \}\n    \}\n  \}\n  else\{ //Used for standard connection types\n    float4 temp_pos;\n    bool insideX = !(Vformat.x < pos.x+1);\n    bool insideY = !(Vformat.y < pos.y+1);\n\n\n    if (!_plexLinedefAUX)\{\n      temp_pos = normals(pos.x,pos.y);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,vWorld+plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n\n    if ( insideX && !_plexLinedefX) \{\n      temp_pos = ppos(pos.x+1,pos.y );\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n    else if ( _plexConnectX && !_plexLinedefX) \{\n      temp_pos = ppos(0,pos.y);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n\n    if ( insideY && !_plexLinedefY) \{\n      temp_pos = ppos(pos.x,pos.y+1);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\}                          \n    \}\n    else if ( _plexConnectY  && !_plexLinedefY) \{\n      temp_pos = ppos(pos.x,0);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n\n    //_plexConnect\n    if ( insideX && insideY && !_plexLinedefXY) \{              \n      temp_pos = ppos(pos.x+1,pos.y+1);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n    else if ( _plexConnectX && _plexConnectY && !_plexLinedefXY) \{\n      temp_pos = ppos((pos.x+1)*insideX,(pos.y+1)*insideY);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n    else if ( _plexConnectX && insideY && !_plexLinedefXY) \{\n      temp_pos = ppos((pos.x+1)*insideX,(pos.y+1)*insideY);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n    else if ( _plexConnectY && insideX && !_plexLinedefXY) \{\n      temp_pos = ppos((pos.x+1)*insideX,(pos.y+1)*insideY);\n      plex_position = float3(temp_pos.x,temp_pos.y,temp_pos.z)*(zoom);\n      if (temp_pos.w != 0) \{wire_connection(vWorld,plex_position, plexlist,plexlistXY,plex_count,pos);\} \n    \}\n  \}   \n\n  //now that all the connections have been sorted by distance then we connect the dots.\n  for( int x = 0; x < min(_maxPlexConnections,plex_count) ; x++)\{\n    plex_position = float3(plexlist\[x].x,plexlist\[x].y,plexlist\[x].z);\n    plex_dist = plexlist\[x].w;\n\n\n    float plex_distribution = 1.0f-((plexlist\[x].w-plexlist\[0].w)/((plexlist\[min(_maxPlexConnections,plex_count)].w-plexlist\[0].w)+0.00001f)); //Where does it lie between the best and the worst distance?\n    //plexlistXY\n\n    float4 plex_col = float4(pow(1.0f-(plex_dist/_maxPlexDistance),1.0f/_plex_gamma))*float4(plex_distribution); //This one is quite cool aswell, but does leave the center ones a bit too focused \n    float4 plex_colorA = src(pos.x,pos.y);\n    float4 plex_colorB = src( plexlistXY\[x].x,plexlistXY\[x].y);\n    plex_col *= 0.1f;\n\n    computePixelCoordinates(plex_position, pRaster, worldToCamera, canvasWidth, canvasHeight, WHformat\[0], WHformat\[1],_overscan);\n    if (dst.bounds.inside(int(vRaster.x),int(vRaster.y)) || dst.bounds.inside(int(pRaster.x),int(pRaster.y)))\{\n        DrawLine(vRaster,pRaster,(plex_colorA*plex_col)*_lineInMultiplier,(plex_colorB*plex_col)*_lineOutMultiplier);\n    \}\n  \}\n\}\n\nvoid wire_connection(float3 p_source,float3 p_target, float4 (&p_plexlist)\[11], int2 (&p_plexlistXY)\[11],int &p_plexcount,int2 position) \{\n  float xd = p_target.x - p_source.x;\n  float yd = p_target.y - p_source.y;\n  float zd = p_target.z - p_source.z;\n  float plex_dist = sqrt(xd*xd + yd*yd + zd*zd);\n  if (plex_dist<_maxPlexDistance)\{\n    p_plexcount = min(11,p_plexcount+1); //Add one to the count\n    for( int h = 0; h < p_plexcount+1 ; h++) \{ //Loop thought all the points. If the distance is shorter then insert it into the array and push the rest of the array down\n      if (plex_dist < p_plexlist\[h].w) \{                  \n        for( int i = p_plexcount+1; i > h ; i--) \{\n          p_plexlist\[i] = p_plexlist\[i-1];\n          p_plexlistXY\[i] = p_plexlistXY\[i-1];\n        \}\n        p_plexlist\[h] = float4(p_target.x,p_target.y,p_target.z,plex_dist);\n        p_plexlistXY\[h] = int2(position.x,position.y);\n        break;        \n      \}\n    \}  \n  \}\n\}\n//-------END OF WIRE RENDER FUNCTIONS---------\n\n\n\n\n//-------------------------------\n//-------BOKEH FUNCTIONS---------\n//thanks to: http://devlog-martinsh.blogspot.dk/2011/11/glsl-depth-of-field-with-bokeh-v21.html\nfloat2 rand(float2 coord) //generating noise/pattern texture for dithering\n\{\n  float noiseX = ((Frac(1.0-coord.x*(WHformat\[0]/2.0))*0.25)+(Frac(coord.y*(WHformat\[1]/2.0))*0.75))*2.0-1.0;\n  float noiseY = ((Frac(1.0-coord.x*(WHformat\[0]/2.0))*0.75)+(Frac(coord.y*(WHformat\[1]/2.0))*0.25))*2.0-1.0;\n  noiseX = clamp(Frac(sin(dot(coord ,float2(12.9898f,78.233f))) * 43758.5453f),0.0f,1.0f)*2.0f-1.0f;\n  noiseY = clamp(Frac(sin(dot(coord ,float2(12.9898f,78.233f)*2.0f)) * 43758.5453f),0.0f,1.0f)*2.0-1.0f;\n  return float2(noiseX,noiseY);\n\}\n//-------------------------------------\n// Bokeh\n//-------------------------------------\nvoid Bokeh(float3 pos,float4 color)\{\n  float blur = 0.0;\n  blur = clamp((fabs(pos.z - focalDepth)/_depthOfField)*100.0f,-_maxDofSize,_maxDofSize);\n  \n  float w = (1.0/WHformat.x)*blur;//+noise.x;\n  float h = (1.0/(WHformat.x*dof_aspect))*blur;//+noise.y;\n  float3 v3_col = float3(color.x,color.y,color.z);\n  int ringsamples;\n  float s = 1.0;  \n\n  for (int i = 1; i <= _dof_rings; i += 1)\n  \{   \n    ringsamples = i * _dof_samples; \n    for (int j = 0 ; j < ringsamples ; j += 1)  \n    \{ \n      s += (1.0f*mix(1.0f,(float(i))/(float(_dof_rings)),dof_bias)*1.0f); //No need to do this in the loop\n    \}\n  \}\n\n  for (int i = 1; i <= _dof_rings; i += 1)\n  \{   \n    ringsamples = i * _dof_samples;\n     \n    for (int j = 0 ; j < ringsamples ; j += 1)   \n    \{\n      float step = PI*2.0 / float(ringsamples);\n      float pw = (cos(float(j)*step)*(float(i)/_dof_rings));\n      float ph = (sin(float(j)*step)*(float(i)/_dof_rings));\n      float p = 1.0;\n\n      float posx = pos.x+((pw*w)*blur);\n      float posy = pos.y+((ph*h)*blur);\n\n\n      float3 lumcoeff = float3(0.299,0.587,0.114);\n      float lum = dot(v3_col, lumcoeff);\n      float thresh = max((lum-dof_threshold)*dof_gain, 0.0f);\n      v3_col+mix(float3(0.0),v3_col,thresh*blur);\n\n      float3 col = (v3_col*mix(1.0,(float(i))/(float(_dof_rings)),dof_bias)*p)/s; \n      bilinear_Plot(float2(posx,posy),float4(col.x,col.y,col.z,color.w/(_dof_rings*_dof_rings)),1);\n    \}\n  \}\n\}\n//-------END OF BOKEH FUNCTIONS---------\n\n\n\n//-------------------------------------\n// Process\n//-------------------------------------\n  void process(int2 pos) \{\n    float4 _sample = ppos(pos.x,pos.y); //Get the XYZ Coordinates\n    float2 posf = float2(pos.x,pos.y);\n\n    if (_sample.w != 0.0f) \{  //No need to process if there is no data.\n\n      //Convert worldspace coordinates to screenspcace coordinates.\n      vWorld = float3(_sample.x,_sample.y,_sample.z)*(zoom);\n      int ret = computePixelCoordinates(vWorld, vRaster, worldToCamera, canvasWidth, canvasHeight, WHformat\[0], WHformat\[1],_overscan);\n      if (ret) \{ //Only create points that are visible on screen\n        if (_pointRender)\{\n          point_render(pos,vRaster);\n        \}\n      \} //Pointrender over\n\n      if (_wireRender && _maxPlexConnections>=1) \{\n        if (max(pos.x,pos.y)<=max_line_connections || (_maxPlexType==0))\{ // Don't process more wires than allowed in nearest mode.\n          wire_render(pos);\n        \}\n      \} //WireRender over\n\n      if (_facetRender) \{\n        facet_render(pos,float3(_sample.x,_sample.y,_sample.z));\n      \}  //FacetRender over\n      \n    \}\n  \} //----> process\n\};\n"
+  useGPUIfAvailable false
+  rebuild ""
+  PointRender3D_cam_Matrix {
+      {{parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix}}
+      {{parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix}}
+      {{parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix}}
+      {{parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix} {parent.Camera1.world_matrix}}
+    }
+  PointRender3D_focallength {{parent.Camera1.focal}}
+  PointRender3D_hapeture {{parent.Camera1.haperture}}
+  PointRender3D_format {{!proxy?Settings_Format.width:Settings_Format.width*proxy_scale} {!proxy?Settings_Format.height:Settings_Format.height*proxy_scale}}
+  PointRender3D_vertexformat {{parent.InputFormat.box.r-1} {parent.InputFormat.box.t-1}}
+  PointRender3D__alphaMultiplier {{parent.AlphaMultiplier}}
+  PointRender3D__pointRender {{parent.RenderMode==0}}
+  PointRender3D__wireRender {{parent.RenderMode==1}}
+  PointRender3D__facetRender {{parent.RenderMode==2}}
+  PointRender3D__maxLDistance {{parent.wire_maxdistance}}
+  PointRender3D__maxLConnections {{parent.wire_connections}}
+  PointRender3D__maxPlexType {{-parent.wire_type}}
+  PointRender3D__plexLinedefXY {{!parent.connect_xy}}
+  PointRender3D__plexLinedefX {{!parent.connect_x}}
+  PointRender3D__plexLinedefY {{!parent.connect_y}}
+  PointRender3D__plexLinedefAUX {{!connect_aux}}
+  PointRender3D__plexConnectX {{parent.CloseX}}
+  PointRender3D__plexConnectY {{parent.CloseY}}
+  PointRender3D__L_gamma {{parent.wire_Threshold}}
+  "PointRender3D_Enable Depth of Field" {{parent.dof_enable}}
+  PointRender3D_samples {{3*(parent.Dof_Quality*parent.Dof_Quality+1)}}
+  PointRender3D_rings {{3*(parent.Dof_Quality*parent.Dof_Quality+1)}}
+  PointRender3D_focalDepth {{parent.dof_focaldepth}}
+  PointRender3D__depthOfField {{parent.dof_dof}}
+  PointRender3D__depthMult 0
+  PointRender3D__maxDofSize {{parent.dof_maxSize*400}}
+  PointRender3D_dof_aspect {{parent.dof_Aspect}}
+  PointRender3D_dof_bias {{parent.dof_bias}}
+  PointRender3D__flatshading {{parent.facet_flatShading}}
+  PointRender3D__backfacing {{parent.facet_backface}}
+  PointRender3D__frontfacing {{parent.facet_front}}
+  PointRender3D__vertexMode {{parent.renderMode}}
+  PointRender3D__depthBuffer {{parent.facet_depth}}
+  PointRender3D__texoffset {-0.5 0.5}
+  PointRender3D__pointSize 0
+  PointRender3D__depthOcclusion {{parent.UseOcclusionMap}}
+  PointRender3D__maxLineSteps {{parent.maxSamples}}
+  PointRender3D__lineOffset {{parent.lineoffset}}
+  PointRender3D__lineInMultiplier {{parent.inGain}}
+  PointRender3D__lineOutMultiplier {{parent.outGain}}
+  PointRender3D__overscan {{parent.overscan} {parent.overscan}}
+  format "1280 720 0 0 1280 720 1 HD_720"
+  rebuild_finalise ""
+  name BlinkScript1
+  xpos -27
+  ypos 159
+ }
+set N8e083000 [stack 0]
+ TimeBlur {
+  divisions {{parent.Samples}}
+  shutter {{parent.Shutter}}
+  shutteroffset centred
+  shuttercustomoffset 0
+  name MotionBlur
+  xpos -27
+  ypos 301
+  disable {{1-parent.mb_enable x89 0}}
+ }
+ ShuffleCopy {
+  inputs 2
+  alpha alpha2
+  black alpha
+  out2 depth
+  name ShuffleCopy2
+  xpos -27
+  ypos 411
+  disable {{!parent.OutputZdepth}}
+ }
+ CopyBBox {
+  inputs 2
+  name CopyBBox1
+  xpos -27
+  ypos 521
+ }
+ Reformat {
+  format {{{Settings_Format.format}}}
+  resize none
+  center false
+  pbb {{max(parent.overscan.w,parent.overscan.h)!=0}}
+  name Reformat1
+  xpos -27
+  ypos 545
+ }
+ Group {
+  name SoftLook
+  xpos -27
+  ypos 647
+  disable {{!parent.HighlightCompression}}
+  addUserKnob {20 User}
+  addUserKnob {26 ""}
+  addUserKnob {7 Add R 0 4}
+  Add {{parent.HighlightCeiling}}
+  addUserKnob {7 Offset R 0 4}
+  Offset {{parent.Compression}}
+ }
+  Input {
+   inputs 0
+   name Input1
+   xpos -248
+   ypos 500
+  }
+set N8ad98800 [stack 0]
+  Expression {
+   expr0 r/(r+parent.Offset)*parent.Add
+   expr1 g/(g+parent.Offset)*parent.Add
+   expr2 b/(b+parent.Offset)*parent.Add
+   expr3 a/(a+parent.Offset)*parent.Add
+   name Expression1
+   xpos -339
+   ypos 576
+  }
+push $N8ad98800
+  ShuffleCopy {
+   inputs 2
+   red red
+   green green
+   blue blue
+   alpha alpha2
+   name ShuffleCopy1
+   xpos -248
+   ypos 576
+  }
+  Output {
+   name Output1
+   xpos -248
+   ypos 651
+  }
+ end_group
+ ShuffleCopy {
+  inputs 2
+  in pos
+  red red
+  green green
+  blue blue
+  out pos
+  name ShuffleCopy1
+  xpos -27
+  ypos 860
+  disable true
+ }
+ Output {
+  name Output1
+  xpos -27
+  ypos 897
+ }
+push $N8e8ed400
+ PositionToPoints2 {
+  display textured
+  render_mode textured
+  P_channel pos
+  detail 0.25
+  pointSize 0.6
+  name PreviewNode
+  xpos -22
+  ypos 8
+  disable {{!parent.Enable3DPreview}}
+ }
+push $N8982cc00
+ Reformat {
+  type "to box"
+  box_width 100
+  box_height 100
+  box_fixed true
+  scale 0.1
+  resize none
+  filter Impulse
+  black_outside true
+  name Reformat3
+  xpos -633
+  ypos -1109
+  disable {{!wire_type==1}}
+ }
+push $N7c4ba800
+push $N7c4bb400
+push $N7c4bb800
+ Merge2 {
+  inputs 2
+  operation min
+  Achannels {-pos.red -pos.green -pos.blue pos.alpha}
+  Bchannels {-pos.red -pos.green -pos.blue pos.alpha}
+  output {-pos.red -pos.green -pos.blue pos.alpha}
+  name Merge4
+  xpos -582
+  ypos -634
+ }
+ Merge2 {
+  inputs 2
+  operation min
+  Achannels {-pos.red -pos.green -pos.blue pos.alpha}
+  Bchannels {-pos.red -pos.green -pos.blue pos.alpha}
+  output {-pos.red -pos.green -pos.blue pos.alpha}
+  name Merge5
+  xpos -582
+  ypos -602
+ }
+push $N7c4bbc00
+ Crop {
+  box {0 0 {width} {height}}
+  reformat true
+  crop false
+  name InputFormat
+  xpos -456
+  ypos -402
+ }
+push $N8e083000
+ Viewer {
+  frame 36
+  frame_range 1-100
+  name Viewer1
+  xpos -27
+  ypos 325
+ }
+ Input {
+  inputs 0
+  name InputCamera
+  xpos -1271
+  ypos 89
+  number 1
+ }
+ Camera {
+  useMatrix true
+  matrix {
+      {1 0 0 0}
+      {0 {1/Settings_Format.actual_format.pixel_aspect} 0 0}
+      {0 0 1 0}
+      {0 0 0 1}
+    }
+  projection_mode {{"\[value the_cam]projection_mode"}}
+  focal {{"\[value \[value the_cam]focal]"}}
+  haperture {{"\[value \[value the_cam]haperture]"}}
+  vaperture {{"\[value \[value the_cam]vaperture]"}}
+  near {{"\[value \[value the_cam]near]"}}
+  far {{"\[value \[value the_cam]far]"}}
+  win_translate {{"\[lindex \[value \[value the_cam]win_translate] 0]"} {"\[lindex \[value \[value the_cam]win_translate] 1]"}}
+  win_scale {{"\[lindex \[value \[value the_cam]win_scale] 0]"} {"\[lindex \[value \[value the_cam]win_scale] 1]"}}
+  winroll {{"\[value \[value the_cam]winroll]"}}
+  focal_point {{"\[value \[value the_cam]focal_point]"}}
+  fstop {{"\[value \[value the_cam]fstop]"}}
+  name Camera1
+  help "DummyCam by Adrian Pueyo\n\nCamera that apart from the matrices also grabs all the \"Projection\" values from the upstream camera that it's connected to. Turns into a default Camera if not Camera connected.\n\nCan also be used inside of groups and gizmos, as many levels deep as you want :D\n\nAll using live and super fast TCL.\n\nadrianpueyo.com, 2019"
+  onCreate "n = nuke.thisNode()\nfor k in \[\"projection_mode\",\"focal\",\"haperture\",\"vaperture\",\"near\",\"far\",\"win_translate\",\"win_scale\",\"winroll\",\"focal_point\",\"fstop\"]:\n    n\[k].setFlag(0x0000000010000000)"
+  label "(thanks to Adrian Pueyo and Ernest Dios)"
+  xpos -1261
+  ypos 198
+  addUserKnob {20 DummyCam l Defaults}
+  addUserKnob {43 the_cam +INVISIBLE}
+  the_cam "\[\nset the_knob \"focal\"\nset knob_index 0\nset starting_point \"this.input0\"\nset default \"this\"\nset default \[append default \".d_\"]\n\n# If cam has no inputs, return the default...\nif \{\[exists \$starting_point]\} \{\n    set x \[node \$starting_point]\n\} \{ \n    return \$default\n\}\n\nset finished 0\nwhile \{\$finished != 1\} \{\n\n    # First look for a Cam or Input or topnode.\n    while \{\[class \$x] != \"Camera2\" && \[class \$x] != \"Camera\" && \[class \$x] != \"Input\" && \$x != \[topnode \$x]\} \{\n        set x \[node \$x.input0]\n    \}\n\n    # Then, check if node is a cam (and return), and otherwise, if it's an input, see if the parent exists and move to it.\n    if \{\[class \$x]==\"Camera2\"||\[class \$x]==\"Camera\"\} \{\n        set x \[append x \".\"]\n        return \$x\n    \} \{ \n        if \{\[class \$x]==\"Input\"\} \{ \n            set inp \"\$x.parent.input\"\n            set inputNum \[value \$x.number]\n            set inp \[append inp \$inputNum]\n            if \{\[exists \$inp]\} \{\n                set x \[node \$inp]\n            \} \{ \n                set finished 1\n            \}\n        \} \{ \n            set finished 1\n        \}\n    \}\n\}\nreturn \$default\n]"
+  addUserKnob {4 d_projection_mode l projection M {perspective orthographic uv spherical ""}}
+  addUserKnob {7 d_focal l focal R 0 100}
+  d_focal 50
+  addUserKnob {7 d_haperture l "horiz aperture" R 0 50}
+  d_haperture 24.576
+  addUserKnob {7 d_vaperture l "vert aperture" R 0 50}
+  d_vaperture 18.672
+  addUserKnob {7 d_near l near R 0 10}
+  d_near 0.1
+  addUserKnob {7 d_far l far R 0 10000}
+  d_far 10000
+  addUserKnob {12 d_win_translate l "window translate"}
+  addUserKnob {12 d_win_scale l "window scale"}
+  d_win_scale {1 1}
+  addUserKnob {7 d_winroll l "window roll" R 0 45}
+  addUserKnob {7 d_focal_point l "focal distance" R 0 10}
+  d_focal_point 2
+  addUserKnob {7 d_fstop l fstop R 0 30}
+  d_fstop 16
+  addUserKnob {26 text l " " T "<span style=\"color:#666\"><br/><b>DummyCam v1.0</b> - <a href=\"http://www.adrianpueyo.com\" style=\"color:#666;text-decoration: none;\">adrianpueyo.com</a>, 2019</span>"}
+ }
+end_group

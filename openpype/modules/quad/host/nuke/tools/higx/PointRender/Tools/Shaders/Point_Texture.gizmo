@@ -1,0 +1,97 @@
+Group {
+ name Point_Texture2
+ tile_color 0x434343ff
+ note_font_color 0x7dadf9ff
+ addUserKnob {20 User}
+ addUserKnob {26 Info l "" +STARTLINE T "Point Texture v1.2\n\nApply a texture that matches the format of the point data."}
+ addUserKnob {26 devider_general l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {41 operation l Operation T Merge1.operation}
+ addUserKnob {41 resize l "resize type" T Reformat2.resize}
+ addUserKnob {41 center -STARTLINE T Reformat2.center}
+ addUserKnob {41 flip -STARTLINE T Reformat2.flip}
+ addUserKnob {41 flop -STARTLINE T Reformat2.flop}
+ addUserKnob {41 turn -STARTLINE T Reformat2.turn}
+ addUserKnob {41 filter T Reformat2.filter}
+ addUserKnob {26 ""}
+ addUserKnob {41 Achannels l "A channels" T Merge1.Achannels}
+ addUserKnob {41 Bchannels l "B channels" T Merge1.Bchannels}
+ addUserKnob {41 output T Merge1.output}
+ addUserKnob {41 also_merge l "also merge" T Merge1.also_merge}
+ addUserKnob {41 maskChannelInput l "" -STARTLINE T Merge1.maskChannelInput}
+ addUserKnob {26 maskbl l "" +STARTLINE}
+ addUserKnob {26 label_1 l mask T ""}
+ addUserKnob {41 maskChannelMask l "" -STARTLINE T Merge1.maskChannelMask}
+ addUserKnob {41 inject -STARTLINE T Merge1.inject}
+ addUserKnob {41 invert_mask l invert -STARTLINE T Merge1.invert_mask}
+ addUserKnob {41 fringe -STARTLINE T Merge1.fringe}
+ addUserKnob {41 mix T Merge1.mix}
+}
+ Input {
+  inputs 0
+  name Mask
+  xpos 142
+  ypos 15
+  number 2
+ }
+ Reformat {
+  type "to box"
+  box_width {{parent.InputFormat.box.r}}
+  box_height {{parent.InputFormat.box.t}}
+  box_fixed true
+  resize distort
+  name Reformat1
+  xpos 142
+  ypos 56
+ }
+ Dot {
+  name Dot1
+  selected true
+  xpos 176
+  ypos 143
+ }
+ Input {
+  inputs 0
+  name Texture
+  xpos 488
+  ypos 12
+  number 1
+ }
+ Reformat {
+  type "to box"
+  box_width {{parent.InputFormat.box.r}}
+  box_height {{parent.InputFormat.box.t}}
+  box_fixed true
+  resize distort
+  name Reformat2
+  xpos 488
+  ypos 52
+ }
+ Input {
+  inputs 0
+  name Data
+  xpos 286
+  ypos 11
+ }
+ Crop {
+  box {0 0 {width} {height}}
+  reformat true
+  crop false
+  name InputFormat
+  xpos 286
+  ypos 55
+ }
+ Merge2 {
+  inputs 2+1
+  operation copy
+  bbox B
+  maskChannelMask -rgba.alpha
+  name Merge1
+  xpos 286
+  ypos 139
+ }
+ Output {
+  name Output1
+  xpos 286
+  ypos 231
+ }
+end_group

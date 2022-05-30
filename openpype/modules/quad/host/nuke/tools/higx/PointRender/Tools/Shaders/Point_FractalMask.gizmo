@@ -1,0 +1,125 @@
+Group {
+ name Point_FractalMask
+ tile_color 0x434343ff
+ note_font_color 0x7DADF9FF
+ selected true
+ addUserKnob {20 User}
+ addUserKnob {26 info l "" +STARTLINE T "Point Fractal Mask v1.0\n\nThis node generates a fractal mask that can be used to reveal the object."}
+ addUserKnob {26 DeviderGeneral l "<b><font color=#7DADF9>General</font><b>"}
+ addUserKnob {41 distance l "Masking Offset" T Expression2.distance}
+ addUserKnob {41 select_axis l "Masking Axis" T Expression2.select_axis}
+ addUserKnob {4 _mode l Mode -STARTLINE M {Normal "Normal (abs)" "Hard Edge" "Hard Edge (abs)" "" "" "" "" ""}}
+ _mode "Hard Edge"
+ addUserKnob {41 _invert l Invert -STARTLINE T Expression2._invert}
+ addUserKnob {41 position l "Radial Center" T Expression1.position}
+ addUserKnob {26 devider_fractal l "<b><font color=#7DADF9>Fractal</font><b>"}
+ addUserKnob {41 _rnd_mag l "Fractal Expansion" T Expression2._rnd_mag}
+ addUserKnob {41 _rnd_scale l "Fractal Scale" -STARTLINE T Expression2._rnd_scale}
+ addUserKnob {41 _rnd_axis l INVISIBLE +INVISIBLE T Expression2._rnd_axis}
+ addUserKnob {26 devider_subsettings l "" +STARTLINE T " "}
+ addUserKnob {13 noise_offset l Offset}
+ addUserKnob {3 Octaves}
+ Octaves 10
+ addUserKnob {7 Lacunarity R 0 10}
+ Lacunarity 1.9
+ addUserKnob {7 noise_gain l Gain}
+ noise_gain 0.5
+}
+ BackdropNode {
+  inputs 0
+  name BackdropNode3
+  tile_color 0x388e8e00
+  label Offset
+  note_font_size 42
+  xpos -648
+  ypos 316
+  bdwidth 224
+  bdheight 161
+ }
+ Input {
+  inputs 0
+  name Input1
+  xpos -580
+  ypos 50
+ }
+add_layer {pos pos.red pos.green pos.blue pos.alpha}
+ Shuffle {
+  in pos
+  name Shuffle5
+  xpos -580
+  ypos 120
+ }
+ Dot {
+  name Dot7
+  xpos -546
+  ypos 242
+ }
+ Expression {
+  temp_name0 xd
+  temp_expr0 r-position.x
+  temp_name1 yd
+  temp_expr1 g-position.y
+  temp_name2 zd
+  temp_expr2 b-position.z
+  temp_name3 Distance
+  temp_expr3 "sqrt(xd*xd + yd*yd + zd*zd)"
+  expr3 Distance
+  name Expression1
+  xpos -580
+  ypos 292
+  addUserKnob {20 User}
+  addUserKnob {13 position}
+ }
+ Expression {
+  temp_name0 value
+  temp_expr0 select_axis==0?r:select_axis==1?g:select_axis==2?b:a
+  temp_name1 rnd
+  temp_expr1 _rnd_axis==0?random(r*_rnd_scale)*_rnd_mag:_rnd_axis==1?random(g*_rnd_scale)*_rnd_mag:_rnd_axis==2?random(b*_rnd_scale)*_rnd_mag:fBm(r*_rnd_scale+parent.noise_offset.x,g*_rnd_scale+parent.noise_offset.y,b*_rnd_scale+parent.noise_offset.z,parent.Octaves,parent.Lacunarity,parent.noise_gain)*_rnd_mag
+  temp_name3 _distance
+  temp_expr3 distance+(rnd)
+  expr3 _invert?(-(value-_distance)):((value-_distance))
+  name Expression2
+  xpos -580
+  ypos 355
+  addUserKnob {20 User}
+  addUserKnob {4 select_axis M {X Y Z Radial}}
+  select_axis Radial
+  addUserKnob {7 distance R -10 10}
+  distance 0.5
+  addUserKnob {6 _invert +STARTLINE}
+  addUserKnob {7 _rnd_mag R 0 10}
+  _rnd_mag 0.3
+  addUserKnob {7 _rnd_scale R 0 10}
+  _rnd_scale 2
+  addUserKnob {4 _rnd_axis M {X Y Z Radial ""}}
+  _rnd_axis Radial
+ }
+ Expression {
+  expr0 _mode==0?max(0,a):_mode==1?abs(a):_mode==2?max(0,1/a):max(0,1/abs(a))
+  name Expression3
+  selected true
+  xpos -580
+  ypos 398
+  addUserKnob {20 User}
+  addUserKnob {3 _mode}
+  _mode {{parent._mode}}
+ }
+ Shuffle {
+  green red
+  blue red
+  alpha red
+  name Shuffle1
+  xpos -580
+  ypos 446
+ }
+ Dot {
+  name Dot8
+  xpos -546
+  ypos 530
+ }
+ Output {
+  name Output1
+  xpos -580
+  ypos 686
+ }
+end_group
