@@ -5,19 +5,44 @@ import os
 import json
 import re
 from copy import copy, deepcopy
-import requests
 import clique
 import appdirs
 
 import pyblish.api
 
-import openpype.api
+from openpype.api import (
+    get_system_settings,
+    get_latest_version,
+)
 from openpype.lib import requests_post
 from openpype.pipeline import (
     get_representation_path,
     legacy_io,
 )
 from openpype.pipeline.farm.patterning import match_aov_pattern
+
+
+# mapping between Maya renderer names and Muster template ids
+def _get_template_id(template_name):
+    """
+    Return muster template ID based on renderer name.
+
+    :param renderer: renderer name
+    :type renderer: str
+    :returns: muster template id
+    :rtype: int
+    """
+
+    templates = get_system_settings()["modules"]["muster"]["templates_mapping"]
+    if not templates:
+        raise RuntimeError(("Muster template mapping missing in "
+                            "pype-settings"))
+    try:
+        template_id = templates[template_name]
+    except KeyError:
+        raise RuntimeError("Unmapped renderer - missing template id")
+
+    return template_id
 
 
 def get_resources(version, extension=None):
@@ -74,11 +99,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
     These jobs are dependent on a deadline or muster job
     submission prior to this plug-in.
 
-    - In case of Deadline, it creates dependend job on farm publishing
-      rendered image sequence.
-
-    - In case of Muster, there is no need for such thing as dependend job,
-      post action will be executed and rendered sequence will be published.
+    - It creates dependent job on farm publishing rendered image sequence.
 
     Options in instance.data:
         - deadlineSubmissionJob (dict, Required): The returned .json
@@ -100,43 +121,36 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
         - expectedFiles (list or dict): explained bellow
 
     """
-    print(100*"I9NSIDE CLASS")
     label = "Submit image sequence jobs to Muster"
     order = pyblish.api.IntegratorOrder + 0.2
     icon = "tractor"
-    deadline_plugin = "OpenPype"
 
-    hosts = ["fusion", "maya", "nuke", "celaction", "aftereffects", "harmony"]
+    hosts = ["maya", "nuke"]
 
     families = ["render.farm", "prerender.farm",
                 "renderlayer", "imagesequence", "vrayscene"]
 
-    aov_filter = {"maya": [r".*([Bb]eauty).*"],
-                  "aftereffects": [r".*"],  # for everything from AE
-                  "harmony": [r".*"],  # for everything from AE
-                  "celaction": [r".*"]}
+    aov_filter = {"maya": [r".*([Bb]eauty).*"]}
 
-    enviro_filter = [
-        "FTRACK_API_USER",
-        "FTRACK_API_KEY",
-        "FTRACK_SERVER",
-        "OPENPYPE_METADATA_FILE",
-        "AVALON_PROJECT",
-        "AVALON_ASSET",
-        "AVALON_TASK",
-        "AVALON_APP_NAME",
-        "OPENPYPE_PUBLISH_JOB"
+    # enviro_filter = [
+    #     "FTRACK_API_USER",
+    #     "FTRACK_API_KEY",
+    #     "FTRACK_SERVER",
+    #     "OPENPYPE_METADATA_FILE",
+    #     "AVALON_PROJECT",
+    #     "AVALON_ASSET",
+    #     "AVALON_TASK",
+    #     "AVALON_APP_NAME",
+    #     "OPENPYPE_LOG_NO_COLORS",
+    #     "OPENPYPE_USERNAME",
+    #     "OPENPYPE_RENDER_JOB",
+    #     "OPENPYPE_PUBLISH_JOB"
+    # ]
 
-        "OPENPYPE_LOG_NO_COLORS",
-        "OPENPYPE_USERNAME",
-        "OPENPYPE_RENDER_JOB",
-        "OPENPYPE_PUBLISH_JOB"
-    ]
-
-    # custom deadline attributes
-    deadline_department = ""
-    deadline_group = ""
-    deadline_chunk_size = 1
+    # custom default attributes
+    default_department = ""
+    default_group = ""
+    default_chunk_size = 1
 
     # regex for finding frame number in string
     R_FRAME_NUMBER = re.compile(r'.+\.(?P<frame>[0-9]+)\..+')
@@ -198,12 +212,16 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
         submitter, so this type of code isn't necessary for it.
 
         """
-        print(100*'-')
-        from pprint import pprint
-        pprint(job)
         data = instance.data.copy()
+
+        source = data.get("source")
+        if not source:
+            source = instance.context.data["currentFile"]
+        scene = os.path.basename(os.path.splitext(source)[0])
+
         subset = data["subset"]
-        job_name = "Publish-{subset}".format(subset=subset)
+
+        job_name = "{}_Publish-{}".format(scene, subset)
 
         # instance.data.get("subset") != instances[0]["subset"]
         # 'Main' vs 'renderMain'
@@ -220,17 +238,23 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
             override_version
         )
 
-        # Transfer the environment from the original job to this dependent
-        # job so they use the same environment
-        metadata_path, roothless_metadata_path = self._create_metadata_path(
+        _, roothless_metadata_path = self._create_metadata_path(
             instance
         )
 
+        # Transfer the environment from the original job to this dependent
+        # job so they use the same environment
         environment = {}
         environment["AVALON_PROJECT"] = legacy_io.Session["AVALON_PROJECT"]
         environment["AVALON_ASSET"] = legacy_io.Session["AVALON_ASSET"]
         environment["AVALON_TASK"] = legacy_io.Session["AVALON_TASK"]
         environment["AVALON_APP_NAME"] = os.environ.get("AVALON_APP_NAME")
+        environment["FTRACK_API_USER"] = os.environ.get("FTRACK_API_USER")
+        environment["FTRACK_API_KEY"] = os.environ.get("FTRACK_API_KEY")
+        environment["FTRACK_SERVER"] = os.environ.get("FTRACK_SERVER")
+        environment["OPENPYPE_METADATA_FILE"] = os.environ.get(
+            "OPENPYPE_METADATA_FILE"
+        )
         environment["OPENPYPE_LOG_NO_COLORS"] = "1"
         environment["OPENPYPE_USERNAME"] = instance.context.data["user"]
         environment["OPENPYPE_PUBLISH_JOB"] = "1"
@@ -262,7 +286,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
                 "platform": 0,
                 "job": {
                     "jobName": job_name,
-                    "templateId": 1002,
+                    "templateId": _get_template_id('OpenPype'),
                     "department": "",
                     "dependIds": dependencies,
                     "emergencyQueue": False,
@@ -291,7 +315,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
                             "state": True,
                             "subst": True
                         },
-                        "OPFLAGS": {
+                        "OPARGS": {
                             "value": "--headless",
                             "state": True,
                             "subst": False
@@ -301,7 +325,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
                             "state": True,
                             "subst": False
                         },
-                        "OPCMDFLAGS": {
+                        "OPCMDARGS": {
                             "value": " ".join(args),
                             "state": True,
                             "subst": False
@@ -403,8 +427,10 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
 
         # get latest version of subset
         # this will stop if subset wasn't published yet
-        version = openpype.api.get_latest_version(instance.data.get("asset"),
-                                                  instance.data.get("subset"))
+        version = get_latest_version(
+            instance.data.get("asset"),
+            instance.data.get("subset")
+        )
         # get its files based on extension
         subset_resources = get_resources(version, representation.get("ext"))
         r_col, _ = clique.assemble(subset_resources)
@@ -726,15 +752,14 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
         # type: (pyblish.api.Instance) -> None
         """Process plugin.
 
-        Detect type of renderfarm submission and create and post dependend job
-        in case of Deadline. It creates json file with metadata needed for
-        publishing in directory of render.
+        Detect type of renderfarm submission and create and post dependent job
+        It creates json file with metadata needed for publishing in directory
+        of render.
 
         Args:
             instance (pyblish.api.Instance): Instance data.
 
         """
-        print(100*"I9NSIDE SUBMIT DEADLINE")
         data = instance.data.copy()
         context = instance.context
         self.context = context
@@ -963,59 +988,19 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
                         at.get("subset"), at.get("version")))
             instances = new_instances
 
-        r''' SUBMiT PUBLiSH JOB 2 D34DLiN3
-          ____
-        '     '            .---.  .---. .--. .---. .--..--..--..--. .---.
-        |     |   --= \   |  .  \/   _|/    \|  .  \  ||  ||   \  |/   _|
-        | JOB |   --= /   |  |  ||  __|  ..  |  |  |  |;_ ||  \   ||  __|
-        |     |           |____./ \.__|._||_.|___./|_____|||__|\__|\.___|
-        ._____.
-
-        '''
-
-        render_job = None
-        if instance.data.get("toBeRenderedOn") == "deadline":
-            render_job = data.pop("deadlineSubmissionJob", None)
-            submission_type = "deadline"
-
+        # submit publish job to Muster
         if instance.data.get("toBeRenderedOn") == "muster":
             render_job = data.pop("musterSubmissionJob", None)
             submission_type = "muster"
 
         if not render_job and instance.data.get("tileRendering") is False:
-            raise AssertionError(("Cannot continue without valid Deadline "
-                                  "or Muster submission."))
+            raise AssertionError(
+                "Cannot continue without valid or Muster submission."
+            )
 
-        if not render_job:
-            import getpass
-
-            render_job = {}
-            self.log.info("Faking job data ...")
-            render_job["Props"] = {}
-            # Render job doesn't exist because we do not have prior submission.
-            # We still use data from it so lets fake it.
-            #
-            # Batch name reflect original scene name
-
-            if instance.data.get("assemblySubmissionJobs"):
-                render_job["Props"]["Batch"] = instance.data.get(
-                    "jobBatchName")
-            else:
-                render_job["Props"]["Batch"] = os.path.splitext(
-                    os.path.basename(context.data.get("currentFile")))[0]
-            # User is deadline user
-            render_job["Props"]["User"] = context.data.get(
-                "deadlineUser", getpass.getuser())
-
-            render_job["Props"]["Env"] = {
-                "FTRACK_API_USER": os.environ.get("FTRACK_API_USER"),
-                "FTRACK_API_KEY": os.environ.get("FTRACK_API_KEY"),
-                "FTRACK_SERVER": os.environ.get("FTRACK_SERVER"),
-            }
-
-        # submit the publish job to muster
         self._submit_muster_post_job(instance, render_job, instances)
 
+        # writing json file
         # publish job file
         publish_job = {
             "asset": asset,
@@ -1072,9 +1057,10 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
         prev_start = None
         prev_end = None
 
-        version = openpype.api.get_latest_version(asset_name=asset,
-                                                  subset_name=subset
-                                                  )
+        version = get_latest_version(
+            asset_name=asset,
+            subset_name=subset
+        )
 
         # Set prev start / end frames for comparison
         if not prev_start and not prev_end:
@@ -1119,7 +1105,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin):
                 based on 'publish' template
         """
         if not version:
-            version = openpype.api.get_latest_version(asset, subset)
+            version = get_latest_version(asset, subset)
             if version:
                 version = int(version["name"]) + 1
             else:

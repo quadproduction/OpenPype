@@ -37,22 +37,6 @@ def _get_template_id(renderer):
     return template_id
 
 
-def _get_script():
-    """Get path to the image sequence script"""
-    try:
-        from openpype.scripts import publish_filesequence
-    except Exception:
-        return "JustForTest"
-        raise RuntimeError("Expected module 'publish_deadline'"
-                           "to be available")
-
-    module_path = publish_filesequence.__file__
-    if module_path.endswith(".pyc"):
-        module_path = module_path[:-len(".pyc")] + ".py"
-
-    return module_path
-
-
 def get_renderer_variables(renderlayer=None):
     """Retrieve the extension which has been set in the VRay settings
 
@@ -292,9 +276,7 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
         renderlayer = instance.data['setMembers']       # rs_beauty
         renderlayer_name = instance.data['subset']      # beauty
         renderglobals = instance.data["renderGlobals"]
-        # legacy_layers = renderlayer_globals["UseLegacyRenderLayers"]
-        # deadline_user = context.data.get("deadlineUser", getpass.getuser())
-        jobname = "%s_%s" % (filename, instance.name)
+        jobname = "{}_{}".format(scene, instance.name)
 
         # Get the variables depending on the renderer
         render_variables = get_renderer_variables(renderlayer)
@@ -306,43 +288,6 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
 
         instance.data["outputDir"] = os.path.dirname(output_filename_0)
         self.log.debug("output: {}".format(filepath))
-        # build path for metadata file
-        metadata_filename = "{}_metadata.json".format(instance.data["subset"])
-        output_dir = instance.data["outputDir"]
-        metadata_path = os.path.join(output_dir, metadata_filename)
-
-        pype_root = os.environ["OPENPYPE_ROOT"]
-
-        # we must provide either full path to executable or use musters own
-        # python named MPython.exe, residing directly in muster bin
-        # directory.
-        if platform.system().lower() == "windows":
-            # for muster, those backslashes must be escaped twice
-            muster_python = ("\"C:\\\\Program Files\\\\Virtual Vertex\\\\"
-                             "Muster 9\\\\MPython.exe\"")
-        else:
-            # we need to run pype as different user then Muster dispatcher
-            # service is running (usually root).
-            muster_python = ("/usr/sbin/runuser -u {}"
-                             " -- /usr/bin/python3".format(getpass.getuser()))
-
-        # build the path and argument. We are providing separate --pype
-        # argument with network path to pype as post job actions are run
-        # but dispatcher (Server) and not render clients. Render clients
-        # inherit environment from publisher including PATH, so there's
-        # no problem finding PYPE, but there is now way (as far as I know)
-        # to set environment dynamically for dispatcher. Therefore this hack.
-        args = [muster_python,
-                _get_script().replace('\\', '\\\\'),
-                "--paths",
-                metadata_path.replace('\\', '\\\\'),
-                "--pype",
-                pype_root.replace('\\', '\\\\')]
-
-        # print(100 * "Y")
-        # print(" ".join(args))
-
-        postjob_command = " ".join(args)
 
         try:
             # Ensure render folder exists
@@ -413,11 +358,6 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                         },
                         "output_folder": {
                             "value": dirname.replace("\\", "/"),
-                            "state": True,
-                            "subst": True
-                        },
-                        "post_job_action": {
-                            "value": postjob_command,
                             "state": True,
                             "subst": True
                         },
