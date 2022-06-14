@@ -295,6 +295,18 @@ class CreateRender(plugin.Creator):
                                                default_priority)
             self.data["tile_priority"] = tile_priority
 
+            pool_setting = (self._project_settings["deadline"]
+                                                  ["publish"]
+                                                  ["CollectDeadlinePools"])
+            primary_pool = pool_setting["primary_pool"]
+            self.data["primaryPool"] = self._set_default_pool(pool_names,
+                                                              primary_pool)
+            # We add a string "-" to allow the user to not
+            # set any secondary pools
+            pool_names = ["-"] + pool_names
+            secondary_pool = pool_setting["secondary_pool"]
+            self.data["secondaryPool"] = self._set_default_pool(pool_names,
+                                                                secondary_pool)
         if muster_enabled:
             self.log.info(">>> Loading Muster credentials ...")
             self._load_credentials()
@@ -318,22 +330,9 @@ class CreateRender(plugin.Creator):
             templates = get_system_settings()["modules"]["muster"]["templates_mapping"]
             self.data['musterTemplates'] = list(templates.keys())
 
-        self.data["primaryPool"] = pool_names
+            self.data["primaryPool"] = pool_names
+            self.data["secondaryPool"] = ["-"] + pool_names
 
-        # pool_setting = (self._project_settings["deadline"]
-        #                                       ["publish"]
-        #                                       ["CollectDeadlinePools"])
-        # primary_pool = pool_setting["primary_pool"]
-        # self.data["primaryPool"] = self._set_default_pool(pool_names,
-        #                                                   primary_pool)
-
-        # We add a string "-" to allow the user to not
-        # set any secondary pools
-        self.data["secondaryPool"] = ["-"] + pool_names
-        # pool_names = ["-"] + pool_names
-        # secondary_pool = pool_setting["secondary_pool"]
-        # self.data["secondaryPool"] = self._set_default_pool(pool_names,
-        #                                                     secondary_pool)
         self.options = {"useSelection": False}  # Force no content
 
     def _set_default_pool(self, pool_names, pool_value):
@@ -377,8 +376,10 @@ class CreateRender(plugin.Creator):
         """
         params = {"authToken": self._token}
         api_entry = "/api/pools/list"
-        response = requests_get(self.MUSTER_REST_URL + api_entry,
-                                      params=params)
+        response = requests_get(
+            self.MUSTER_REST_URL + api_entry,
+            params=params
+        )
         if response.status_code != 200:
             if response.status_code == 401:
                 self.log.warning("Authentication token expired.")
