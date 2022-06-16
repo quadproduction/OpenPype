@@ -103,10 +103,6 @@ class CreateRender(plugin.Creator):
     def __init__(self, *args, **kwargs):
         """Constructor."""
         super(CreateRender, self).__init__(*args, **kwargs)
-        deadline_settings = get_system_settings()["modules"]["deadline"]
-        if not deadline_settings["enabled"]:
-            self.deadline_servers = {}
-            return
         self._project_settings = get_project_settings(
             legacy_io.Session["AVALON_PROJECT"])
 
@@ -120,6 +116,11 @@ class CreateRender(plugin.Creator):
             )]
         except KeyError:
             self.aov_separator = "_"
+
+        deadline_settings = get_system_settings()["modules"]["deadline"]
+        if not deadline_settings["enabled"]:
+            self.deadline_servers = {}
+            return
 
         manager = ModulesManager()
         self.deadline_module = manager.modules_by_name["deadline"]
