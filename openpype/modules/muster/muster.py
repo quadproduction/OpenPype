@@ -1,5 +1,6 @@
 import os
 import json
+import subprocess
 import appdirs
 import requests
 from openpype.modules import OpenPypeModule
@@ -27,6 +28,8 @@ class MusterModule(OpenPypeModule, ITrayModule):
             self.cred_folder_path, self.cred_filename
         )
         # Tray attributes
+        self.action_show_launch = None
+
         self.widget_login = None
         self.action_show_login = None
         self.rest_api_obj = None
@@ -61,11 +64,13 @@ class MusterModule(OpenPypeModule, ITrayModule):
         menu.setProperty('submenu', 'on')
 
         # Actions
-        self.action_show_login = QtWidgets.QAction(
-            "Change login", menu
-        )
-
+        self.action_show_launch = QtWidgets.QAction("Launch", menu)
+        self.action_show_login = QtWidgets.QAction("Change login", menu)
+        
+        menu.addAction(self.action_show_launch)
         menu.addAction(self.action_show_login)
+
+        self.action_show_launch.triggered.connect(self.launch_app)
         self.action_show_login.triggered.connect(self.show_login)
 
         parent.addMenu(menu)
@@ -150,3 +155,14 @@ class MusterModule(OpenPypeModule, ITrayModule):
         if 'verify' not in kwargs:
             kwargs['verify'] = False if os.getenv("OPENPYPE_DONT_VERIFY_SSL", True) else True  # noqa
         return requests.post(*args, **kwargs)
+
+
+    def launch_app(self):
+        subprocess.Popen(
+            [
+                'bash', '/prod/softprod/apps/muster/9.0.14/linux/xConsole',
+                '-server', 'muster9.prs.vfx.int',
+                '-port', '9881',
+                '-user', os.getlogin()
+            ]
+        )
