@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import subprocess
 import appdirs
@@ -23,7 +24,9 @@ class MusterModule(OpenPypeModule, ITrayModule):
         muster_settings = modules_settings[self.name]
         self.enabled = muster_settings["enabled"]
         self.muster_url = muster_settings["MUSTER_REST_URL"]
-
+        self.muster_paths = muster_settings.get("muster_paths")
+        self.muster_address = self.muster_url.split('//')[1].split(':')[0]
+        self.muster_port = self.muster_url.split(':')[2]
         self.cred_path = os.path.join(
             self.cred_folder_path, self.cred_filename
         )
@@ -70,7 +73,7 @@ class MusterModule(OpenPypeModule, ITrayModule):
         menu.addAction(self.action_show_launch)
         menu.addAction(self.action_show_login)
 
-        self.action_show_launch.triggered.connect(self.launch_app)
+        self.action_show_launch.triggered.connect(self.launch_app_from_tray)
         self.action_show_login.triggered.connect(self.show_login)
 
         parent.addMenu(menu)
@@ -157,12 +160,12 @@ class MusterModule(OpenPypeModule, ITrayModule):
         return requests.post(*args, **kwargs)
 
 
-    def launch_app(self):
-        subprocess.Popen(
-            [
-                'bash', '/prod/softprod/apps/muster/9.0.14/linux/xConsole',
-                '-server', 'muster9.prs.vfx.int',
-                '-port', '9881',
-                '-user', os.getlogin()
-            ]
-        )
+    def launch_app_from_tray(self):
+            subprocess.Popen(
+                [
+                    self.muster_paths.get('default').get(sys.platform),
+                    '-server', self.muster_address,
+                    '-port', self.muster_port,
+                    '-user', os.getlogin()
+                ]
+            )

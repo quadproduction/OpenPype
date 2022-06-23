@@ -162,6 +162,16 @@
             "checkbox_key": "enabled",
             "children": [
                 {
+                    "type": "dict-modifiable",
+                    "object_type": {
+                        "type": "path",
+                        "multiplatform": true
+                    },
+                    "key": "muster_paths",
+                    "required_keys": ["default"],
+                    "label": "Muster Root Paths"
+                },
+                {
                     "type": "boolean",
                     "key": "enabled",
                     "label": "Enabled"
