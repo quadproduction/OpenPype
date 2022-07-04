@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+import subprocess
 import appdirs
 import requests
 from openpype.modules import OpenPypeModule
@@ -22,11 +24,15 @@ class MusterModule(OpenPypeModule, ITrayModule):
         muster_settings = modules_settings[self.name]
         self.enabled = muster_settings["enabled"]
         self.muster_url = muster_settings["MUSTER_REST_URL"]
-
+        self.muster_paths = muster_settings.get("muster_paths")
+        self.muster_address = self.muster_url.split('//')[1].split(':')[0]
+        self.muster_port = self.muster_url.split(':')[2]
         self.cred_path = os.path.join(
             self.cred_folder_path, self.cred_filename
         )
         # Tray attributes
+        self.action_show_launch = None
+
         self.widget_login = None
         self.action_show_login = None
         self.rest_api_obj = None
@@ -61,11 +67,13 @@ class MusterModule(OpenPypeModule, ITrayModule):
         menu.setProperty('submenu', 'on')
 
         # Actions
-        self.action_show_login = QtWidgets.QAction(
-            "Change login", menu
-        )
+        self.action_show_launch = QtWidgets.QAction("Launch", menu)
+        self.action_show_login = QtWidgets.QAction("Change login", menu)
 
+        menu.addAction(self.action_show_launch)
         menu.addAction(self.action_show_login)
+
+        self.action_show_launch.triggered.connect(self.launch_app_from_tray)
         self.action_show_login.triggered.connect(self.show_login)
 
         parent.addMenu(menu)
@@ -150,3 +158,13 @@ class MusterModule(OpenPypeModule, ITrayModule):
         if 'verify' not in kwargs:
             kwargs['verify'] = False if os.getenv("OPENPYPE_DONT_VERIFY_SSL", True) else True  # noqa
         return requests.post(*args, **kwargs)
+
+    def launch_app_from_tray(self):
+        subprocess.Popen(
+            [
+                self.muster_paths.get('default').get(sys.platform),
+                '-server', self.muster_address,
+                '-port', self.muster_port,
+                '-user', os.getlogin()
+            ]
+        )

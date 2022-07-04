@@ -164,6 +164,13 @@
     },
     "muster": {
         "enabled": false,
+        "muster_paths": {
+            "default": {
+                "windows": "",
+                "darwin": "",
+                "linux": ""
+            }
+        },
         "MUSTER_REST_URL": "http://127.0.0.1:9890",
         "templates_mapping": {
             "file_layers": 7,

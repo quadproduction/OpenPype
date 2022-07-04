@@ -1,4 +1,3 @@
-import os
 from Qt import QtCore, QtGui, QtWidgets
 from openpype import resources, style
 
