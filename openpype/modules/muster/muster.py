@@ -69,7 +69,7 @@ class MusterModule(OpenPypeModule, ITrayModule):
         # Actions
         self.action_show_launch = QtWidgets.QAction("Launch", menu)
         self.action_show_login = QtWidgets.QAction("Change login", menu)
-        
+
         menu.addAction(self.action_show_launch)
         menu.addAction(self.action_show_login)
 
@@ -159,13 +159,12 @@ class MusterModule(OpenPypeModule, ITrayModule):
             kwargs['verify'] = False if os.getenv("OPENPYPE_DONT_VERIFY_SSL", True) else True  # noqa
         return requests.post(*args, **kwargs)
 
-
     def launch_app_from_tray(self):
-            subprocess.Popen(
-                [
-                    self.muster_paths.get('default').get(sys.platform),
-                    '-server', self.muster_address,
-                    '-port', self.muster_port,
-                    '-user', os.getlogin()
-                ]
-            )
+        subprocess.Popen(
+            [
+                self.muster_paths.get('default').get(sys.platform),
+                '-server', self.muster_address,
+                '-port', self.muster_port,
+                '-user', os.getlogin()
+            ]
+        )
