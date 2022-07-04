@@ -62,6 +62,13 @@ def install():
 
         # Create default items
         cmds.menuItem(
+            "Work Files...",
+            command=lambda *args: host_tools.show_workfiles(
+                parent=parent_widget
+            ),
+        )
+
+        cmds.menuItem(
             "Create...",
             command=lambda *args: host_tools.show_creator(parent=parent_widget)
         )
@@ -97,13 +104,6 @@ def install():
         )
 
         cmds.menuItem(divider=True)
-
-        cmds.menuItem(
-            "Work Files...",
-            command=lambda *args: host_tools.show_workfiles(
-                parent=parent_widget
-            ),
-        )
 
         cmds.menuItem(
             "Reset Frame Range",
