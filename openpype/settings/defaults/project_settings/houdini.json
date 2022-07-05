@@ -52,5 +52,12 @@
             "optional": true,
             "active": true
         }
+    },
+    "hdamanager": {
+        "hda_path": [
+            "path/to/your/hda/file.hda",
+            "path/to/your/otl/file.otl",
+            "paht/to/your/hda/folder"
+        ]
     }
 }

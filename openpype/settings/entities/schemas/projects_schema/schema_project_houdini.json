@@ -26,6 +26,10 @@
                     ]
                 }
             ]
+        },
+        {
+            "type": "schema",
+            "name": "schema_houdini_hdamanager"
         }
     ]
 }

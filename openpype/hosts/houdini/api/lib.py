@@ -1,3 +1,4 @@
+import os
 import uuid
 import logging
 from contextlib import contextmanager
@@ -457,3 +458,33 @@ def reset_framerange():
     hou.playbar.setFrameRange(frame_start, frame_end)
     hou.playbar.setPlaybackRange(frame_start, frame_end)
     hou.setFrame(frame_start)
+
+
+def load_hdas(hda_path):
+    if not os.path.exists(hda_path):
+        log.warning("Cannot load HDA/OTL from {}, this path does not exist !".format(hda_path))
+        return
+
+    loaded_files = hou.hda.loadedFiles()
+
+    if os.path.isfile(hda_path):
+        hda_list = [hda_path]
+    else:
+        hda_list = [os.path.join(hda_path, f) for f in os.listdir(hda_path)]
+
+    valid_ext = ['.otl', '.hda']
+    for file in hda_list:
+        if file in loaded_files:
+            continue
+        if not os.path.splitext(file)[-1] in valid_ext:
+            log.warning("This file is not a hda or otl file: {}".format(
+                os.path.basename(hda_path)
+            ))
+            continue
+
+        try:
+            hou.hda.installFile(file)
+        except hou.OperationFailed:
+            log.warning("Failed to load this HDA: {}. \
+Check that it's a valid operator type library".format(file))
+            continue

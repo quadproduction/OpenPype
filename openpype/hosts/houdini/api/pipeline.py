@@ -14,7 +14,7 @@ from openpype.pipeline import (
 )
 import openpype.hosts.houdini
 from openpype.hosts.houdini.api import lib
-
+from openpype.settings import get_project_settings
 from openpype.lib import (
     register_event_callback,
     emit_event,
@@ -244,6 +244,7 @@ def on_open():
     # Validate FPS after update_task_from_path to
     # ensure it is using correct FPS for the asset
     lib.validate_fps()
+    _set_hdas()
 
     if any_outdated():
         from openpype.widgets import popup
@@ -282,6 +283,7 @@ def on_new():
 
     log.info("Running callback on new..")
     _set_context_settings()
+    _set_hdas()
 
     # It seems that the current frame always gets reset to frame 1 on
     # new scene. So we enforce current frame to be at the start of the playbar
@@ -320,6 +322,20 @@ def _set_context_settings():
     lib.set_scene_fps(fps)
 
     lib.reset_framerange()
+
+
+def _set_hdas():
+    project_settings = get_project_settings(os.getenv("AVALON_PROJECT"))
+
+    if project_settings['houdini']['hdamanager']['hda_path']:
+        hda_path = project_settings['houdini']['hdamanager']['hda_path']
+
+        if not any(hda_path):
+            log.warning("Skipping HDA configuration, no HDA path found.")
+            return
+
+        for path in hda_path:
+            lib.load_hdas(path.format(**os.environ))
 
 
 def on_pyblish_instance_toggled(instance, new_value, old_value):
