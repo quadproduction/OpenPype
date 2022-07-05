@@ -15,7 +15,6 @@ class ValidateNodeNoLocked(pyblish.api.InstancePlugin):
     actions = [openpype.api.RepairAction,
                openpype.hosts.maya.api.action.SelectInvalidAction]
 
-
     @classmethod
     def get_invalid(cls, instance):
         locked_nodes = cmds.ls(instance, long=True, lockedNodes=True)
