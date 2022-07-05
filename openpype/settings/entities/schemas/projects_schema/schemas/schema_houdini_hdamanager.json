@@ -1,0 +1,18 @@
+{
+    "type": "dict",
+    "collapsible": true,
+    "key": "hdamanager",
+    "label": "HDA Manager",
+    "children": [
+        {
+            "type": "label",
+            "label": "Absolute path to HDA folders or files"
+        },
+        {
+            "type": "path",
+            "key": "hda_path",
+            "label": "HDA Path",
+            "multipath": true
+        }
+    ]
+}
