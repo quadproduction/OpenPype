@@ -461,7 +461,7 @@ def reset_framerange():
 
 
 def load_hdas(hda_path):
-    if not os.path.exist(hda_path):
+    if not os.path.exists(hda_path):
         log.warning("Cannot load HDA/OTL from {}, this path does not exist !".format(hda_path))
         return
 

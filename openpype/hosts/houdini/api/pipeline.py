@@ -327,8 +327,8 @@ def _set_context_settings():
 def _set_hdas():
     project_settings = get_project_settings(os.getenv("AVALON_PROJECT"))
 
-    for hda in project_settings['houdini']['hdamanager']:
-        hda_path = hda['hda_path']
+    if project_settings['houdini']['hdamanager']['hda_path']:
+        hda_path = project_settings['houdini']['hdamanager']['hda_path']
 
         if not any(hda_path):
             log.warning("Skipping HDA configuration, no HDA path found.")
