@@ -718,6 +718,15 @@
             }
         ]
     },
+    "templated_workfile_build": {
+        "profiles": [
+            {
+                "task_types": [],
+                "tasks": [],
+                "path": "/path/to/your/template"
+            }
+        ]
+    },
     "filters": {
         "preset 1": {
             "ValidateNoAnimation": false,
