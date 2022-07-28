@@ -37,21 +37,6 @@ def _get_template_id(renderer):
     return template_id
 
 
-def _get_script():
-    """Get path to the image sequence script"""
-    try:
-        from openpype.scripts import publish_filesequence
-    except Exception:
-        raise RuntimeError("Expected module 'publish_deadline'"
-                           "to be available")
-
-    module_path = publish_filesequence.__file__
-    if module_path.endswith(".pyc"):
-        module_path = module_path[:-len(".pyc")] + ".py"
-
-    return module_path
-
-
 def get_renderer_variables(renderlayer=None):
     """Retrieve the extension which has been set in the VRay settings
 
@@ -291,9 +276,7 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
         renderlayer = instance.data['setMembers']       # rs_beauty
         renderlayer_name = instance.data['subset']      # beauty
         renderglobals = instance.data["renderGlobals"]
-        # legacy_layers = renderlayer_globals["UseLegacyRenderLayers"]
-        # deadline_user = context.data.get("deadlineUser", getpass.getuser())
-        jobname = "%s - %s" % (filename, instance.name)
+        jobname = "{}_{}".format(scene, instance.name)
 
         # Get the variables depending on the renderer
         render_variables = get_renderer_variables(renderlayer)
@@ -305,40 +288,6 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
 
         instance.data["outputDir"] = os.path.dirname(output_filename_0)
         self.log.debug("output: {}".format(filepath))
-        # build path for metadata file
-        metadata_filename = "{}_metadata.json".format(instance.data["subset"])
-        output_dir = instance.data["outputDir"]
-        metadata_path = os.path.join(output_dir, metadata_filename)
-
-        pype_root = os.environ["OPENPYPE_SETUP_PATH"]
-
-        # we must provide either full path to executable or use musters own
-        # python named MPython.exe, residing directly in muster bin
-        # directory.
-        if platform.system().lower() == "windows":
-            # for muster, those backslashes must be escaped twice
-            muster_python = ("\"C:\\\\Program Files\\\\Virtual Vertex\\\\"
-                             "Muster 9\\\\MPython.exe\"")
-        else:
-            # we need to run pype as different user then Muster dispatcher
-            # service is running (usually root).
-            muster_python = ("/usr/sbin/runuser -u {}"
-                             " -- /usr/bin/python3".format(getpass.getuser()))
-
-        # build the path and argument. We are providing separate --pype
-        # argument with network path to pype as post job actions are run
-        # but dispatcher (Server) and not render clients. Render clients
-        # inherit environment from publisher including PATH, so there's
-        # no problem finding PYPE, but there is now way (as far as I know)
-        # to set environment dynamically for dispatcher. Therefore this hack.
-        args = [muster_python,
-                _get_script().replace('\\', '\\\\'),
-                "--paths",
-                metadata_path.replace('\\', '\\\\'),
-                "--pype",
-                pype_root.replace('\\', '\\\\')]
-
-        postjob_command = " ".join(args)
 
         try:
             # Ensure render folder exists
@@ -354,7 +303,7 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                 "job": {
                     "jobName": jobname,
                     "templateId": _get_template_id(
-                        instance.data["renderer"]),
+                        renderglobals["musterTemplate"]),
                     "chunksInterleave": 2,
                     "chunksPriority": "0",
                     "chunksTimeoutValue": 320,
@@ -367,27 +316,24 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                     "includedPools": [renderglobals["Pool"]],
                     "packetSize": 4,
                     "packetType": 1,
-                    "priority": 1,
+                    "priority": renderglobals["Priority"],
                     "jobId": -1,
                     "startOn": 0,
                     "parentId": -1,
                     "project": os.environ.get('AVALON_PROJECT') or scene,
                     "shot": os.environ.get('AVALON_ASSET') or scene,
                     "camera": instance.data.get("cameras")[0],
-                    "dependMode": 0,
-                    "packetSize": 4,
-                    "packetType": 1,
-                    "priority": 1,
                     "maximumInstances": 0,
                     "assignedInstances": 0,
                     "attributes": {
                         "environmental_variables": {
-                            "value": ", ".join("{!s}={!r}".format(k, v)
-                                               for (k, v) in env.items()),
-
+                            "value": ",".join(
+                                "{}={}".format(k, v)
+                                for (k, v) in env.items()
+                            ),
                             "state": True,
                             "subst": False
-                         },
+                        },
                         "memo": {
                             "value": comment,
                             "state": True,
@@ -415,35 +361,30 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                             "state": True,
                             "subst": True
                         },
-                        "post_job_action": {
-                            "value": postjob_command,
+                        "MAYADIGITS": {
+                            "value": 4,
+                            "state": True,
+                            "subst": False
+                        },
+                        "ARNOLDMODE": {
+                            "value": "0",
+                            "state": True,
+                            "subst": False
+                        },
+                        "ABORTRENDER": {
+                            "value": "0",
                             "state": True,
                             "subst": True
                         },
-                        "MAYADIGITS": {
-                          "value": 1,
-                          "state": True,
-                          "subst": False
-                        },
-                        "ARNOLDMODE": {
-                          "value": "0",
-                          "state": True,
-                          "subst": False
-                        },
-                        "ABORTRENDER": {
-                          "value": "0",
-                          "state": True,
-                          "subst": True
-                        },
                         "ARNOLDLICENSE": {
-                          "value": "0",
-                          "state": False,
-                          "subst": False
+                            "value": "0",
+                            "state": False,
+                            "subst": False
                         },
                         "ADD_FLAGS": {
-                          "value": "-rl {}".format(renderlayer),
-                          "state": True,
-                          "subst": True
+                            "value": "-rl {}".format(renderlayer),
+                            "state": True,
+                            "subst": True
                         }
                     }
                 }
@@ -479,20 +420,27 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
             # TODO(marcus): This won't work if the slaves don't
             # have access to these paths, such as if slaves are
             # running Linux and the submitter is on Windows.
+            "OPENPYPE_REPOS_ROOT",
+            "OPENPYPE_MONGO",
+            "OPENPYPE_DATABASE_NAME",
+            "AUTODESK_ADLM_THINCLIENT_ENV",
+            "MAYA_LICENSE",
+            "MAYA_LICENSE_METHOD",
+            "MAYA_LEGACY_THINCLIENT",
             "PYTHONPATH",
             "PATH",
-
             "MTOA_EXTENSIONS_PATH",
             "MTOA_EXTENSIONS",
             "DYLD_LIBRARY_PATH",
             "MAYA_RENDER_DESC_PATH",
             "MAYA_MODULE_PATH",
             "ARNOLD_PLUGIN_PATH",
+            "solidangle_LICENSE",
+            "ADSKFLEX_LICENSE_FILE",
             "FTRACK_API_KEY",
             "FTRACK_API_USER",
             "FTRACK_SERVER",
             "PYBLISHPLUGINPATH",
-
             # todo: This is a temporary fix for yeti variables
             "PEREGRINEL_LICENSE",
             "SOLIDANGLE_LICENSE",
@@ -521,7 +469,8 @@ class MayaSubmitMuster(pyblish.api.InstancePlugin):
                     if not path:
                         continue
                     try:
-                        path.decode('UTF-8', 'strict')
+                        if not isinstance(path, str):
+                            path.decode('UTF-8', 'strict')
                         valid_paths.append(os.path.normpath(path))
                     except UnicodeDecodeError:
                         print('path contains non UTF characters')

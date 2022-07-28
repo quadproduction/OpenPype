@@ -443,6 +443,11 @@ class CollectMayaRender(pyblish.api.ContextPlugin):
             key = "Whitelist" if attributes["whitelist"] else "Blacklist"
             options["renderGlobals"][key] = machine_list
 
+        # Muster template
+        muster_templates = attributes.get("musterTemplates")
+        if muster_templates:
+            options["renderGlobals"]["musterTemplate"] = muster_templates
+
         # Suspend publish job
         state = "Suspended" if attributes["suspendPublishJob"] else "Active"
         options["publishJobState"] = state

@@ -3,10 +3,10 @@ import json
 import appdirs
 import requests
 from openpype.modules import OpenPypeModule
-from openpype_interfaces import ITrayModule
+from openpype_interfaces import ITrayModule, IPluginPaths
 
 
-class MusterModule(OpenPypeModule, ITrayModule):
+class MusterModule(OpenPypeModule, ITrayModule, IPluginPaths):
     """
     Module handling Muster Render credentials. This will display dialog
     asking for user credentials for Muster if not already specified.
@@ -30,6 +30,13 @@ class MusterModule(OpenPypeModule, ITrayModule):
         self.widget_login = None
         self.action_show_login = None
         self.rest_api_obj = None
+
+    def get_plugin_paths(self):
+        """Muster plugin paths."""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        return {
+            "publish": [os.path.join(current_dir, "plugins", "publish")]
+        }
 
     def get_global_environments(self):
         return {

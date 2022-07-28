@@ -103,10 +103,6 @@ class CreateRender(plugin.Creator):
     def __init__(self, *args, **kwargs):
         """Constructor."""
         super(CreateRender, self).__init__(*args, **kwargs)
-        deadline_settings = get_system_settings()["modules"]["deadline"]
-        if not deadline_settings["enabled"]:
-            self.deadline_servers = {}
-            return
         self._project_settings = get_project_settings(
             legacy_io.Session["AVALON_PROJECT"])
 
@@ -120,6 +116,11 @@ class CreateRender(plugin.Creator):
             )]
         except KeyError:
             self.aov_separator = "_"
+
+        deadline_settings = get_system_settings()["modules"]["deadline"]
+        if not deadline_settings["enabled"]:
+            self.deadline_servers = {}
+            return
 
         manager = ModulesManager()
         self.deadline_module = manager.modules_by_name["deadline"]
@@ -241,8 +242,6 @@ class CreateRender(plugin.Creator):
         pool_names = []
         default_priority = 50
 
-        self.server_aliases = list(self.deadline_servers.keys())
-        self.data["deadlineServers"] = self.server_aliases
         self.data["suspendPublishJob"] = False
         self.data["review"] = True
         self.data["extendFrames"] = False
@@ -275,6 +274,8 @@ class CreateRender(plugin.Creator):
             raise RuntimeError("Both Deadline and Muster are enabled")
 
         if deadline_enabled:
+            self.server_aliases = list(self.deadline_servers.keys())
+            self.data["deadlineServers"] = self.server_aliases
             try:
                 deadline_url = self.deadline_servers["default"]
             except KeyError:
@@ -295,6 +296,18 @@ class CreateRender(plugin.Creator):
                                                default_priority)
             self.data["tile_priority"] = tile_priority
 
+            pool_setting = (self._project_settings["deadline"]
+                                                  ["publish"]
+                                                  ["CollectDeadlinePools"])
+            primary_pool = pool_setting["primary_pool"]
+            self.data["primaryPool"] = self._set_default_pool(pool_names,
+                                                              primary_pool)
+            # We add a string "-" to allow the user to not
+            # set any secondary pools
+            pool_names = ["-"] + pool_names
+            secondary_pool = pool_setting["secondary_pool"]
+            self.data["secondaryPool"] = self._set_default_pool(pool_names,
+                                                                secondary_pool)
         if muster_enabled:
             self.log.info(">>> Loading Muster credentials ...")
             self._load_credentials()
@@ -314,18 +327,13 @@ class CreateRender(plugin.Creator):
                 self.log.info("  - pool: {}".format(pool["name"]))
                 pool_names.append(pool["name"])
 
-        pool_setting = (self._project_settings["deadline"]
-                                              ["publish"]
-                                              ["CollectDeadlinePools"])
-        primary_pool = pool_setting["primary_pool"]
-        self.data["primaryPool"] = self._set_default_pool(pool_names,
-                                                          primary_pool)
-        # We add a string "-" to allow the user to not
-        # set any secondary pools
-        pool_names = ["-"] + pool_names
-        secondary_pool = pool_setting["secondary_pool"]
-        self.data["secondaryPool"] = self._set_default_pool(pool_names,
-                                                            secondary_pool)
+            # get muster templates
+            templates = get_system_settings()["modules"]["muster"]["templates_mapping"]
+            self.data['musterTemplates'] = list(templates.keys())
+
+            self.data["primaryPool"] = pool_names
+            self.data["secondaryPool"] = ["-"] + pool_names
+
         self.options = {"useSelection": False}  # Force no content
 
     def _set_default_pool(self, pool_names, pool_value):
@@ -369,8 +377,10 @@ class CreateRender(plugin.Creator):
         """
         params = {"authToken": self._token}
         api_entry = "/api/pools/list"
-        response = requests_get(self.MUSTER_REST_URL + api_entry,
-                                      params=params)
+        response = requests_get(
+            self.MUSTER_REST_URL + api_entry,
+            params=params
+        )
         if response.status_code != 200:
             if response.status_code == 401:
                 self.log.warning("Authentication token expired.")
