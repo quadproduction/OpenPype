@@ -33,6 +33,7 @@ stages:
     # Get PySide2, ffmpeg, oiio and other tools needed
     - ./tools/fetch_thirdparty_libs.sh
     # build pype executables in .\build\
+    - .poetry/bin/poetry install --no-root
     - ./tools/build.sh
     # - tar cvzfp ./build.tar.gz ./build
   # cache:
