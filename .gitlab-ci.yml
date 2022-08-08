@@ -26,18 +26,14 @@ stages:
     - centos
   script:
     # Add python from soft prod 
-    - export PATH="/prod/softprod/apps/python/3.7.9/linux/bin:$PATH"
-    - export PYTHONUSERBASE=$(mktemp -d -t ci-XXXXXXXXXX -p ./)
-    - export PYTHONPATH=./pythonpath/
-    - mkdir $PYTHONPATH
+    - export PYTHEMP=$(mktemp -d -t ci-XXXXXXXXXX -p ./)
+    - cp -Rv /prod/softprod/apps/python/3.7.9/linux/ $PYTHEMP/
+    - export PATH="$PYTHEMP/bin:$PATH"
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
     # Get PySide2, ffmpeg, oiio and other tools needed
     - ./tools/fetch_thirdparty_libs.sh
     # build pype executables in .\build\
-    - .poetry/bin/poetry install --no-root
-    - .poetry/bin/poetry run python -c "import sys, pprint; pprint.pprint(sys.path)"
-
     - ./tools/build.sh
     # - tar cvzfp ./build.tar.gz ./build
   # cache:
