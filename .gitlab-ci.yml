@@ -34,6 +34,7 @@ stages:
     - ./tools/fetch_thirdparty_libs.sh
     # build pype executables in .\build\
     - .poetry/bin/poetry install --no-root
+    - .poetry/bin/poetry run python -c "import sys, pprint; pprint.pprint(sys.path)"
     - ./tools/build.sh
     # - tar cvzfp ./build.tar.gz ./build
   # cache:
