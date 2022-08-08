@@ -27,8 +27,8 @@ stages:
   script:
     # Add python from soft prod 
     - export PYTHEMP=$(mktemp -d -t ci-XXXXXXXXXX -p ./)
-    - cp -Rv /prod/softprod/apps/python/3.7.9/linux/ $PYTHEMP/
-    - export PATH="$PYTHEMP/bin:$PATH"
+    - cp -Rv /prod/softprod/apps/python/3.7.9/linux $PYTHEMP/
+    - export PATH="$PYTHEMP/linux/bin:$PATH"
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
     # Get PySide2, ffmpeg, oiio and other tools needed
