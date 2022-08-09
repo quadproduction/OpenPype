@@ -79,14 +79,14 @@ deploy-staged:
     - mkdir -p /prod/softprod/apps/openpype/$version/linux/
     - rsync -rptl ./build/exe.linux-x86_64-3.7/ /prod/softprod/apps/openpype/$version/linux/
 
-deploy-prod:
-  when: manual
-  stage: prod
-  environment:
-    name: production
-  needs: [deploy-staged]
-  tags: 
-    - shell
-    - centos
-  script:
-    - pwd
+#deploy-prod:
+#  when: manual
+#  stage: prod
+#  environment:
+#    name: production
+#  needs: [deploy-staged]
+#  tags: 
+#    - shell
+#    - centos
+#  script:
+#    - pwd
