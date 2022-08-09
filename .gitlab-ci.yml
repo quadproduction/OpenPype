@@ -64,7 +64,6 @@ build-windows-manual:
 
 deploy-staged:
   <<: *cache_configuration
-  extends: build-centos-on-tags
   stage: deploy
   environment:
     name: staging
