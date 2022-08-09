@@ -62,8 +62,6 @@ deploy-staged:
   stage: deploy
   environment:
     name: staging
-  only:
-    - tags
   needs: [build-centos-manual, build-centos-on-tags, build-windows]
   tags: 
     - shell
@@ -80,8 +78,6 @@ deploy-prod:
   stage: set on prod
   environment:
     name: production
-  only:
-    - tags
   needs: [deploy-staged]
   tags: 
     - shell
