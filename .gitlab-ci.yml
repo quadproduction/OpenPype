@@ -90,14 +90,14 @@ deploy-staged-manual:
     - if: $CI_COMMIT_BRANCH
   
 
-deploy-prod:
-  when: manual
-  stage: prod
-  environment:
-    name: production
-  needs: [deploy-staged-on-tags, {job: deploy-staged-manual, optional: true }]
-  tags: 
-    - shell
-    - centos
-  script:
-    - pwd
+#deploy-prod:
+#  when: manual
+#  stage: prod
+#  environment:
+#    name: production
+#  needs: [deploy-staged-on-tags, {job: deploy-staged-manual, optional: true }]
+#  tags: 
+#    - shell
+#    - centos
+#  script:
+#    - pwd
