@@ -62,13 +62,7 @@ deploy-staged:
   stage: deploy
   environment:
     name: staging
-  needs: 
-    - job: build-centos-manual
-      optional: true
-    - job: build-centos-on-tags
-      optional: true
-    - job: build-windows
-      optional: true
+
   tags: 
     - shell
     - centos
