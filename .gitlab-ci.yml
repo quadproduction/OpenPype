@@ -1,25 +1,18 @@
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
-
-# This is a sample GitLab CI/CD configuration file that should run without any modifications.
-# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
-# it uses echo commands to simulate the pipeline execution.
-#
-# A pipeline is composed of independent jobs that run scripts, grouped into stages.
-# Stages run in sequential order, but jobs within stages run in parallel.
-#
-# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
 
 stages:
   - build
   - test
   - deploy
+  - set on prod
 
+.cache: &cache_configuration
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - ./build
 
 .build-centos:
+  <<: *cache_configuration
   stage: build
   tags: 
     - shell
@@ -28,7 +21,7 @@ stages:
     # Add python from soft prod 
     - export PYTHEMP=$(mktemp -d -t ci-XXXXXXXXXX -p ./)
     - rsync -rtl --chmod a+w /prod/softprod/apps/python/3.7.9/linux $PYTHEMP/
-    - ls -la $PYTHEMP
+    - export
     - export PATH="$PYTHEMP/linux/bin:$PATH"
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
@@ -37,15 +30,8 @@ stages:
     # build pype executables in .\build\
     - ./tools/build.sh
     # - tar cvzfp ./build.tar.gz ./build
-  # cache:
-  #   key: "$CI_COMMIT_REF_SLUG"
-  #   paths:
-  #     - ./build
 
-  # artifacts:
-  #   paths:
-  #     - ./build.tar.gz
-  #   expire_in: 1 day
+
 
 build-centos-on-tags:
   extends: .build-centos
@@ -56,6 +42,7 @@ build-centos-manual:
   when: manual
 
 build-windows:
+  <<: *cache_configuration
   stage: build
   only:
     - tags
@@ -69,14 +56,15 @@ build-windows:
     - .\tools\fetch_thirdparty_libs.ps1
     - .\tools\build.ps1
 
-deploy-centos-staged:
+deploy-staged:
+  <<: *cache_configuration
   extends: build-centos-on-tags
   stage: deploy
   environment:
     name: staging
   only:
     - tags
-  needs: [build-centos-on-tags]
+  needs: [build-centos-manual, build-centos-on-tags, build-windows]
   tags: 
     - shell
     - centos
@@ -87,14 +75,14 @@ deploy-centos-staged:
     - mkdir -p /prod/softprod/apps/openpype/$version/linux/
     - rsync -rptl ./build/exe.linux-x86_64-3.7/ /prod/softprod/apps/openpype/$version/linux/
 
-deploy-centos-prod:
+deploy-prod:
   when: manual
-  stage: deploy
+  stage: set on prod
   environment:
     name: production
   only:
     - tags
-  needs: [deploy-centos-staged]
+  needs: [deploy-staged]
   tags: 
     - shell
     - centos
