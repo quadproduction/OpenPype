@@ -31,17 +31,7 @@ stages:
     - ./tools/build.sh
     # - tar cvzfp ./build.tar.gz ./build
 
-
-
-build-centos-on-tags:
-  extends: .build-centos
-  only: [tags]
-
-build-centos-manual:
-  extends: .build-centos
-  when: manual
-
-build-windows:
+.build-windows:
   <<: *cache_configuration
   stage: build
   only:
@@ -56,19 +46,34 @@ build-windows:
     - .\tools\fetch_thirdparty_libs.ps1
     - .\tools\build.ps1
 
+build-centos-on-tags:
+  extends: .build-centos
+  only: [tags]
+
+build-centos-manual:
+  extends: .build-centos
+  when: manual
+
+build-windows-on-tags:
+  extends: .build-windows
+  only: [tags]
+
+build-windows-manual:
+  extends: .build-windows
+  when: manual
+
 deploy-staged:
   <<: *cache_configuration
   extends: build-centos-on-tags
   stage: deploy
   environment:
     name: staging
-  needs: 
-    - job: build-centos-manual
-      optional: true
-    - job: build-centos-on-tags
-      optional: true
-    - job: build-windows
-      optional: true
+  rules:
+    - if: $CI_COMMIT_TAG
+      needs: [ build-centos-on-tags, build-windows-on-tags ]
+    - if: $CI_COMMIT_TAG
+      needs: [ build-centos-manual, build-windows-manual ]
+
   tags: 
     - shell
     - centos
