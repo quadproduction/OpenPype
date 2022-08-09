@@ -3,7 +3,7 @@ stages:
   - build
   - test
   - deploy
-  - set on prod
+  - prod
 
 .cache: &cache_configuration
   cache:
@@ -62,7 +62,13 @@ deploy-staged:
   stage: deploy
   environment:
     name: staging
-
+  needs: 
+    - job: build-centos-manual
+      optional: true
+    - job: build-centos-on-tags
+      optional: true
+    - job: build-windows
+      optional: true
   tags: 
     - shell
     - centos
@@ -75,7 +81,7 @@ deploy-staged:
 
 deploy-prod:
   when: manual
-  stage: set on prod
+  stage: prod
   environment:
     name: production
   needs: [deploy-staged]
