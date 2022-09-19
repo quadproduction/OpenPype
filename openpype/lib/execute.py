@@ -4,6 +4,7 @@ import subprocess
 import platform
 import json
 import tempfile
+import six
 
 from .log import Logger
 from .vendor_bin_utils import find_executable
@@ -121,13 +122,17 @@ def run_subprocess(*args, **kwargs):
         full_output += _stdout
         logger.debug(_stdout)
 
+    
     if _stderr:
-        _stderr = _stderr.decode("utf-8")
+        if six.PY2:
+            _stderr = _stderr.decode("utf-8")
+        else:
+            _stderr = str(_stderr)
+
         # Add additional line break if output already contains stdout
         if full_output:
             full_output += "\n"
         full_output += _stderr
-        logger.info(_stderr)
 
     if proc.returncode != 0:
         exc_msg = "Executing arguments was not successful: \"{}\"".format(args)
