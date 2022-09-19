@@ -334,7 +334,7 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
         # This will probably never happen as ffmpeg use stdout
         if _stderr:
             for line in _stderr.split(b"\r\n"):
-                print(line.decode("utf-8"))
+                # print(line.decode("utf-8"))
 
         if proc.returncode != 0:
             raise RuntimeError(

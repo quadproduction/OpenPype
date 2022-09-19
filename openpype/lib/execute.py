@@ -4,6 +4,7 @@ import subprocess
 import platform
 import json
 import tempfile
+import six
 
 from .log import Logger
 from .vendor_bin_utils import find_executable
@@ -123,7 +124,11 @@ def run_subprocess(*args, **kwargs):
 
     
     if _stderr:
-        _stderr = str(_stderr)
+        if six.PY2:
+            _stderr = _stderr.decode("utf-8")
+        else:
+            _stderr = str(_stderr)
+
         # Add additional line break if output already contains stdout
         if full_output:
             full_output += "\n"
