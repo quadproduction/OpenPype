@@ -121,13 +121,13 @@ def run_subprocess(*args, **kwargs):
         full_output += _stdout
         logger.debug(_stdout)
 
+    
     if _stderr:
-        _stderr = _stderr.decode("utf-8")
+        _stderr = str(_stderr)
         # Add additional line break if output already contains stdout
         if full_output:
             full_output += "\n"
         full_output += _stderr
-        logger.info(_stderr)
 
     if proc.returncode != 0:
         exc_msg = "Executing arguments was not successful: \"{}\"".format(args)
