@@ -143,6 +143,20 @@
                             ]
                         }
                     ]
+                },
+                {
+                    "type": "dict",
+                    "key": "ExportJsonAndPsd",
+                    "label": "Export JSON and PSD",
+                    "is_group": false,
+                    "checkbox_key": "enabled",
+                    "children": [
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled"
+                        }
+                    ]
                 }
             ]
         },
