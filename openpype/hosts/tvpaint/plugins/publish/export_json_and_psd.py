@@ -1,12 +1,14 @@
 import os
 import json
+import tempfile
 
 import pyblish.api
 from openpype.hosts.tvpaint.api import lib
 
 
 class ExportJsonAndPsd(pyblish.api.InstancePlugin):
-    order = pyblish.api.ExtractorOrder + 0.1
+    # Offset to get after ExtractConvertToEXR plugin.
+    order = pyblish.api.ExtractorOrder + 0.2
     label = "Export Json and PSD"
     hosts = ["tvpaint"]
     families = ["render"]
@@ -14,22 +16,33 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
     enabled = False
 
     def process(self, instance):
+        george_script_lines = []
         repres = instance.data.get("representations")
         if not repres:
             return
 
-        self.log.info("####################################")
-        self.log.info(repres)
-        # george_script_lines = [
-        #     # Change bg color to color from settings
-        #     "tv_background \"color\" {} {} {}".format(*bg_color),
-        #     "tv_SaveMode \"PNG\"",
-        #     "export_path = \"{}\"".format(
-        #         first_frame_filepath.replace("\\", "/")
-        #     ),
-        #     "tv_savesequence '\"'export_path'\"' {} {}".format(
-        #         mark_in, mark_out
-        #     )
-        # ]
+        for repre in repres:
+            if repre['name'] != 'png':
+                continue
 
-        # lib.execute_george_through_file("\n".join(george_script_lines))
+            self.log.info("Processing representation: {}".format(
+                json.dumps(repre, sort_keys=True, indent=4)
+            ))
+
+            output_dir = instance.data.get("stagingDir")
+            if not output_dir:
+                # Create temp folder if staging dir is not set
+                output_dir = (
+                    tempfile.mkdtemp(prefix="tvpaint_export_json_psd_")
+                ).replace("\\", "/")
+
+            mark_in = repre['frameStart']
+            mark_out = repre['frameEnd']
+
+            for frame in range(mark_in, mark_out + 1):
+                output_dir = "/".join(["C:/Users/dev/Desktop/psds", str(frame - 1)])
+                george_script_lines.append(
+                    "tv_clipsavestructure \"{}\" \"PSD\" \"image\" {}".format(output_dir, frame - 1)
+                )
+            
+            lib.execute_george_through_file("\n".join(george_script_lines))
