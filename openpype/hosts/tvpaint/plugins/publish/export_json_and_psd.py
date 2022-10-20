@@ -44,5 +44,10 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
                 george_script_lines.append(
                     "tv_clipsavestructure \"{}\" \"PSD\" \"image\" {}".format(output_dir, frame - 1)
                 )
+            george_script_lines.append(
+                "tv_clipsavestructure \"{}\" \"JSON\" \"onlyvisiblelayers\" \"true\" \"patternfolder\" \"{}\" \"patternfile\" \"{}\"".format(
+                    "C:/Users/dev/Desktop/psds/json_export", "%ln_%4li", "%pfn_%ln_%3ii"
+                )
+            )
             
             lib.execute_george_through_file("\n".join(george_script_lines))
