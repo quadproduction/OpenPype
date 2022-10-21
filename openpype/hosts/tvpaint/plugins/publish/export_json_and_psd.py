@@ -9,7 +9,7 @@ from openpype.hosts.tvpaint.api import lib
 class ExportJsonAndPsd(pyblish.api.InstancePlugin):
     # Offset to get after ExtractConvertToEXR plugin.
     order = pyblish.api.ExtractorOrder + 0.2
-    label = "Export Json and PSD"
+    label = "Export JSON and PSD"
     hosts = ["tvpaint"]
     families = ["render"]
 
@@ -21,6 +21,7 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
         if not repres:
             return
 
+        new_repres = []
         for repre in repres:
             if repre['name'] != 'png':
                 continue
@@ -30,7 +31,7 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
             ))
 
             output_dir = instance.data.get("stagingDir")
-            if not output_dir:
+            if not output_dir or not os.path.exists(output_dir):
                 # Create temp folder if staging dir is not set
                 output_dir = (
                     tempfile.mkdtemp(prefix="tvpaint_export_json_psd_")
@@ -38,16 +39,40 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
 
             mark_in = repre['frameStart']
             mark_out = repre['frameEnd']
+            new_filenames = []
 
-            for frame in range(mark_in, mark_out + 1):
-                output_dir = "/".join(["C:/Users/dev/Desktop/psds", str(frame - 1)])
+            for filename in repre['files']:
+                new_filename = os.path.splitext(filename)[0]
+                dst_filepath = os.path.join(repre["stagingDir"], new_filename)
+                new_filenames.append(new_filename + '.psd')
+
                 george_script_lines.append(
-                    "tv_clipsavestructure \"{}\" \"PSD\" \"image\" {}".format(output_dir, frame - 1)
+                    "tv_clipsavestructure \"{}\" \"PSD\" \"image\" {}".format(dst_filepath, int(new_filename) - 1)
                 )
-            george_script_lines.append(
-                "tv_clipsavestructure \"{}\" \"JSON\" \"onlyvisiblelayers\" \"true\" \"patternfolder\" \"{}\" \"patternfile\" \"{}\"".format(
-                    "C:/Users/dev/Desktop/psds/json_export", "%ln_%4li", "%pfn_%ln_%3ii"
-                )
+
+            # george_script_lines.append(
+            #     "tv_clipsavestructure \"{}\" \"JSON\" \"onlyvisiblelayers\" \"true\" \"patternfolder\" \"{}\" \"patternfile\" \"{}\"".format(
+            #         "C:/Users/dev/Desktop/psds/json_export", "%ln_%4li", "%pfn_%ln_%3ii"
+            #     )
+            # )
+
+            new_repres.append(
+                {
+                    "name": "psd",
+                    "ext": "psd",
+                    "files": new_filenames,
+                    "stagingDir": repre["stagingDir"],
+                    "tags": list(repre["tags"])
+                }
             )
             
-            lib.execute_george_through_file("\n".join(george_script_lines))
+        lib.execute_george_through_file("\n".join(george_script_lines))
+
+        instance.data["representations"].extend(new_repres)
+        self.log.info(
+            "Representations: {}".format(
+                json.dumps(
+                    instance.data["representations"], sort_keys=True, indent=4
+                )
+            )
+        )
