@@ -155,6 +155,16 @@
                             "type": "boolean",
                             "key": "enabled",
                             "label": "Enabled"
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "psd_export",
+                            "label": "PSD"
+                        },
+                        {
+                            "type": "boolean",
+                            "key": "json_export",
+                            "label": "JSON"
                         }
                     ]
                 }
