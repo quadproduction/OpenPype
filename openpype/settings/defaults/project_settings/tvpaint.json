@@ -39,7 +39,9 @@
             "exr_compression": "ZIP"
         },
         "ExportJsonAndPsd": {
-            "enabled": false
+            "enabled": false,
+            "psd_export": false,
+            "json_export": false
         }
     },
     "load": {

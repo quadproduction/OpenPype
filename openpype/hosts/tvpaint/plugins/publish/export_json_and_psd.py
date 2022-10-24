@@ -16,6 +16,10 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
     enabled = False
 
     def process(self, instance):
+        if not self.psd_export and not self.json_export:
+            self.log.warning("PSD and JSON export are not enabled. Please check your project settings.")
+            return
+
         george_script_lines = []
         repres = instance.data.get("representations")
         if not repres:
@@ -38,45 +42,44 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
                     tempfile.mkdtemp(prefix="tvpaint_export_json_psd_")
                 ).replace("\\", "/")
 
-            mark_in = repre['frameStart']
-            mark_out = repre['frameEnd']
             new_filenames = []
 
-            for filename in repre['files']:
-                new_filename = os.path.splitext(filename)[0]
-                dst_filepath = os.path.join(repre["stagingDir"], new_filename)
-                new_filenames.append(new_filename + '.psd')
+            if self.psd_export:
+                for filename in repre['files']:
+                    new_filename = os.path.splitext(filename)[0]
+                    dst_filepath = os.path.join(repre["stagingDir"], new_filename)
+                    new_filenames.append(new_filename + '.psd')
 
+                    george_script_lines.append(
+                        "tv_clipsavestructure \"{}\" \"PSD\" \"image\" {}".format(dst_filepath, int(new_filename) - 1)
+                    )
+                
+                new_psd_repres.append(
+                    {
+                        "name": "psd",
+                        "ext": "psd",
+                        "files": new_filenames,
+                        "stagingDir": output_dir,
+                        "tags": list(repre["tags"])
+                    }
+                )
+
+            if self.json_export:
                 george_script_lines.append(
-                    "tv_clipsavestructure \"{}\" \"PSD\" \"image\" {}".format(dst_filepath, int(new_filename) - 1)
+                    "tv_clipsavestructure \"{}\" \"JSON\" \"onlyvisiblelayers\" \"true\" \"patternfolder\" \"{}\" \"patternfile\" \"{}\"".format(
+                        os.path.join(output_dir, 'json_files'), "%ln_%4li", "%pfn_%ln_%3ii"
+                    )
                 )
-            self.log.info(repre['stagingDir'])
 
-            george_script_lines.append(
-                "tv_clipsavestructure \"{}\" \"JSON\" \"onlyvisiblelayers\" \"true\" \"patternfolder\" \"{}\" \"patternfile\" \"{}\"".format(
-                    os.path.join(repre['stagingDir'], 'json_files'), "%ln_%4li", "%pfn_%ln_%3ii"
+                new_json_repres.append(
+                    {
+                        "name": "json",
+                        "ext": "json",
+                        "files": 'json_files.json',
+                        "stagingDir": output_dir,
+                        "tags": list(repre["tags"])
+                    }
                 )
-            )
-
-            new_psd_repres.append(
-                {
-                    "name": "psd",
-                    "ext": "psd",
-                    "files": new_filenames,
-                    "stagingDir": repre["stagingDir"],
-                    "tags": list(repre["tags"])
-                }
-            )
-
-            new_json_repres.append(
-                {
-                    "name": "json",
-                    "ext": "json",
-                    "files": 'json_files.json',
-                    "stagingDir": repre["stagingDir"],
-                    "tags": list(repre["tags"])
-                }
-            )
             
         lib.execute_george_through_file("\n".join(george_script_lines))
 
