@@ -53,14 +53,14 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
                     george_script_lines.append(
                         "tv_clipsavestructure \"{}\" \"PSD\" \"image\" {}".format(dst_filepath, int(new_filename) - 1)
                     )
-                
+
                 new_psd_repres.append(
                     {
                         "name": "psd",
                         "ext": "psd",
                         "files": new_filenames,
                         "stagingDir": output_dir,
-                        "tags": list(repre["tags"])
+                        "tags": "psd"
                     }
                 )
 
@@ -77,14 +77,15 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
                         "ext": "json",
                         "files": 'json_files.json',
                         "stagingDir": output_dir,
-                        "tags": list(repre["tags"])
+                        "tags": "json"
                     }
                 )
-            
+
         lib.execute_george_through_file("\n".join(george_script_lines))
 
         instance.data["representations"].extend(new_psd_repres)
         instance.data["representations"].extend(new_json_repres)
+
         self.log.info(
             "Representations: {}".format(
                 json.dumps(
