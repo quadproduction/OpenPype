@@ -184,8 +184,9 @@ class ExtractSequence(pyblish.api.Extractor):
         )
 
         repre_filenames = []
-        for filepath in new_filepaths_by_frame.values():
-            repre_filenames.append(os.path.basename(filepath))
+        if new_filepaths_by_frame:
+            for filepath in new_filepaths_by_frame.values():
+                repre_filenames.append(os.path.basename(filepath))
 
         if mark_in < output_frame_start:
             repre_filenames = list(reversed(repre_filenames))
