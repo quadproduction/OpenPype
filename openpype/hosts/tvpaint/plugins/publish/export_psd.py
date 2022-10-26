@@ -1,17 +1,14 @@
-from genericpath import isdir
+"""Plugin exporting psd files.
+"""
 import os
 import json
 import tempfile
 
 import pyblish.api
 from openpype.hosts.tvpaint.api import lib
-from openpype.settings import get_anatomy_settings, get_current_project_settings
-from openpype.settings.lib import get_default_anatomy_settings
 
 
 class ExportJsonAndPsd(pyblish.api.InstancePlugin):
-    # Offset to get after ExtractConvertToEXR plugin.
-    order = pyblish.api.ExtractorOrder + 0.2
     label = "Export PSD"
     hosts = ["tvpaint"]
     families = ["render"]
@@ -47,6 +44,7 @@ class ExportJsonAndPsd(pyblish.api.InstancePlugin):
                 dst_filepath = os.path.join(repre["stagingDir"], new_filename)
                 new_filenames.append(new_filename + '.psd')
 
+                # george command to export psd files for each image
                 george_script_lines.append(
                     "tv_clipsavestructure \"{}\" \"PSD\" \"image\" {}".format(dst_filepath, int(new_filename) - 1)
                 )
