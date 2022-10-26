@@ -146,8 +146,8 @@
                 },
                 {
                     "type": "dict",
-                    "key": "ExportJsonAndPsd",
-                    "label": "Export JSON and PSD",
+                    "key": "export_psd",
+                    "label": "Export PSD",
                     "is_group": false,
                     "checkbox_key": "enabled",
                     "children": [
@@ -155,16 +155,6 @@
                             "type": "boolean",
                             "key": "enabled",
                             "label": "Enabled"
-                        },
-                        {
-                            "type": "boolean",
-                            "key": "psd_export",
-                            "label": "PSD"
-                        },
-                        {
-                            "type": "boolean",
-                            "key": "json_export",
-                            "label": "JSON"
                         }
                     ]
                 }
