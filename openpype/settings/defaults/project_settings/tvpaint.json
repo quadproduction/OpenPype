@@ -38,10 +38,8 @@
             "replace_pngs": true,
             "exr_compression": "ZIP"
         },
-        "ExportJsonAndPsd": {
-            "enabled": false,
-            "psd_export": false,
-            "json_export": false
+        "ExportPsd": {
+            "enabled": false
         }
     },
     "load": {
