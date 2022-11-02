@@ -28,14 +28,10 @@ class ExtractJson(pyblish.api.InstancePlugin):
 
         self.log.info('Extract Json')
         # TODO: george script in list
-        george_script_lines = """
-            tv_clipsavestructure \"{}\" \"JSON\"
-            \"onlyvisiblelayers\" \"true\"
-            \"patternfolder\" \"{}\"
-            \"patternfile\" \"{}\"
-            """.format(
+        george_script_lines = "tv_clipsavestructure \"{}\" \"JSON\" \"onlyvisiblelayers\" \"true\" \"patternfolder\" \"{}\" \"patternfile\" \"{}\"".format(  # noqa
             os.path.join(output_dir, 'tvpaint'), "%ln", "%pfn_%ln.%4ii"
         )
+
         self.log.debug("Execute: {}".format(george_script_lines))
         lib.execute_george_through_file(george_script_lines)
 
