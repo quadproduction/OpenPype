@@ -68,11 +68,9 @@ class ExtractSequence(pyblish.api.Extractor):
 
         # Frame start/end may be stored as float
         frame_start = int(instance.data["frameStart"])
-        frame_end = int(instance.data["frameEnd"])
 
         # Handles are not stored per instance but on Context
         handle_start = instance.context.data["handleStart"]
-        handle_end = instance.context.data["handleEnd"]
 
         scene_bg_color = instance.context.data["sceneBgColor"]
 
@@ -109,12 +107,6 @@ class ExtractSequence(pyblish.api.Extractor):
                 output_dir, mark_in, mark_out, scene_bg_color
             )
         elif self.extract_json and instance.data['family'] == 'renderLayer':
-            # self.log.debug(' extrat_json is True')
-            # if not instance.context.data.get('json_is_extract'):
-            #     self.log.debug(' entre in extract_json_and_png')
-            #     # self.extract_json_and_png(instance, output_dir)
-                
-            # elif instance.data['family'] == 'renderLayer':
             self.add_render_layer_to_repre(instance)
             return
 
@@ -189,14 +181,13 @@ class ExtractSequence(pyblish.api.Extractor):
             "tags": ["thumbnail"]
         }
         instance.data["representations"].append(thumbnail_repre)
-        
+
     def add_render_layer_to_repre(self, instance):
-        self.log.debug("json_output_dir:"+instance.context.data.get('json_output_dir'))
         json_output_dir = instance.context.data['json_output_dir']
         layers = instance.data['layers']
         if len(layers) != 1:
             raise Exception("ERROR")
-        
+
         layer_name = layers[0]['name']
         output_dir = os.path.join(json_output_dir, layer_name)
 
@@ -204,19 +195,21 @@ class ExtractSequence(pyblish.api.Extractor):
         frame_end = int(instance.data["frameEnd"])
 
         layers_data = instance.context.data['tvpaint_layers_data']
-        layer_data = [l for l in layers_data if l['name'] == layer_name]
+        layer_data = [l for l in layers_data if l['name'] == layer_name]  # noqa
         if not len(layer_data) == 1:
             raise Exception("Layer not found in json data")
         layer_data = layer_data[0]
-        link_data = {os.path.basename(l['file']):l for l in layer_data['link']}
-        
+        link_data = {
+            os.path.basename(l['file']): l for l in layer_data['link']  # noqa
+        }
+
         files = []
         filter_link_data = []
         for file_name in os.listdir(output_dir):
             if file_name not in link_data:
                 continue
-            
-            frame_number = re.search( r'\.(\d*)\.png$', file_name)
+
+            frame_number = re.search(r'\.(\d*)\.png$', file_name)
             if not frame_number:
                 continue
 
@@ -233,7 +226,6 @@ class ExtractSequence(pyblish.api.Extractor):
         }
         self.log.debug("Add png representation: {}".format(png_repres))
         instance.data["representations"].append(png_repres)
-        self.log.debug("filter_link_data: {}".format(filter_link_data))
 
         layer_data['link'] = filter_link_data
         instance.data['layers_data'] = layer_data
