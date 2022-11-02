@@ -13,9 +13,8 @@ class ExtractJson(pyblish.api.InstancePlugin):
     label = "Extract JSON"
     hosts = ["tvpaint"]
     families = ["renderPass"]
-    
-    def process(self, instance):
 
+    def process(self, instance):
         # Save to staging dir
         output_dir = instance.data.get("stagingDir")
         if not output_dir:
@@ -27,12 +26,17 @@ class ExtractJson(pyblish.api.InstancePlugin):
 
         self.log.info('Extract Json')
         # TODO: george script in list
-        george_script_lines = "tv_clipsavestructure \"{}\" \"JSON\" \"onlyvisiblelayers\" \"true\" \"patternfolder\" \"{}\" \"patternfile\" \"{}\"".format(
-                os.path.join(output_dir, 'tvpaint'), "%ln", "%pfn_%ln.%4ii"
-            )
+        george_script_lines = """
+            tv_clipsavestructure \"{}\" \"JSON\"
+            \"onlyvisiblelayers\" \"true\"
+            \"patternfolder\" \"{}\"
+            \"patternfile\" \"{}\"
+            """.format(
+            os.path.join(output_dir, 'tvpaint'), "%ln", "%pfn_%ln.%4ii"
+        )
         self.log.debug("Execute: {}".format(george_script_lines))
         lib.execute_george_through_file(george_script_lines)
-        
+
         raw_json_path = os.path.join(output_dir, 'tvpaint.json')
         instance.context.data['json_output_dir'] = output_dir
         instance.context.data['raw_json_data_path'] = raw_json_path
@@ -40,12 +44,12 @@ class ExtractJson(pyblish.api.InstancePlugin):
         with open(raw_json_path) as tvpaint_json:
             tvpaint_data = json.load(tvpaint_json)
 
-        instance.context.data['tvpaint_layers_data'] = tvpaint_data['project']['clip']['layers']
+        instance.context.data['tvpaint_layers_data'] = tvpaint_data['project']['clip']['layers']  # noqa
         tvpaint_data['project']['clip']['layers'] = []
         op_json_filename = 'openpype.json'
         op_json_path = os.path.join(output_dir, op_json_filename)
         with open(op_json_path, "w") as op_json:
-           json.dump(tvpaint_data, op_json)
+            json.dump(tvpaint_data, op_json)
 
         json_repres = {
             "name": "json",
