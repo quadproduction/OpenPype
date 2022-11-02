@@ -40,6 +40,9 @@
         },
         "ExportPsd": {
             "enabled": false
+        },
+        "ExtractJson": {
+            "enabled": false
         }
     },
     "load": {
