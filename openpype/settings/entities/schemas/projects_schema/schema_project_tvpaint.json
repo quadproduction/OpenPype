@@ -146,8 +146,22 @@
                 },
                 {
                     "type": "dict",
-                    "key": "export_psd",
+                    "key": "ExportPsd",
                     "label": "Export PSD",
+                    "is_group": false,
+                    "checkbox_key": "enabled",
+                    "children": [
+                        {
+                            "type": "boolean",
+                            "key": "enabled",
+                            "label": "Enabled"
+                        }
+                    ]
+                },
+                {
+                    "type": "dict",
+                    "key": "ExtractJson",
+                    "label": "Extract JSON",
                     "is_group": false,
                     "checkbox_key": "enabled",
                     "children": [
