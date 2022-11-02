@@ -1,4 +1,4 @@
-"""Plugin exporting psd files.
+"""Plugin exporting json file.
 """
 import os
 import tempfile
@@ -9,6 +9,8 @@ from openpype.hosts.tvpaint.api import lib
 
 
 class ExtractJson(pyblish.api.InstancePlugin):
+    """ Extract a JSON file and add it to the instance representation.
+    """
     order = pyblish.api.ExtractorOrder
     label = "Extract JSON"
     hosts = ["tvpaint"]

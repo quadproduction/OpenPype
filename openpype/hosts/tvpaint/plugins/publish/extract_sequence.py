@@ -189,6 +189,11 @@ class ExtractSequence(pyblish.api.Extractor):
         instance.data["representations"].append(thumbnail_repre)
 
     def add_render_layer_to_repre(self, instance):
+        """ Add render layers to representation with only frameranged frames
+
+        Args:
+            instance (dict): the current instance of the sequence
+        """
         json_output_dir = instance.context.data['json_output_dir']
         layers = instance.data['layers']
         if len(layers) != 1:
@@ -215,6 +220,7 @@ class ExtractSequence(pyblish.api.Extractor):
             if file_name not in link_data:
                 continue
 
+            # Regex to search the frame number in the name of the file
             frame_number = re.search(r'\.(\d*)\.png$', file_name)
             if not frame_number:
                 continue
