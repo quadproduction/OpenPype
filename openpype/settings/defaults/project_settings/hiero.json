@@ -1,0 +1,67 @@
+{
+    "create": {
+        "CreateShotClip": {
+            "hierarchy": "{folder}/{sequence}",
+            "clipRename": true,
+            "clipName": "{track}{sequence}{shot}",
+            "countFrom": 10,
+            "countSteps": 10,
+            "folder": "shots",
+            "episode": "ep01",
+            "sequence": "sq01",
+            "track": "{_track_}",
+            "shot": "sh###",
+            "vSyncOn": false,
+            "workfileFrameStart": 1001,
+            "handleStart": 10,
+            "handleEnd": 10
+        }
+    },
+    "load": {
+        "LoadClip": {
+            "enabled": true,
+            "families": [
+                "render2d",
+                "source",
+                "plate",
+                "render",
+                "review"
+            ],
+            "representations": [
+                "exr",
+                "dpx",
+                "jpg",
+                "jpeg",
+                "png",
+                "h264",
+                "mov",
+                "mp4"
+            ],
+            "clip_name_template": "{asset}_{subset}_{representation}"
+        }
+    },
+    "publish": {
+        "CollectInstanceVersion": {
+            "enabled": false
+        },
+        "ExtractReviewCutUpVideo": {
+            "enabled": true,
+            "tags_addition": [
+                "review"
+            ]
+        }
+    },
+    "filters": {},
+    "scriptsmenu": {
+        "name": "OpenPype Tools",
+        "definition": [
+            {
+                "type": "action",
+                "sourcetype": "python",
+                "title": "OpenPype Docs",
+                "command": "import webbrowser;webbrowser.open(url='https://openpype.io/docs/artist_hosts_hiero')",
+                "tooltip": "Open the OpenPype Hiero user doc page"
+            }
+        ]
+    }
+}

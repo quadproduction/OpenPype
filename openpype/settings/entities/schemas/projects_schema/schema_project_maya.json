@@ -1,0 +1,89 @@
+{
+    "type": "dict",
+    "collapsible": true,
+    "key": "maya",
+    "label": "Maya",
+    "is_file": true,
+    "children": [
+        {
+            "type": "dict-modifiable",
+            "key": "ext_mapping",
+            "label": "Extension Mapping",
+            "use_label_wrap": true,
+            "object_type": {
+                                "type": "text"
+                            }
+        },
+        {
+           "type": "dict",
+            "collapsible": true,
+            "checkbox_key": "enabled",
+            "key": "maya-dirmap",
+            "label": "Maya Directory Mapping",
+            "is_group": true,
+            "children": [
+                {
+                    "type": "boolean",
+                    "key": "use_env_var_as_root",
+                    "label": "Use env var placeholder in referenced paths",
+                    "docstring": "Use ${} placeholder instead of absolute value of a root in referenced filepaths."
+                },
+                {
+                    "type": "boolean",
+                    "key": "enabled",
+                    "label": "Enabled"
+                },
+                {
+                    "type": "dict",
+                    "key": "paths",
+                    "children": [
+                        {
+                            "type": "list",
+                            "object_type": "text",
+                            "key": "source-path",
+                            "label": "Source Path"
+                        },
+                        {
+                            "type": "list",
+                            "object_type": "text",
+                            "key": "destination-path",
+                            "label": "Destination Path"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "schema",
+            "name": "schema_scriptsmenu"
+        },
+        {
+            "type": "schema",
+            "name": "schema_maya_render_settings"
+        },
+        {
+            "type": "schema",
+            "name": "schema_maya_create"
+        },
+        {
+            "type": "schema",
+            "name": "schema_maya_publish"
+        },
+        {
+            "type": "schema",
+            "name": "schema_maya_load"
+        },
+        {
+            "type": "schema",
+            "name": "schema_workfile_build"
+        },
+        {
+            "type": "schema",
+            "name": "schema_templated_workfile_build"
+        },
+        {
+            "type": "schema",
+            "name": "schema_publish_gui_filter"
+        }
+    ]
+}

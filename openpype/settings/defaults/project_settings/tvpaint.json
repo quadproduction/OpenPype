@@ -1,0 +1,69 @@
+{
+    "stop_timer_on_application_exit": false,
+    "publish": {
+        "CollectRenderScene": {
+            "enabled": false,
+            "render_layer": "Main"
+        },
+        "ExtractSequence": {
+            "review_bg": [
+                255,
+                255,
+                255,
+                255
+            ]
+        },
+        "ValidateProjectSettings": {
+            "enabled": true,
+            "optional": true,
+            "active": true
+        },
+        "ValidateMarks": {
+            "enabled": true,
+            "optional": true,
+            "active": true
+        },
+        "ValidateStartFrame": {
+            "enabled": false,
+            "optional": true,
+            "active": true
+        },
+        "ValidateAssetName": {
+            "enabled": true,
+            "optional": true,
+            "active": true
+        },
+        "ExtractConvertToEXR": {
+            "enabled": false,
+            "replace_pngs": true,
+            "exr_compression": "ZIP"
+        },
+        "ExtractPsd": {
+            "enabled": false
+        },
+        "ExtractJson": {
+            "enabled": false
+        }
+    },
+    "load": {
+        "LoadImage": {
+            "defaults": {
+                "stretch": true,
+                "timestretch": true,
+                "preload": true
+            }
+        },
+        "ImportImage": {
+            "defaults": {
+                "stretch": true,
+                "timestretch": true,
+                "preload": true
+            }
+        }
+    },
+    "workfile_builder": {
+        "create_first_version": false,
+        "custom_templates": []
+    },
+    "filters": {}
+}

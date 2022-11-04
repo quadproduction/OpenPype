@@ -1,0 +1,51 @@
+{
+    "create": {
+        "CreateImage": {
+            "defaults": [
+                "Main"
+            ]
+        }
+    },
+    "publish": {
+        "CollectColorCodedInstances": {
+            "create_flatten_image": "no",
+            "flatten_subset_template": "",
+            "color_code_mapping": []
+        },
+        "CollectInstances": {
+            "flatten_subset_template": ""
+        },
+        "ValidateContainers": {
+            "enabled": true,
+            "optional": true,
+            "active": true
+        },
+        "ValidateNaming": {
+            "invalid_chars": "[ \\\\/+\\*\\?\\(\\)\\[\\]\\{\\}:,;]",
+            "replace_char": "_"
+        },
+        "ExtractImage": {
+            "formats": [
+                "png",
+                "jpg"
+            ]
+        },
+        "ExtractReview": {
+            "make_image_sequence": false,
+            "max_downscale_size": 8192,
+            "jpg_options": {
+                "tags": []
+            },
+            "mov_options": {
+                "tags": [
+                    "review",
+                    "ftrackreview"
+                ]
+            }
+        }
+    },
+    "workfile_builder": {
+        "create_first_version": false,
+        "custom_templates": []
+    }
+}
