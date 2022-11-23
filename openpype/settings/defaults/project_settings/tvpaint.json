@@ -37,6 +37,12 @@
             "enabled": false,
             "replace_pngs": true,
             "exr_compression": "ZIP"
+        },
+        "ExportPsd": {
+            "enabled": false
+        },
+        "ExtractJson": {
+            "enabled": false
         }
     },
     "load": {
