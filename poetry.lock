@@ -225,7 +225,7 @@ python-versions = "~=3.7"
 
 [[package]]
 name = "certifi"
-version = "2022.9.24"
+version = "2022.12.7"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -295,7 +295,7 @@ test = ["flake8 (==3.7.8)", "hypothesis (==3.55.3)"]
 
 [[package]]
 name = "coolname"
-version = "2.0.0"
+version = "2.1.0"
 description = "Random name and slug generator"
 category = "main"
 optional = false
@@ -487,7 +487,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "gazu"
-version = "0.8.33"
+version = "0.8.34"
 description = "Gazu is a client for Zou, the API to store the data of your CG production."
 category = "main"
 optional = false
@@ -527,20 +527,20 @@ typing-extensions = {version = ">=3.7.4.3", markers = "python_version < \"3.8\""
 
 [[package]]
 name = "google-api-core"
-version = "2.10.2"
+version = "2.11.0"
 description = "Google API client core library"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
-google-auth = ">=1.25.0,<3.0dev"
+google-auth = ">=2.14.1,<3.0dev"
 googleapis-common-protos = ">=1.56.2,<2.0dev"
 protobuf = ">=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<5.0.0dev"
 requests = ">=2.18.0,<3.0.0dev"
 
 [package.extras]
-grpc = ["grpcio (>=1.33.2,<2.0dev)", "grpcio-status (>=1.33.2,<2.0dev)"]
+grpc = ["grpcio (>=1.33.2,<2.0dev)", "grpcio-status (>=1.33.2,<2.0dev)", "grpcio (>=1.49.1,<2.0dev)", "grpcio-status (>=1.49.1,<2.0dev)"]
 grpcgcp = ["grpcio-gcp (>=0.2.2,<1.0dev)"]
 grpcio-gcp = ["grpcio-gcp (>=0.2.2,<1.0dev)"]
 
@@ -562,7 +562,7 @@ uritemplate = ">=3.0.0,<4dev"
 
 [[package]]
 name = "google-auth"
-version = "2.14.1"
+version = "2.15.0"
 description = "Google Authentication Library"
 category = "main"
 optional = false
@@ -661,15 +661,15 @@ python-versions = "*"
 
 [[package]]
 name = "isort"
-version = "5.10.1"
+version = "5.11.2"
 description = "A Python utility / library to sort Python imports."
 category = "dev"
 optional = false
-python-versions = ">=3.6.1,<4.0"
+python-versions = ">=3.7.0"
 
 [package.extras]
-pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
-requirements_deprecated_finder = ["pipreqs", "pip-api"]
+pipfile-deprecated-finder = ["pipreqs", "requirementslib"]
+requirements-deprecated-finder = ["pipreqs", "pip-api"]
 colors = ["colorama (>=0.4.3,<0.5.0)"]
 plugins = ["setuptools"]
 
@@ -790,7 +790,7 @@ python-versions = "*"
 
 [[package]]
 name = "multidict"
-version = "6.0.2"
+version = "6.0.3"
 description = "multidict implementation"
 category = "main"
 optional = false
@@ -818,14 +818,11 @@ reference = "openpype"
 
 [[package]]
 name = "packaging"
-version = "21.3"
+version = "22.0"
 description = "Core utilities for Python packages"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
+python-versions = ">=3.7"
 
 [[package]]
 name = "paramiko"
@@ -884,7 +881,7 @@ tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "pa
 
 [[package]]
 name = "platformdirs"
-version = "2.5.4"
+version = "2.6.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "dev"
 optional = false
@@ -927,7 +924,7 @@ python-versions = "*"
 
 [[package]]
 name = "protobuf"
-version = "4.21.9"
+version = "4.21.12"
 description = ""
 category = "main"
 optional = false
@@ -1408,7 +1405,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "slack-sdk"
-version = "3.19.4"
+version = "3.19.5"
 description = "The Slack API Platform SDK for Python"
 category = "main"
 optional = false
@@ -1711,7 +1708,7 @@ ujson = ["ujson"]
 
 [[package]]
 name = "yarl"
-version = "1.8.1"
+version = "1.8.2"
 description = "Yet another URL library"
 category = "main"
 optional = false
