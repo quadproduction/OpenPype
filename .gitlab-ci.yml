@@ -34,6 +34,7 @@ workflow:
     - export PYTHEMP=$(mktemp -d -t ci-XXXXXXXXXX -p ./)
     - rsync -rtl --chmod a+w /prod/softprod/apps/python/3.7.9/linux $PYTHEMP/
     - export PATH="$PYTHEMP/linux/bin:$PATH"
+    - cp /prod/softprod/apps/openpype/RESOURCES/wizz-gdrive/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/gdrive.json
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
     # Get PySide2, ffmpeg, oiio and other tools needed
