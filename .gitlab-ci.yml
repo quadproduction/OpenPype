@@ -25,16 +25,40 @@ workflow:
         OP_VERSION_PATH: "$OP_APP_DIR/$CI_COMMIT_BRANCH/$CI_COMMIT_SHORT_SHA"
     - when: always
 
+collect-secure-files:
+  image: debian:latest
+  stage: build
+  tags: [docker]
+  before_script:
+    - apt-get install -y curl
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+  script:
+    - ls -lah .secure_files
+  cache:
+    key: secure_files
+    paths:
+      - .secure_files/
+    policy: push
+    unprotect: false
+    when: on_success
+
 .build-centos:
   stage: build
   tags: [shell, centos]
+  needs: [collect-secure-files]
+  cache:
+    key: secure_files
+    paths:
+      - .secure_files/
+    policy: pull
   script:
     - echo "Build then copy to $OP_VERSION_PATH"
     # Add python 3.7.9 from softprod
     - export PYTHEMP=$(mktemp -d -t ci-XXXXXXXXXX -p ./)
     - rsync -rtl --chmod a+w /prod/softprod/apps/python/3.7.9/linux $PYTHEMP/
     - export PATH="$PYTHEMP/linux/bin:$PATH"
-    - cp /prod/softprod/apps/openpype/RESOURCES/wizz-gdrive/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/gdrive.json
+    # Add Wizz google drive credentials
+    - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
     # Get PySide2, ffmpeg, oiio and other tools needed
@@ -50,9 +74,15 @@ workflow:
 .build-windows:
   stage: build
   tags: [shell, windows]
+  needs: [collect-secure-files]
   artifacts:
     paths:
       - .\build\OpenPype-${OP_VERSION}-install.exe
+  cache:
+    key: secure_files
+    paths:
+      - .secure_files/
+    policy: pull
   script:
     - echo "Build then copy to $env:OP_VERSION_PATH"
     # Add python 3.7.9 from softprod
@@ -62,6 +92,8 @@ workflow:
     # Add InnoSetup in PATH
     - $env:PATH="C:\Program Files (x86)\Inno Setup 6\;"+$env:PATH
     - git config --global http.sslVerify false
+    # Add Wizz google drive credentials
+    - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     # Create virtual environment in ./venv
     - .\tools\create_env.ps1
     # Get PySide2, ffmpeg, oiio and other tools needed
@@ -106,22 +138,16 @@ build-windows-manual:
     - if: $CI_COMMIT_BRANCH == "cicd"
       when: manual
 
-.deploy-staged:
+deploy-staged:
   stage: staging
+  tags: [shell, centos]
   needs: [build-windows-on-tags, build-centos-on-tags]
   rules:
     - if: $CI_COMMIT_TAG
       when: always
-  tags: [shell, centos]
   script:
     - echo "Set staging link $OP_VERSION/ to $OP_VERSION_PATH"
     - ln -sfn $OP_VERSION/ $OP_STAGING_PATH
-
-deploy-staged-on-tags:
-  extends: .deploy-staged
-  needs: [ {job: build-centos-on-tags, optional: false }, {job: build-windows-on-tags, optional: false } ]
-  rules:
-    - if: $CI_COMMIT_TAG
 
 deploy-staged-manual:
   extends: .deploy-staged
