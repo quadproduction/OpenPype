@@ -28,7 +28,6 @@ workflow:
 .build-centos:
   stage: build
   tags: [shell, centos]
-  needs: [collect-secure-files]
   before_script:
     - yum update -y && yum install -y curl which
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
@@ -57,7 +56,6 @@ workflow:
 .build-windows:
   stage: build
   tags: [shell, windows]
-  needs: [collect-secure-files]
   artifacts:
     paths:
       - .\build\OpenPype-${OP_VERSION}-install.exe
