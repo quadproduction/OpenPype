@@ -96,6 +96,8 @@ collect-secure-files:
     - $env:PATH="C:\Program Files (x86)\Inno Setup 6\;"+$env:PATH
     - git config --global http.sslVerify false
     # Add Wizz google drive credentials
+    - ls -lah
+    - ls -lah .secure_files
     - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     # Create virtual environment in ./venv
     - .\tools\create_env.ps1
