@@ -149,16 +149,11 @@ deploy-staged:
     - echo "Set staging link $OP_VERSION/ to $OP_VERSION_PATH"
     - ln -sfn $OP_VERSION/ $OP_STAGING_PATH
 
-deploy-staged-manual:
-  extends: .deploy-staged
-  needs: [ {job: build-centos-manual, optional: true }, {job: build-windows-manual, optional: true } ]
-  rules:
-    - if: $CI_COMMIT_BRANCH == "cicd"
 
 deploy-prod:
   when: manual
   stage: production
-  needs: [{job: deploy-staged-on-tags, optional: true }, {job: deploy-staged-manual, optional: true }]
+  needs: [deploy-staged]
   tags: [shell, centos]
   script:
     - echo "Set prod link $OP_VERSION/ to $OP_PROD_PATH"
