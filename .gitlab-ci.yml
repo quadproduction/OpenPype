@@ -25,35 +25,13 @@ workflow:
         OP_VERSION_PATH: "$OP_APP_DIR/$CI_COMMIT_BRANCH/$CI_COMMIT_SHORT_SHA"
     - when: always
 
-collect-secure-files:
-  image: debian:latest
-  stage: build
-  tags: [docker]
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: always
-  before_script:
-    - apt-get update && apt-get install -y curl
-    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
-  script:
-    - ls -lah .secure_files
-  cache:
-    key: secure_files
-    paths:
-      - .secure_files/
-    policy: push
-    unprotect: false
-    when: on_success
-
 .build-centos:
   stage: build
   tags: [shell, centos]
   needs: [collect-secure-files]
-  cache:
-    key: secure_files
-    paths:
-      - .secure_files/
-    policy: pull
+  before_script:
+    - yum update -y && yum install -y curl which
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
   script:
     - echo "Build then copy to $OP_VERSION_PATH"
     # Add python 3.7.9 from softprod
