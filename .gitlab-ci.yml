@@ -59,11 +59,6 @@ workflow:
   artifacts:
     paths:
       - .\build\OpenPype-${OP_VERSION}-install.exe
-  cache:
-    key: secure_files
-    paths:
-      - .secure_files/
-    policy: pull
   script:
     - echo "Build then copy to $env:OP_VERSION_PATH"
     # Add python 3.7.9 from softprod
@@ -74,7 +69,7 @@ workflow:
     - $env:PATH="C:\Program Files (x86)\Inno Setup 6\;"+$env:PATH
     - git config --global http.sslVerify false
     # Add Wizz google drive credentials
-    - Copy-Item .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
+    - Copy-Item /prod/softprod/apps/openpype/RESOURCES/wizz-gdrive/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     # Create virtual environment in ./venv
     - .\tools\create_env.ps1
     # Get PySide2, ffmpeg, oiio and other tools needed
