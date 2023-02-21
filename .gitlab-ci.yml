@@ -41,13 +41,10 @@ workflow:
     - echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.profile
     - echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.profile
     - echo 'eval "$(pyenv init -)"' >> ~/.profile
+    - pyenv install 3.9.6
 
   script:
     - echo "Build then copy to $OP_VERSION_PATH"
-    # Add python 3.7.9 from softprod
-    - export PYTHEMP=$(mktemp -d -t ci-XXXXXXXXXX -p ./)
-    - rsync -rtl --chmod a+w /prod/softprod/apps/python/3.7.9/linux $PYTHEMP/
-    - export PATH="$PYTHEMP/linux/bin:$PATH"
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
     # Get PySide2, ffmpeg, oiio and other tools needed
@@ -59,7 +56,6 @@ workflow:
     # Copy to softprod
     - echo "Copy to $OP_VERSION_PATH/linux/"
     - rsync -rptl ./build/exe.linux-x86_64-3.7/ $OP_VERSION_PATH/linux/
-
 .build-windows:
   stage: build
   tags: [shell, windows]
