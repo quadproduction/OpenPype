@@ -32,7 +32,9 @@ workflow:
   before_script:
     - yum update -y
     - yum groupinstall -y "Development Tools"
-    - yum install -y git
+    # - yum install -y git
+    - yum install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
+
     # install pyenv
     - git clone https://github.com/pyenv/pyenv.git ~/.pyenv
     - echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
