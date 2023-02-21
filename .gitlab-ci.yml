@@ -30,7 +30,8 @@ workflow:
   tags: [docker]
   image: centos:7
   before_script:
-    - yum install -y curl git
+    - yum groupinstall -y "Development Tools"
+    - yum install -y git
     # install pyenv
     - git clone https://github.com/pyenv/pyenv.git ~/.pyenv
     - echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
