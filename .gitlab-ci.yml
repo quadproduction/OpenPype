@@ -30,6 +30,7 @@ workflow:
   tags: [docker]
   image: centos:7
   before_script:
+    - sudo yum update -y
     - yum groupinstall -y "Development Tools"
     - yum install -y git
     # install pyenv
