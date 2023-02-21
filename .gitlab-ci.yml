@@ -36,7 +36,7 @@ workflow:
 
     # mount softprod
     - mkdir -p /prod/softprod
-    - systemctl status rpc-statd
+    # - systemctl status rpc-statd
     - mount -t nfs -o nolock,vers=3 fs301.prs.vfx.int:/mnt/fs301/fs301/softprod /prod/softprod
 
     # install pyenv
