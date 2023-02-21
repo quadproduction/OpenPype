@@ -32,7 +32,7 @@ workflow:
   before_script:
     - yum update -y
     - yum groupinstall -y "Development Tools"
-    - yum install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
+    - yum install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils
 
     # install pyenv
     - git clone https://github.com/pyenv/pyenv.git ~/.pyenv
@@ -47,6 +47,10 @@ workflow:
     # install poetry
     - export POETRY_HOME="$openpype_root/.poetry"
     - curl -sSL https://install.python-poetry.org | python3 -
+
+    # mount softprod
+    - mkdir -p /prod/softprod
+    -  mount -t nfs fs301.prs.vfx.int:/mnt/fs301/fs301/softprod /prod/softprod
 
   script:
     - echo "Build then copy to $OP_VERSION_PATH"
