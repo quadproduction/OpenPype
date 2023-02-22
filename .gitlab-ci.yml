@@ -160,7 +160,7 @@ deploy-staged-minor:
 
 deploy-staged-manual:
   extends: .deploy-staged
-  needs: [ {job: build-centos-manual, optional: true }, {job: build-windows-manual, optional: true } ]
+  needs: [ {job: build-centos-patch, optional: true }, {job: build-windows-manual, optional: true } ]
   rules:
     - if: $CI_COMMIT_BRANCH == "cicd"
 
