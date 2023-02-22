@@ -11,6 +11,7 @@ variables:
   OP_APP_DIR: /prod/softprod/apps/openpype
   OP_STAGING_PATH: $OP_APP_DIR/staging
   OP_PROD_PATH: $OP_APP_DIR/latest
+  OP_REPOSITORY: $OP_APP_DIR/REPOSITORY
   OP_VERSION_PATH: $OP_APP_DIR/VERSION_NOT_SET
   DEADLINE_CUSTOM: /prod/softprod/apps/deadline/repo/
 
@@ -56,14 +57,16 @@ workflow:
     # install poetry
     - export POETRY_HOME="$openpype_root/.poetry"
     - curl -sSL https://install.python-poetry.org | python3 -
-  script:
-    - echo "Build then copy to $OP_VERSION_PATH"
+
     # Add Wizz google drive credentials
     - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
+    
     # Set OpenPype version
     - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
+    
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
+    
     # Get PySide2, ffmpeg, oiio and other tools needed
     - ./tools/fetch_thirdparty_libs.sh
 
@@ -110,6 +113,7 @@ build-centos-minor:
     - if: $CI_PIPELINE_SOURCE == "push"
       when: manual
   script:
+    - echo "Build OP then copy to $OP_REPOSITORY"
     # Build pype executables in ./build
     - ./tools/build.sh
     # Copy build in softprod
@@ -125,7 +129,10 @@ build-centos-patch:
   rules:
     - if: $CI_COMMIT_TAG
       when: never
-
+  script:
+    - echo "Build ZIP then copy to $OP_VERSION_PATH"
+    - tools/create_zip.sh --path $OP_VERSION_PATH
+    - ls -la $OP_VERSION_PATH
 
 build-windows-minor:
   extends: .build-windows
