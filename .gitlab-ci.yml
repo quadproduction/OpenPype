@@ -62,10 +62,10 @@ workflow:
     - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     
     # Set OpenPype version
-    # - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
-    # - if [ -z "$VERSION_OP" = "$CI_COMMIT_BRANCH" ]; then export VERSION_OP="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
-    # - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
-    
+    - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
+    - if [ -z "$VERSION_OP" = "$CI_COMMIT_BRANCH" ]; then export VERSION_OP="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
+    - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
+    - echo "version=>$VERSION_OP" 
     # Create virtual environment in ./venv
     - $openpype_root/.poetry/bin/poetry -q update # only to have less verbosity
     - ./tools/create_env.sh
