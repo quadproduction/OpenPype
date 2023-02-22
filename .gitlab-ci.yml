@@ -11,8 +11,8 @@ variables:
   OP_APP_DIR: /prod/softprod/apps/openpype
   OP_STAGING_PATH: $OP_APP_DIR/staging
   OP_PROD_PATH: $OP_APP_DIR/latest
-  OP_REPOSITORY: $OP_APP_DIR/REPOSITORY
   OP_VERSION_PATH: $OP_APP_DIR/VERSION_NOT_SET
+  OP_REPOSITORY: $OP_APP_DIR/REPOSITORY
   DEADLINE_CUSTOM: /prod/softprod/apps/deadline/repo/
 
 workflow:
@@ -134,9 +134,9 @@ build-centos-patch:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
   script:
-    - echo "Build ZIP then copy to $OP_VERSION_PATH"
-    - tools/create_zip.sh --path $OP_VERSION_PATH
-    - ls -la $OP_VERSION_PATH
+    - echo "Build ZIP then copy to $OP_REPOSITORY"
+    - tools/create_zip.sh --path $OP_REPOSITORY
+    - ls -la $OP_REPOSITORY
 
 build-windows-minor:
   extends: .build-windows
