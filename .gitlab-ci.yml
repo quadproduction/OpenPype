@@ -63,7 +63,7 @@ workflow:
     
     # Set OpenPype version
     - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
-    - if [ -z "$VERSION_OP" = "$CI_COMMIT_BRANCH"]; then export VERSION_OP="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
+    - if [ -z "$VERSION_OP" = "$CI_COMMIT_BRANCH" ]; then export VERSION_OP="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
     - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
     
     # Create virtual environment in ./venv
