@@ -33,7 +33,7 @@ workflow:
   before_script:
     - yum update -y -q
     - yum groupinstall -y -q "Development Tools"
-    - yum install -y -q zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils curl which
+    - yum install -y -q zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils curl 
 
     # install secure Files (beta)
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
@@ -61,6 +61,8 @@ workflow:
     - echo "Build then copy to $OP_VERSION_PATH"
     # Add Wizz google drive credentials
     - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
+    # Set OpenPype version
+    - sed -i 's/__version__ = .*/__version__ = "'"$VERSION_OP"'"/' openpype/version.py
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
     # Get PySide2, ffmpeg, oiio and other tools needed
