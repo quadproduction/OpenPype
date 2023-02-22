@@ -67,7 +67,7 @@ workflow:
     - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
     
     # Create virtual environment in ./venv
-    - .poetry/bin/poetry -q update # only to have less verbosity
+    - $openpype_root/.poetry/bin/poetry -q update # only to have less verbosity
     - ./tools/create_env.sh
     
     # Get PySide2, ffmpeg, oiio and other tools needed
