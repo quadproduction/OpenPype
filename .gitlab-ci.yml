@@ -33,7 +33,7 @@ workflow:
   before_script:
     - yum update -y -q
     - yum groupinstall -y -q "Development Tools"
-    - yum install -y -q zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils curl 
+    - yum install -y -q zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils curl which
 
     # install secure Files (beta)
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
@@ -56,7 +56,6 @@ workflow:
     # install poetry
     - export POETRY_HOME="$openpype_root/.poetry"
     - curl -sSL https://install.python-poetry.org | python3 -
-
   script:
     - echo "Build then copy to $OP_VERSION_PATH"
     # Add Wizz google drive credentials
@@ -67,13 +66,7 @@ workflow:
     - ./tools/create_env.sh
     # Get PySide2, ffmpeg, oiio and other tools needed
     - ./tools/fetch_thirdparty_libs.sh
-    # Build pype executables in ./build
-    - ./tools/build.sh
-    # Copy build in softprod
-    - mkdir -p $OP_VERSION_PATH/linux
-    # Copy to softprod
-    - echo "Copy to $OP_VERSION_PATH/linux/"
-    - rsync -rptl ./build/exe.linux-x86_64-3.9/ $OP_VERSION_PATH/linux/
+
 
 .build-windows:
   stage: build
@@ -107,23 +100,32 @@ workflow:
     # Build exe
     - .\tools\build_win_installer.ps1
 
-build-centos-on-tags:
+build-centos-minor:
   extends: .build-centos
   variables:
     VERSION: $CI_COMMIT_TAG
   rules:
     - if: $CI_COMMIT_TAG
       when: always
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: manual
+  script:
+    # Build pype executables in ./build
+    - ./tools/build.sh
+    # Copy build in softprod
+    - mkdir -p $OP_VERSION_PATH/linux
+    # Copy to softprod
+    - echo "Copy to $OP_VERSION_PATH/linux/"
+    - rsync -rptl ./build/exe.linux-x86_64-3.9/ $OP_VERSION_PATH/linux/
 
-build-centos-manual:
+build-centos-patch:
   extends: .build-centos
   variables:
     VERSION: $CI_COMMIT_REF_SLUG
   rules:
     - if: $CI_COMMIT_TAG
       when: never
-    - if: $CI_PIPELINE_SOURCE == "push"
-      when: manual
+
 
 build-windows-on-tags:
   extends: .build-windows
