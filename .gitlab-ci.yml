@@ -62,7 +62,7 @@ workflow:
     # Add Wizz google drive credentials
     - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     # Set OpenPype version
-    - sed -i 's/__version__ = .*/__version__ = "'"$VERSION_OP"'"/' openpype/version.py
+    - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
     # Get PySide2, ffmpeg, oiio and other tools needed
