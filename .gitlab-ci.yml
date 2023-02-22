@@ -131,6 +131,8 @@ build-centos-patch:
       when: never
     - if: $CI_PIPELINE_SOURCE == "push"
       when: manual
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
   script:
     - echo "Build ZIP then copy to $OP_VERSION_PATH"
     - tools/create_zip.sh --path $OP_VERSION_PATH
