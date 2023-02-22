@@ -31,15 +31,12 @@ workflow:
   image: centos:7
   before_script:
     - yum update -y
-    - yum groupinstall -y "Development Tools"
+    # - yum groupinstall -y "Development Tools"
     - yum install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils
 
     # mount softprod
     - mkdir -p /prod/softprod
-    # - systemctl status rpc-statd
     - mount -t nfs -o nolock,vers=3 fs301.prs.vfx.int:/mnt/fs301/fs301/softprod /prod/softprod
-    - ls -la /prod
-    - ls -la /prod/softprod
 
     # install pyenv
     - git clone https://github.com/pyenv/pyenv.git ~/.pyenv
@@ -47,10 +44,11 @@ workflow:
     - echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
     - echo 'eval "$(pyenv init -)"' >> ~/.bashrc
     - source ~/.bashrc
+
     # install python
     - pyenv install 3.9.6
     - pyenv global 3.9.6
-    - python -V
+
     # install poetry
     - export POETRY_HOME="$openpype_root/.poetry"
     - curl -sSL https://install.python-poetry.org | python3 -
