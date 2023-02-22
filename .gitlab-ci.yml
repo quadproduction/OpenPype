@@ -37,7 +37,7 @@ workflow:
     # mount softprod
     - mkdir -p /prod/softprod
     # - systemctl status rpc-statd
-    - mount -t nfs -o nolock fs301.prs.vfx.int:/mnt/fs301/fs301/softprod /prod/softprod
+    - mount -t nfs -o nolock,vers=3 fs301.prs.vfx.int:/mnt/fs301/fs301/softprod /prod/softprod
     - ls -la /prod
     - ls -la /prod/sofprod
 
@@ -68,12 +68,18 @@ workflow:
     # Copy to softprod
     - echo "Copy to $OP_VERSION_PATH/linux/"
     - rsync -rptl ./build/exe.linux-x86_64-3.7/ $OP_VERSION_PATH/linux/
+
 .build-windows:
   stage: build
-  tags: [shell, windows]
+  tags: [docker]
+  image: microsoft/dotnet-framework
   artifacts:
     paths:
       - .\build\OpenPype-${OP_VERSION}-install.exe
+  before_script:
+    - powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+    - refreshenv
+    - choco install python --version=3.9.6 -y 
   script:
     - echo "Build then copy to $env:OP_VERSION_PATH"
     # Add python 3.7.9 from softprod
@@ -124,7 +130,7 @@ build-windows-manual:
   rules:
     - if: $CI_COMMIT_TAG
       when: never
-    - if: $CI_COMMIT_BRANCH == "cicd"
+    - if: $CI_PIPELINE_SOURCE == "push"
       when: manual
 
 .deploy-staged:
