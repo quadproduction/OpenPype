@@ -6,6 +6,7 @@ stages:
   - production
 
 variables:
+  PYTHON_VERSION: 3.9.6
   GIT_SUBMODULE_STRATEGY: recursive
   OP_APP_DIR: /prod/softprod/apps/openpype
   OP_STAGING_PATH: $OP_APP_DIR/staging
@@ -30,9 +31,12 @@ workflow:
   tags: [docker]
   image: centos:7
   before_script:
-    - yum update -y
-    # - yum groupinstall -y "Development Tools"
-    - yum install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils
+    - yum update -y -q
+    - yum groupinstall -y -q "Development Tools"
+    - yum install -y -q zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils curl
+
+    # install secure Files (beta)
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
 
     # mount softprod
     - mkdir -p /prod/softprod
@@ -46,8 +50,8 @@ workflow:
     - source ~/.bashrc
 
     # install python
-    - pyenv install 3.9.6
-    - pyenv global 3.9.6
+    - pyenv install $PYTHON_VERSION
+    - pyenv global $PYTHON_VERSION
 
     # install poetry
     - export POETRY_HOME="$openpype_root/.poetry"
@@ -55,6 +59,8 @@ workflow:
 
   script:
     - echo "Build then copy to $OP_VERSION_PATH"
+    # Add Wizz google drive credentials
+    - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     # Create virtual environment in ./venv
     - ./tools/create_env.sh
     # Get PySide2, ffmpeg, oiio and other tools needed
