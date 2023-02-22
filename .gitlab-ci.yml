@@ -23,7 +23,7 @@ workflow:
         OP_VERSION_PATH: "$OP_APP_DIR/$CI_COMMIT_TAG"
     - if: $CI_COMMIT_TAG == null || $CI_COMMIT_TAG ==""
       variables:
-        OP_VERSION: "$CI_COMMIT_BRANCH/$CI_COMMIT_SHORT_SHA"
+        OP_VERSION: "$CI_COMMIT_BRANCH"
         OP_VERSION_PATH: "$OP_APP_DIR/$CI_COMMIT_BRANCH"
     - when: always
 
@@ -62,9 +62,12 @@ workflow:
     - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     
     # Set OpenPype version
-    # - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
+    - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
+    - if [ -z "$VERSION_OP" = "$CI_COMMIT_BRANCH"]; then export VERSION_OP="$CUR_VERSION.$CI_COMMIT_BRANCH" ); fi
+    - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
     
     # Create virtual environment in ./venv
+    - .poetry/bin/poetry -q update # only to have less verbosity
     - ./tools/create_env.sh
     
     # Get PySide2, ffmpeg, oiio and other tools needed
@@ -197,4 +200,3 @@ deploy-deadline:
 #   tags: [shell, centos]
 #   script:
 #     - docker info
-
