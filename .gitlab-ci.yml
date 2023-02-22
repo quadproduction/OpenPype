@@ -33,7 +33,7 @@ workflow:
   before_script:
     - yum update -y -q
     - yum groupinstall -y -q "Development Tools"
-    - yum install -y -q zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils curl
+    - yum install -y -q zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils curl which
 
     # install secure Files (beta)
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
