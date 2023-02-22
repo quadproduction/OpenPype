@@ -72,7 +72,7 @@ workflow:
 .build-windows:
   stage: build
   tags: [docker]
-  image: mcr.microsoft.com/windows/dotnet-framework
+  image: mcr.microsoft.com/windows/servercore:ltsc2019
   artifacts:
     paths:
       - .\build\OpenPype-${OP_VERSION}-install.exe
