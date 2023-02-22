@@ -67,7 +67,7 @@ workflow:
     - mkdir -p $OP_VERSION_PATH/linux
     # Copy to softprod
     - echo "Copy to $OP_VERSION_PATH/linux/"
-    - rsync -rptl ./build/exe.linux-x86_64-3.7/ $OP_VERSION_PATH/linux/
+    - rsync -rptl ./build/exe.linux-x86_64-3.9/ $OP_VERSION_PATH/linux/
 
 .build-windows:
   stage: build
