@@ -32,19 +32,7 @@ workflow:
   tags: [docker]
   image: centos:7
   before_script:
-    # Set OpenPype version
-    - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
-    - echo "CUR_VERSION = $CUR_VERSION"
-    - echo "OP_VERSION = $OP_VERSION"
-    - if [ "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
-    # - if [ "$A" = "$B" ]; then export A="toto"; fi
-    - echo "OP_VERSION = $OP_VERSION"
-    - echo "CI_COMMIT_BRANCH = $CI_COMMIT_BRANCH"
-    - echo "$CUR_VERSION.$CI_COMMIT_BRANCH"
-    - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
-    - cat openpype/version.py
-    - sretf
-
+    # Update/Install package for python build with pyenv
     - yum update -y -q
     - yum groupinstall -y -q "Development Tools"
     - yum install -y -q zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils nfs-utils curl which
@@ -71,11 +59,16 @@ workflow:
     - export POETRY_HOME="$openpype_root/.poetry"
     - curl -sSL https://install.python-poetry.org | python3 -
 
+    # Set OpenPype version
+    - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
+    - if [ "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
+    - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
+
     # Add Wizz google drive credentials
     - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     
     # Create virtual environment in ./venv
-    - $openpype_root/.poetry/bin/poetry -q update # only to have less verbosity
+    - $openpype_root/.poetry/bin/poetry -q update # only to have less verbosity with the next line
     - ./tools/create_env.sh
     
     # Get PySide2, ffmpeg, oiio and other tools needed
