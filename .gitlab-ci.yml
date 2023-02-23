@@ -59,11 +59,6 @@ workflow:
     - export POETRY_HOME="$openpype_root/.poetry"
     - curl -sSL https://install.python-poetry.org | python3 -
 
-    # Set OpenPype version
-    - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
-    - if [ "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
-    - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
-
     # Add Wizz google drive credentials
     - cp .secure_files/openpype-345606-59da7749e96d.json openpype/modules/sync_server/providers/resources/wizz_gdrive.json
     
@@ -73,7 +68,6 @@ workflow:
     
     # Get PySide2, ffmpeg, oiio and other tools needed
     - ./tools/fetch_thirdparty_libs.sh
-
 
 .build-windows:
   stage: build
@@ -131,16 +125,34 @@ build-centos-patch:
   variables:
     VERSION: $CI_COMMIT_REF_SLUG
   rules:
-    - if: $CI_COMMIT_TAG
-      when: never
     - if: $CI_PIPELINE_SOURCE == "push"
       when: manual
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
   script:
+    # Set OpenPype version
+    - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
+    - if [ "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION-$CI_COMMIT_BRANCH"; fi
+    - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
+    # build zip patch
     - echo "Build ZIP then copy to $OP_REPOSITORY"
     - tools/create_zip.sh --path $OP_REPOSITORY
-    - ls -la $OP_REPOSITORY
+
+build-centos-mr:
+  extends: .build-centos
+  variables:
+    VERSION: $CI_COMMIT_REF_SLUG
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+  script:
+    # Set OpenPype version
+    - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
+    - if [ "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION-MR+$CI_COMMIT_BRANCH"; fi
+    - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
+    # build zip patch
+    - echo "Build ZIP then copy to $OP_REPOSITORY"
+    - tools/create_zip.sh --path $OP_REPOSITORY
 
 build-windows-minor:
   extends: .build-windows
