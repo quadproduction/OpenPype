@@ -38,6 +38,7 @@ workflow:
     - echo "OP_VERSION = $OP_VERSION"
     - if [ -z "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
     - echo "OP_VERSION = $OP_VERSION"
+    - echo "CI_COMMIT_BRANCH = $CI_COMMIT_BRANCH"
     - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
     - cat openpype/version.py
     - sretf
