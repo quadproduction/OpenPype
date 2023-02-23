@@ -35,9 +35,9 @@ workflow:
     # Set OpenPype version
     - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
     - echo "CUR_VERSION = $CUR_VERSION"
-    - echo "VERSION_OP = $VERSION_OP"
-    - if [ -z "$VERSION_OP" = "$CI_COMMIT_BRANCH" ]; then export VERSION_OP="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
-    - echo "VERSION_OP = $VERSION_OP"
+    - echo "OP_VERSION = $OP_VERSION"
+    - if [ -z "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION.$CI_COMMIT_BRANCH"; fi
+    - echo "OP_VERSION = $OP_VERSION"
     - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
     - cat openpype/version.py
     - sretf
