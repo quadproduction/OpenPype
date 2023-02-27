@@ -121,14 +121,12 @@ build-centos-minor:
 build-centos-patch:
   extends: .build-centos
   rules:
-    - if: $CI_COMMIT_REF_NAME != "master" && $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+\.quad
       when: always
     - if: $CI_PIPELINE_SOURCE == "push"
       when: manual
   script:
     # Set OpenPype version
-    - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
-    - if [ "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION-$CI_COMMIT_BRANCH"; fi
     - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
     # build zip patch
     - echo "Build ZIP then copy to $OP_REPOSITORY"
