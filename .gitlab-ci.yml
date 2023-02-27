@@ -196,12 +196,8 @@ deploy-deadline:
   stage: production
   needs: [deploy-prod-minor]
   tags: [shell, centos]
+  rules:
+    - if: $CI_COMMIT_TAG
   script:
     - echo "Deadline plugins $OP_PROD_PATH/linux/openpype/modules/deadline/repository/custom to deadline directory $DEADLINE_CUSTOM"
     - cp -a $OP_PROD_PATH/linux/openpype/modules/deadline/repository/custom $DEADLINE_CUSTOM
-
-# deploy-ftrack:
-#   stage: build
-#   tags: [shell, centos]
-#   script:
-#     - docker info
