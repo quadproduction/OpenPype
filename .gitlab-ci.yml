@@ -142,7 +142,8 @@ build-centos-mr:
   script:
     # Set OpenPype version
     - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
-    - if [ "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION-MR+$CI_COMMIT_BRANCH"; fi
+    - echo $CI_COMMIT_BRANCH
+    - export OP_VERSION="$CUR_VERSION-MR+$CI_COMMIT_BRANCH"
     - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
     # build zip patch
     - echo "Build ZIP then copy to $OP_REPOSITORY"
