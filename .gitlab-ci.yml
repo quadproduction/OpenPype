@@ -142,7 +142,9 @@ build-centos-mr:
   script:
     # Set OpenPype version
     - export CUR_VERSION=$(grep -oP '(?<=__version__ = ")[^"]*' openpype/version.py )
-    - if [ "$OP_VERSION" = "$CI_COMMIT_BRANCH" ]; then export OP_VERSION="$CUR_VERSION-MR+$CI_COMMIT_BRANCH"; fi
+    - echo $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    - echo $CI_MERGE_REQUEST_TITLE
+    - export OP_VERSION="$CUR_VERSION-$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
     - sed -i 's/__version__ = .*/__version__ = "'"$OP_VERSION"'"/' openpype/version.py
     # build zip patch
     - echo "Build ZIP then copy to $OP_REPOSITORY"
@@ -175,35 +177,26 @@ build-windows-manual:
 
 deploy-staged-minor:
   extends: .deploy-staged
-  needs: [ {job: build-centos-minor, optional: false }, {job: build-windows-minor, optional: false } ]
   rules:
     - if: $CI_COMMIT_TAG
 
-deploy-staged-manual:
-  extends: .deploy-staged
-  needs: [ {job: build-centos-patch, optional: true }, {job: build-windows-manual, optional: true } ]
-  rules:
-    - if: $CI_COMMIT_BRANCH == "cicd"
-
-deploy-prod:
+deploy-prod-minor:
   when: manual
   stage: production
-  needs: [{job: deploy-staged-minor, optional: true }, {job: deploy-staged-manual, optional: true }]
+  needs: [deploy-staged-minor]
   tags: [shell, centos]
+  rules:
+    - if: $CI_COMMIT_TAG
   script:
     - echo "Set prod link $OP_VERSION/ to $OP_PROD_PATH"
     - ln -sfn $OP_VERSION/ $OP_PROD_PATH
 
 deploy-deadline:
   stage: production
-  needs: [deploy-prod]
+  needs: [deploy-prod-minor]
   tags: [shell, centos]
+  rules:
+    - if: $CI_COMMIT_TAG
   script:
     - echo "Deadline plugins $OP_PROD_PATH/linux/openpype/modules/deadline/repository/custom to deadline directory $DEADLINE_CUSTOM"
     - cp -a $OP_PROD_PATH/linux/openpype/modules/deadline/repository/custom $DEADLINE_CUSTOM
-
-# deploy-ftrack:
-#   stage: build
-#   tags: [shell, centos]
-#   script:
-#     - docker info
