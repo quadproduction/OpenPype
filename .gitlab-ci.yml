@@ -181,18 +181,20 @@ deploy-staged-minor:
     - if: $CI_COMMIT_TAG
 
 
-deploy-prod:
+deploy-prod-minor:
   when: manual
   stage: production
   needs: [deploy-staged-minor]
   tags: [shell, centos]
+  rules:
+    - if: $CI_COMMIT_TAG
   script:
     - echo "Set prod link $OP_VERSION/ to $OP_PROD_PATH"
     - ln -sfn $OP_VERSION/ $OP_PROD_PATH
 
 deploy-deadline:
   stage: production
-  needs: [deploy-prod]
+  needs: [deploy-prod-minor]
   tags: [shell, centos]
   script:
     - echo "Deadline plugins $OP_PROD_PATH/linux/openpype/modules/deadline/repository/custom to deadline directory $DEADLINE_CUSTOM"
