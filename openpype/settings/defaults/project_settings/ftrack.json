@@ -493,7 +493,7 @@
         "IntegrateFtrackFarmStatus": {
             "farm_status_profiles": []
         },
-        "extra_editorial_attrs":{
+        "IntegrateExtraEditorialAttributes":{
             "enabled": false,
             "rush_attributes": []
         }

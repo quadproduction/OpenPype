@@ -1104,7 +1104,7 @@
                     "type": "dict",
                     "collapsible": true,
                     "checkbox_key": "enabled",
-                    "key": "extra_editorial_attrs",
+                    "key": "IntegrateExtraEditorialAttributes",
                     "label": "Integrate Extra Editorial Attributes",
                     "children": [
                         {
