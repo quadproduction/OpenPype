@@ -10,30 +10,55 @@ import ftrack_api
 class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
     """Integrate extra editorial attributes."""
 
-    order = pyblish.api.CollectorOrder + 0.449
-    label = "Integrate Extra Editorial Attributes"
+    order = pyblish.api.IntegratorOrder + 0.47
+    label = "Set Extra Editorial Attributes"
     hosts = ["hiero", "flame", "traypublisher"]
     families = ["clip"]
+    optional = True
+    active = True
 
     def process(self, instance):
+        instance.data['is_custom_attrs_set'] = False
+        empty_data = []
+        wrong_key = []
+        project_settings = get_project_settings(os.getenv("AVALON_PROJECT"))
+        rush_and_cut_data = project_settings['ftrack']['publish'][
+            'IntegrateExtraEditorialAttributes'
+        ]
+        rush_and_cut_data.pop('enabled')
         session = self._get_ftrack_session()
         if not session:
             return
 
-        project_settings = get_project_settings(os.getenv("AVALON_PROJECT"))
-        extra_editorial_attrs = project_settings['ftrack']['publish']['IntegrateExtraEditorialAttributes']  # noqa
-
-        ftrack_extra_editorial_attrs = self._get_ftrack_metadata(
+        ftrack_custom_attrs = self._get_ftrack_custom_attrs(
             session,
             os.getenv("AVALON_PROJECT"),
             instance
         )
 
-        otio_editorial_attrs = self._get_otio_attributes(instance)
+        otio_attributes = self._get_otio_attributes(instance)
 
-        self.log.debug("PROJECT SETTINGS: {}".format(
-            project_settings['ftrack']['publish']['IntegrateExtraEditorialAttributes']
-        ))
+        for key, value in rush_and_cut_data.items():
+            if value and value in ftrack_custom_attrs.keys():
+                ftrack_custom_attrs[value] = otio_attributes[key]
+            elif value and value not in ftrack_custom_attrs.keys():
+                wrong_key.append(key)
+            else:
+                empty_data.append(key)
+
+        if empty_data:
+            self.log.warning(
+                "Empty data in settings for key(s): {}".format(empty_data)
+            )
+        if wrong_key:
+            self.log.warning(
+                "Key(s) not found in ftrack custom attributes: {}".format(
+                    wrong_key
+                )
+            )
+
+        session.commit()
+        instance.data['is_custom_attrs_set'] = True
 
     def _get_ftrack_session(self):
         """ Get the extra editorial attrs from Ftrack
@@ -60,19 +85,16 @@ class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
 
         return session
 
-    def _get_ftrack_metadata(self, session, project_name, instance):
+    def _get_ftrack_custom_attrs(self, session, project_name, instance):
         """ Get the extra editorial attrs from Ftrack
         """
-        task_name = instance.context.data['task']
-
+        asset = instance.context.data['asset']
         query = session.query(
-            "Task where project.full_name is '{}' "
-            "and name is '{}'".format(project_name, task_name)
+            "Shot where project.full_name is '{}' "
+            "and name is '{}'".format(project_name, asset)
         ).one()
 
-        metadata = query['metadata']
-
-        return metadata
+        return query['custom_attributes']
 
     def _get_otio_attributes(self, instance):
         otio_clip = instance.data["otioClip"]
