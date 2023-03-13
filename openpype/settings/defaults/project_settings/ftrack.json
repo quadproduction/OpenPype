@@ -495,7 +495,11 @@
         },
         "IntegrateExtraEditorialAttributes":{
             "enabled": false,
-            "rush_attributes": []
+            "rush_name": "",
+            "rush_tc_in": "",
+            "rush_frame_in": "",
+            "rush_tc_out": "",
+            "rush_frame_out": ""
         }
     }
 }
