@@ -1122,8 +1122,23 @@
                             "type": "text"
                         },
                         {
-                            "key": "rush_tc_in",
-                            "label": "Rush TC In",
+                            "key": "head_in",
+                            "label": "Head In",
+                            "type": "text"
+                        },
+                        {
+                            "key": "tail_out",
+                            "label": "Tail_out",
+                            "type": "text"
+                        },
+                        {
+                            "key": "frame_start",
+                            "label": "Frame Start",
+                            "type": "text"
+                        },
+                        {
+                            "key": "frame_end",
+                            "label": "Frame End",
                             "type": "text"
                         },
                         {
@@ -1132,15 +1147,41 @@
                             "type": "text"
                         },
                         {
-                            "key": "rush_tc_out",
-                            "label": "Rush TC Out",
+                            "key": "rush_tc_in",
+                            "label": "Rush TC In",
                             "type": "text"
                         },
                         {
                             "key": "rush_frame_out",
                             "label": "Rush Frame Out",
                             "type": "text"
+                        },
+                        {
+                            "key": "rush_tc_out",
+                            "label": "Rush TC Out",
+                            "type": "text"
+                        },
+                        {
+                            "key": "record_frame_in",
+                            "label": "Record Frame In",
+                            "type": "text"
+                        },
+                        {
+                            "key": "record_tc_in",
+                            "label": "Record TC In",
+                            "type": "text"
+                        },
+                        {
+                            "key": "record_frame_out",
+                            "label": "Record Frame Out",
+                            "type": "text"
+                        },
+                        {
+                            "key": "record_tc_out",
+                            "label": "Record TC Out",
+                            "type": "text"
                         }
+
                     ]
                 }
             ]
