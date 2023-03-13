@@ -18,7 +18,7 @@ class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
     active = True
 
     def process(self, instance):
-        instance.data['is_custom_attrs_set'] = False
+        instance.data['is_custom_attrs_set'] = True
         empty_data = []
         wrong_key = []
         project_settings = get_project_settings(os.getenv("AVALON_PROJECT"))
@@ -42,23 +42,24 @@ class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
             if value and value in ftrack_custom_attrs.keys():
                 ftrack_custom_attrs[value] = otio_attributes[key]
             elif value and value not in ftrack_custom_attrs.keys():
-                wrong_key.append(key)
+                wrong_key.append(value)
             else:
                 empty_data.append(key)
 
         if empty_data:
             self.log.warning(
-                "Empty data in settings for key(s): {}".format(empty_data)
+                "Empty data in settings for key(s): {}".format(
+                    ', '.join(empty_data)
+                )
             )
         if wrong_key:
             self.log.warning(
                 "Key(s) not found in ftrack custom attributes: {}".format(
-                    wrong_key
+                    ', '.join(wrong_key)
                 )
             )
 
         session.commit()
-        instance.data['is_custom_attrs_set'] = True
 
     def _get_ftrack_session(self):
         """ Get the extra editorial attrs from Ftrack
