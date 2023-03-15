@@ -10,7 +10,7 @@ import ftrack_api
 class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
     """Integrate extra editorial attributes."""
 
-    order = pyblish.api.IntegratorOrder + 0.47
+    order = pyblish.api.CollectorOrder + 0.47
     label = "Set Extra Editorial Attributes"
     hosts = ["hiero", "flame", "traypublisher"]
     families = ["clip"]
@@ -21,6 +21,7 @@ class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
         instance.data['is_custom_attrs_set'] = True
         empty_data = []
         wrong_key = []
+        updated_data = {}
         project_settings = get_project_settings(os.getenv("AVALON_PROJECT"))
         rush_and_cut_data = project_settings['ftrack']['publish'][
             'IntegrateExtraEditorialAttributes'
@@ -30,36 +31,41 @@ class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
         if not session:
             return
 
-        ftrack_custom_attrs = self._get_ftrack_custom_attrs(
-            session,
-            os.getenv("AVALON_PROJECT"),
-            instance
-        )
-
-        otio_attributes = self._get_otio_attributes(instance)
-
-        for key, value in rush_and_cut_data.items():
-            if value and value in ftrack_custom_attrs.keys():
-                ftrack_custom_attrs[value] = otio_attributes[key]
-            elif value and value not in ftrack_custom_attrs.keys():
-                wrong_key.append(value)
-            else:
-                empty_data.append(key)
-
-        if empty_data:
-            self.log.warning(
-                "Empty data in settings for key(s): {}".format(
-                    ', '.join(empty_data)
-                )
-            )
-        if wrong_key:
-            self.log.warning(
-                "Key(s) not found in ftrack custom attributes: {}".format(
-                    ', '.join(wrong_key)
-                )
+        if instance.data.get("heroTrack"):
+            ftrack_custom_attrs = self._get_ftrack_custom_attrs(
+                session,
+                os.getenv("AVALON_PROJECT"),
+                instance
             )
 
-        session.commit()
+            otio_attributes = self._get_otio_attributes(instance)
+
+            for key, value in rush_and_cut_data.items():
+                if value and value in ftrack_custom_attrs.keys():
+                    ftrack_custom_attrs[value] = otio_attributes[key]
+                    updated_data[value] = otio_attributes[key]
+                elif value and value not in ftrack_custom_attrs.keys():
+                    wrong_key.append(value)
+                else:
+                    empty_data.append(key)
+
+            if empty_data:
+                self.log.warning(
+                    "Empty data in settings for key(s): {}".format(
+                        ', '.join(empty_data)
+                    )
+                )
+            if wrong_key:
+                self.log.warning(
+                    "Key(s) not found in ftrack custom attributes: {}".format(
+                        ', '.join(wrong_key)
+                    )
+                )
+
+            session.commit()
+            self.log.debug("Ftrack custom attributes updated: {}".format(
+                updated_data
+            ))
 
     def _get_ftrack_session(self):
         """ Get the extra editorial attrs from Ftrack
@@ -116,6 +122,30 @@ class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
         record_tc_in = frames_to_timecode(record_frame_in, fps)
         record_tc_out = frames_to_timecode(record_frame_out, fps)
 
+        otio_clip_context = instance.context.data.get('otioData')
+
+        if otio_clip_context:
+            if otio_clip_context['head_in'] < head_in:
+                head_in = otio_clip_context['head_in']
+            if otio_clip_context['frame_start'] < frame_start:
+                frame_start = otio_clip_context['frame_start']
+            if otio_clip_context['rush_frame_in'] < rush_frame_in:
+                rush_frame_in = otio_clip_context['rush_frame_in']
+                rush_tc_in = otio_clip_context['rush_tc_in']
+            if otio_clip_context['record_frame_in'] < record_frame_in:
+                record_frame_in = otio_clip_context['record_frame_in']
+                record_tc_in = otio_clip_context['record_tc_in']
+            if otio_clip_context['tail_out'] > tail_out:
+                tail_out = otio_clip_context['tail_out']
+            if otio_clip_context['frame_end'] > frame_end:
+                frame_end = otio_clip_context['frame_end']
+            if otio_clip_context['rush_frame_out'] > rush_frame_out:
+                rush_frame_out = otio_clip_context['rush_frame_out']
+                rush_tc_out = otio_clip_context['rush_tc_out']
+            if otio_clip_context['record_frame_out'] > record_frame_out:
+                record_frame_out = otio_clip_context['record_frame_out']
+                record_tc_out = otio_clip_context['record_tc_out']
+
         otio_data = {
             "rush_name": rush_name,
             "head_in": head_in,
@@ -131,5 +161,7 @@ class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
             "record_tc_in": record_tc_in,
             "record_tc_out": record_tc_out,
         }
+
+        instance.context.data['otioData'] = otio_data
 
         return otio_data
