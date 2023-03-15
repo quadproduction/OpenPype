@@ -10,7 +10,7 @@ import ftrack_api
 class IntegrateExtraEditorialAttributes(pyblish.api.InstancePlugin):
     """Integrate extra editorial attributes."""
 
-    order = pyblish.api.CollectorOrder + 0.47
+    order = pyblish.api.IntegratorOrder + 0.47
     label = "Set Extra Editorial Attributes"
     hosts = ["hiero", "flame", "traypublisher"]
     families = ["clip"]
