@@ -2118,6 +2118,12 @@ def reset_frame_range():
         recursive=True,
         objectsOnly=True
     )
+    frames_attributes = {
+        'frameStart': frame_start,
+        'frameEnd': frame_end,
+        'handleStart': handle_start,
+        'handleEnd': handle_end
+    }
 
     for instance in instances:
         if not cmds.attributeQuery("id", node=instance, exists=True):
@@ -2127,7 +2133,11 @@ def reset_frame_range():
         if cmds.getAttr(id_attr) != "pyblish.avalon.instance":
             continue
 
-        cmds.setAttr("{}.frameStart".format(instance), frame_start)
+        for key, value in frames_attributes.items():
+            cmds.setAttr(
+                "{}.{}".format(instance, key),
+                value
+            )
 
 
 def reset_scene_resolution():
