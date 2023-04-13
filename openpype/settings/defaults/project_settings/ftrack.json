@@ -494,6 +494,22 @@
         },
         "IntegrateFtrackFarmStatus": {
             "farm_status_profiles": []
+        },
+        "IntegrateExtraEditorialAttributes":{
+            "enabled": false,
+            "rush_name": "",
+            "head_in": "",
+            "tail_out": "",
+            "frame_start": "",
+            "frame_end": "",
+            "rush_frame_in": "",
+            "rush_tc_in": "",
+            "rush_frame_out": "",
+            "rush_tc_out": "",
+            "record_frame_in": "",
+            "record_tc_in": "",
+            "record_frame_out": "",
+            "record_tc_out": ""
         }
     }
 }
