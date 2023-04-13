@@ -113,6 +113,7 @@
         "CreateLook": {
             "enabled": true,
             "make_tx": true,
+            "rs_tex": false,
             "defaults": [
                 "Main"
             ]
@@ -150,6 +151,7 @@
             "enabled": true,
             "write_color_sets": false,
             "write_face_sets": false,
+            "include_parent_hierarchy": false,
             "include_user_defined_attributes": false,
             "defaults": [
                 "Main"
@@ -181,6 +183,13 @@
             "defaults": [
                 "Main"
             ]
+        },
+        "CreateReview": {
+            "enabled": true,
+            "defaults": [
+                "Main"
+            ],
+            "useMayaTimeline": true
         },
         "CreateAss": {
             "enabled": true,
@@ -258,12 +267,6 @@
                 "Main"
             ]
         },
-        "CreateReview": {
-            "enabled": true,
-            "defaults": [
-                "Main"
-            ]
-        },
         "CreateRig": {
             "enabled": true,
             "defaults": [
@@ -328,6 +331,11 @@
             "regex": "(?P<asset>.*)_(.*)_SHD"
         },
         "ValidateShadingEngine": {
+            "enabled": true,
+            "optional": true,
+            "active": true
+        },
+        "ValidateMayaColorSpace": {
             "enabled": true,
             "optional": true,
             "active": true
@@ -786,11 +794,12 @@
         "ExtractPlayblast": {
             "capture_preset": {
                 "Codec": {
-                    "compression": "jpg",
+                    "compression": "png",
                     "format": "image",
                     "quality": 95
                 },
                 "Display Options": {
+                    "override_display": true,
                     "background": [
                         125,
                         125,
@@ -809,11 +818,12 @@
                         125,
                         255
                     ],
-                    "override_display": true
+                    "displayGradient": true
                 },
                 "Generic": {
                     "isolate_view": true,
-                    "off_screen": true
+                    "off_screen": true,
+                    "pan_zoom": false
                 },
                 "Renderer": {
                     "rendererName": "vp2Renderer"
@@ -862,7 +872,6 @@
                     "dynamics": false,
                     "fluids": false,
                     "follicles": false,
-                    "gpuCacheDisplayFilter": false,
                     "greasePencils": false,
                     "grid": false,
                     "hairSystems": true,
@@ -889,7 +898,10 @@
                     "polymeshes": true,
                     "strokes": false,
                     "subdivSurfaces": false,
-                    "textures": false
+                    "textures": false,
+                    "pluginObjects": {
+                        "gpuCacheDisplayFilter": false
+                    }
                 },
                 "Camera Options": {
                     "displayGateMask": false,
@@ -920,6 +932,24 @@
             "enabled": true,
             "active": true,
             "ogsfx_path": "/maya2glTF/PBR/shaders/glTF_PBR.ogsfx"
+        },
+        "ExtractLook": {
+            "maketx_arguments": []
+        },
+        "ExtractGPUCache": {
+            "enabled": false,
+            "families": [
+                "model",
+                "animation",
+                "pointcache"
+            ],
+            "step": 1.0,
+            "stepSave": 1,
+            "optimize": true,
+            "optimizationThreshold": 40000,
+            "optimizeAnimationsForMotionBlur": true,
+            "writeMaterials": true,
+            "useBaseTessellation": true
         }
     },
     "load": {
@@ -1020,6 +1050,10 @@
                 125,
                 255
             ]
+        },
+        "reference_loader": {
+            "namespace": "{asset_name}_{subset}_##",
+            "group_name": "_GRP"
         }
     },
     "workfile_build": {
@@ -1112,6 +1146,10 @@
                 ]
             }
         ]
+    },
+    "include_handles": {
+        "include_handles_default": false,
+        "per_task_type": []
     },
     "templated_workfile_build": {
         "profiles": []
