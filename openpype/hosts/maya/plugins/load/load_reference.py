@@ -241,11 +241,15 @@ class ReferenceLoader(openpype.hosts.maya.api.plugin.ReferenceLoader):
         creator_plugin = get_legacy_creator_by_name(
             self.animation_creator_name
         )
+        animation_subset_name = namespace.replace(
+            name,
+            name.replace('rig', 'animation')
+        )
         with maintained_selection():
             cmds.select([output, controls] + roots, noExpand=True)
             legacy_create(
                 creator_plugin,
-                name=namespace,
+                name=animation_subset_name,
                 asset=asset,
                 options={"useSelection": True},
                 data={"dependencies": dependency}
