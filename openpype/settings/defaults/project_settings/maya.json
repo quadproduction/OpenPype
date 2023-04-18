@@ -47,7 +47,7 @@
             "destination-path": []
         }
     },
-    "update_instances": {
+    "update_publishable_frame_range": {
         "enabled": false
     },
     "scriptsmenu": {
