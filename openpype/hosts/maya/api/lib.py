@@ -32,7 +32,12 @@ from openpype.pipeline import (
     load_container,
     registered_host,
 )
-from openpype.pipeline.context_tools import get_current_project_asset
+from openpype.pipeline.context_tools import (
+    get_current_asset_name,
+    get_current_project_asset,
+    get_current_project_name,
+    get_current_task_name
+)
 
 
 self = sys.modules[__name__]
@@ -292,15 +297,20 @@ def collect_animation_data(fps=False):
     """
 
     # get scene values as defaults
-    start = cmds.playbackOptions(query=True, animationStartTime=True)
-    end = cmds.playbackOptions(query=True, animationEndTime=True)
+    frame_start = cmds.playbackOptions(query=True, minTime=True)
+    frame_end = cmds.playbackOptions(query=True, maxTime=True)
+    handle_start = cmds.playbackOptions(query=True, animationStartTime=True)
+    handle_end = cmds.playbackOptions(query=True, animationEndTime=True)
+
+    handle_start = frame_start - handle_start
+    handle_end = handle_end - frame_end
 
     # build attributes
     data = OrderedDict()
-    data["frameStart"] = start
-    data["frameEnd"] = end
-    data["handleStart"] = 0
-    data["handleEnd"] = 0
+    data["frameStart"] = frame_start
+    data["frameEnd"] = frame_end
+    data["handleStart"] = handle_start
+    data["handleEnd"] = handle_end
     data["step"] = 1.0
 
     if fps:
@@ -2134,9 +2144,13 @@ def get_frame_range():
     """Get the current assets frame range and handles."""
 
     # Set frame start/end
-    project_name = legacy_io.active_project()
-    asset_name = legacy_io.Session["AVALON_ASSET"]
+    project_name = get_current_project_name()
+    task_name = get_current_task_name()
+    asset_name = get_current_asset_name()
     asset = get_asset_by_name(project_name, asset_name)
+    settings = get_project_settings(project_name)
+    include_handles_settings = settings["maya"]["include_handles"]
+    current_task = asset.get("data").get("tasks").get(task_name)
 
     frame_start = asset["data"].get("frameStart")
     frame_end = asset["data"].get("frameEnd")
@@ -2148,6 +2162,26 @@ def get_frame_range():
     handle_start = asset["data"].get("handleStart") or 0
     handle_end = asset["data"].get("handleEnd") or 0
 
+    animation_start = frame_start
+    animation_end = frame_end
+
+    include_handles = include_handles_settings["include_handles_default"]
+    for item in include_handles_settings["per_task_type"]:
+        if current_task["type"] in item["task_type"]:
+            include_handles = item["include_handles"]
+            break
+    if include_handles:
+        animation_start -= int(handle_start)
+        animation_end += int(handle_end)
+
+    cmds.playbackOptions(
+        minTime=frame_start,
+        maxTime=frame_end,
+        animationStartTime=animation_start,
+        animationEndTime=animation_end
+    )
+    cmds.currentTime(frame_start)
+
     return {
         "frameStart": frame_start,
         "frameEnd": frame_end,
@@ -2156,7 +2190,7 @@ def get_frame_range():
     }
 
 
-def reset_frame_range(playback=True, render=True, fps=True):
+def reset_frame_range(playback=True, render=True, fps=True, instances=True):
     """Set frame range to current asset
 
     Args:
@@ -2165,8 +2199,9 @@ def reset_frame_range(playback=True, render=True, fps=True):
         render (bool, Optional): Whether to set the maya render frame range.
             Defaults to True.
         fps (bool, Optional): Whether to set scene FPS. Defaults to True.
+        instances (bool, Optional): Whether to update publishable instances.
+            Defaults to True.
     """
-
     if fps:
         fps = convert_to_maya_fps(
             float(legacy_io.Session.get("AVALON_FPS", 25))
@@ -2190,6 +2225,41 @@ def reset_frame_range(playback=True, render=True, fps=True):
     if render:
         cmds.setAttr("defaultRenderGlobals.startFrame", frame_start)
         cmds.setAttr("defaultRenderGlobals.endFrame", frame_end)
+
+    if instances:
+        # Update animation instances attributes if enabled in settings
+        project_name = get_current_project_name()
+        settings = get_project_settings(project_name)
+        if settings["maya"]["update_publishable_frame_range"]["enabled"]:
+            collected_instances = cmds.ls(
+                "*.id",
+                long=True,
+                type="objectSet",
+                recursive=True,
+                objectsOnly=True
+            )
+            frames_attributes = {
+                'frameStart': frame_start,
+                'frameEnd': frame_end,
+                'handleStart': frame_range["handleStart"],
+                'handleEnd': frame_range["handleEnd"]
+            }
+
+            for instance in collected_instances:
+                family_attr = "{}.family".format(instance)
+                if family_attr == "render":
+                    continue
+
+                id_attr = "{}.id".format(instance)
+                if cmds.getAttr(id_attr) != "pyblish.avalon.instance":
+                    continue
+
+                for key, value in frames_attributes.items():
+                    if cmds.attributeQuery(key, node=instance, exists=True):
+                        cmds.setAttr(
+                            "{}.{}".format(instance, key),
+                            value
+                        )
 
 
 def reset_scene_resolution():
@@ -3655,7 +3725,17 @@ def get_color_management_preferences():
     # Split view and display from view_transform. view_transform comes in
     # format of "{view} ({display})".
     regex = re.compile(r"^(?P<view>.+) \((?P<display>.+)\)$")
+    if int(cmds.about(version=True)) <= 2020:
+        # view_transform comes in format of "{view} {display}" in 2020.
+        regex = re.compile(r"^(?P<view>.+) (?P<display>.+)$")
+
     match = regex.match(data["view_transform"])
+    if not match:
+        raise ValueError(
+            "Unable to parse view and display from Maya view transform: '{}' "
+            "using regex '{}'".format(data["view_transform"], regex.pattern)
+        )
+
     data.update({
         "display": match.group("display"),
         "view": match.group("view")
