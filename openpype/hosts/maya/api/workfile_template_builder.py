@@ -234,26 +234,10 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         return self.get_load_plugin_options(options)
 
     def cleanup_placeholder(self, placeholder, failed):
-        """Hide placeholder, parent them to root
-        add them to placeholder set and register placeholder's parent
-        to keep placeholder info available for future use
+        """Hide placeholder, add them to placeholder set
         """
-
         node = placeholder._scene_identifier
-        node_parent = placeholder.data["parent"]
-        if node_parent:
-            cmds.setAttr(node + ".parent", node_parent, type="string")
 
-        if cmds.getAttr(node + ".index") < 0:
-            cmds.setAttr(node + ".index", placeholder.data["index"])
-
-        holding_sets = cmds.listSets(object=node)
-        if holding_sets:
-            for set in holding_sets:
-                cmds.sets(node, remove=set)
-
-        if cmds.listRelatives(node, p=True):
-            node = cmds.parent(node, world=True)[0]
         cmds.sets(node, addElement=PLACEHOLDER_SET)
         cmds.hide(node)
         cmds.setAttr(node + ".hiddenInOutliner", True)
@@ -286,19 +270,30 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
             elif not cmds.sets(root, q=True):
                 return
 
-        if placeholder.data["parent"]:
-            cmds.parent(nodes_to_parent, placeholder.data["parent"])
-        # Move loaded nodes to correct index in outliner hierarchy
-        placeholder_form = cmds.xform(
-            placeholder.scene_identifier,
-            q=True,
-            matrix=True,
-            worldSpace=True
-        )
-        for node in set(nodes_to_parent):
-            cmds.reorder(node, front=True)
-            cmds.reorder(node, relative=placeholder.data["index"])
-            cmds.xform(node, matrix=placeholder_form, ws=True)
+        for node in nodes_to_parent:
+            referenced_nodes = cmds.referenceQuery(node, nodes=True)
+            new_node = cmds.listRelatives(
+                referenced_nodes[0],
+                parent=True,
+                fullPath=True
+            )
+
+            if placeholder.data["parent"]:
+                parented_node = cmds.parent(
+                    new_node,
+                    placeholder.data["parent"]
+                )
+            # Move loaded nodes to correct index in outliner hierarchy
+            placeholder_form = cmds.xform(
+                placeholder.scene_identifier,
+                q=True,
+                matrix=True,
+                worldSpace=True
+            )
+
+            cmds.reorder(parented_node, front=True)
+            cmds.reorder(parented_node, relative=placeholder.data["index"])
+            cmds.xform(parented_node, matrix=placeholder_form, ws=True)
 
         holding_sets = cmds.listSets(object=placeholder.scene_identifier)
         if not holding_sets:
