@@ -1282,7 +1282,7 @@ class PlaceholderLoadMixin(object):
                     " field \"inputLinks\""
                     "\nAll assets : Template loader will look for all assets"
                     " in database."
-                    "\nLibraries assets : Template loader will look for assets "
+                    "\nLibraries assets : Template loader will look for assets"
                     "in libraries."
                 )
             ),
@@ -1838,6 +1838,7 @@ class CreatePlaceholderItem(PlaceholderItem):
 
     def create_failed(self, creator_data):
         self._failed_created_publish_instances.append(creator_data)
+
 
 def get_libraries_project_names():
     libraries = list()
