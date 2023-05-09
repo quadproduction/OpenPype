@@ -24,6 +24,7 @@ from openpype.client import (
     get_linked_assets,
     get_representations,
 )
+from openpype.client.entities import get_projects
 from openpype.settings import (
     get_project_settings,
     get_system_settings,
@@ -123,7 +124,7 @@ class AbstractTemplateBuilder(object):
         self._task_type = None
 
     @property
-    def project_name(self):
+    def current_project_name(self):
         return legacy_io.active_project()
 
     @property
@@ -861,8 +862,8 @@ class PlaceholderPlugin(object):
         return self._builder
 
     @property
-    def project_name(self):
-        return self._builder.project_name
+    def current_project_name(self):
+        return self._builder.current_project_name
 
     @property
     def log(self):
@@ -1245,6 +1246,15 @@ class PlaceholderLoadMixin(object):
         ]
 
         loader_items = list(sorted(loader_items, key=lambda i: i["label"]))
+        libraries_project_items = list()
+        for library in get_libraries_project_names():
+            libraries_project_items.append(
+                {
+                    "label": "From Library : {}".format(library),
+                    "value": library
+                }
+            )
+
         options = options or {}
         return [
             attribute_definitions.UISeparatorDef(),
@@ -1253,13 +1263,13 @@ class PlaceholderLoadMixin(object):
 
             attribute_definitions.EnumDef(
                 "builder_type",
-                label="Asset Builder Type",
+                label="Asset Builder Source",
                 default=options.get("builder_type"),
                 items=[
-                    {"label": "Current asset", "value": "context_asset"},
-                    {"label": "Linked assets", "value": "linked_asset"},
-                    {"label": "All assets", "value": "all_assets"},
-                ],
+                    {"label": "From Current asset", "value": "context_asset"},
+                    {"label": "From Linked assets", "value": "linked_asset"},
+                    {"label": "From Others assets", "value": "all_assets"},
+                ] + libraries_project_items,
                 tooltip=(
                     "Asset Builder Type\n"
                     "\nBuilder type describe what template loader will look"
@@ -1270,6 +1280,10 @@ class PlaceholderLoadMixin(object):
                     " linked to current context asset."
                     "\nLinked asset are looked in database under"
                     " field \"inputLinks\""
+                    "\nAll assets : Template loader will look for all assets"
+                    " in database."
+                    "\nLibraries assets : Template loader will look for assets "
+                    "in libraries."
                 )
             ),
             attribute_definitions.TextDef(
@@ -1402,7 +1416,7 @@ class PlaceholderLoadMixin(object):
                 from placeholder data.
         """
 
-        project_name = self.builder.project_name
+        project_name = self.builder.current_project_name
         current_asset_doc = self.builder.current_asset_doc
         linked_asset_docs = self.builder.linked_asset_docs
 
@@ -1432,7 +1446,17 @@ class PlaceholderLoadMixin(object):
                 "family": [placeholder.data["family"]],
             }
 
+        elif builder_type == "all_assets":
+            context_filters = {
+                "asset": [re.compile(placeholder.data["asset"])],
+                "subset": [re.compile(placeholder.data["subset"])],
+                "hierarchy": [re.compile(placeholder.data["hierarchy"])],
+                "representation": [placeholder.data["representation"]],
+                "family": [placeholder.data["family"]]
+            }
+
         else:
+            project_name = builder_type
             context_filters = {
                 "asset": [re.compile(placeholder.data["asset"])],
                 "subset": [re.compile(placeholder.data["subset"])],
@@ -1814,3 +1838,12 @@ class CreatePlaceholderItem(PlaceholderItem):
 
     def create_failed(self, creator_data):
         self._failed_created_publish_instances.append(creator_data)
+
+def get_libraries_project_names():
+    libraries = list()
+
+    for project in get_projects(fields=["name", "data.library_project"]):
+        if project.get("data", {}).get("library_project", False):
+            libraries.append(project["name"])
+
+    return libraries
