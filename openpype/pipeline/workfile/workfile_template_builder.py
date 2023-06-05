@@ -24,6 +24,7 @@ from openpype.client import (
     get_linked_assets,
     get_representations,
 )
+from openpype.client.entities import get_projects
 from openpype.settings import (
     get_project_settings,
     get_system_settings,
@@ -124,7 +125,7 @@ class AbstractTemplateBuilder(object):
         self._task_type = None
 
     @property
-    def project_name(self):
+    def current_project_name(self):
         return legacy_io.active_project()
 
     @property
@@ -144,14 +145,16 @@ class AbstractTemplateBuilder(object):
     @property
     def project_settings(self):
         if self._project_settings is None:
-            self._project_settings = get_project_settings(self.project_name)
+            self._project_settings = get_project_settings(
+                self.current_project_name
+            )
         return self._project_settings
 
     @property
     def current_asset_doc(self):
         if self._current_asset_doc is None:
             self._current_asset_doc = get_asset_by_name(
-                self.project_name, self.current_asset_name
+                self.current_project_name, self.current_asset_name
             )
         return self._current_asset_doc
 
@@ -159,7 +162,7 @@ class AbstractTemplateBuilder(object):
     def linked_asset_docs(self):
         if self._linked_asset_docs is None:
             self._linked_asset_docs = get_linked_assets(
-                self.project_name, self.current_asset_doc
+                self.current_project_name, self.current_asset_doc
             )
         return self._linked_asset_docs
 
@@ -785,7 +788,7 @@ class AbstractTemplateBuilder(object):
         """
 
         host_name = self.host_name
-        project_name = self.project_name
+        project_name = self.current_project_name
         task_name = self.current_task_name
         task_type = self.current_task_type
 
@@ -905,8 +908,8 @@ class PlaceholderPlugin(object):
         return self._builder
 
     @property
-    def project_name(self):
-        return self._builder.project_name
+    def current_project_name(self):
+        return self._builder.current_project_name
 
     @property
     def log(self):
@@ -1289,6 +1292,14 @@ class PlaceholderLoadMixin(object):
         ]
 
         loader_items = list(sorted(loader_items, key=lambda i: i["label"]))
+        libraries_project_items = [
+            {
+                "label": "From Library : {}".format(project_name),
+                "value": project_name
+            }
+            for project_name in get_library_project_names()
+        ]
+
         options = options or {}
 
         # Get families from all loaders excluding "*"
@@ -1307,13 +1318,13 @@ class PlaceholderLoadMixin(object):
 
             attribute_definitions.EnumDef(
                 "builder_type",
-                label="Asset Builder Type",
+                label="Asset Builder Source",
                 default=options.get("builder_type"),
                 items=[
-                    {"label": "Current asset", "value": "context_asset"},
-                    {"label": "Linked assets", "value": "linked_asset"},
-                    {"label": "All assets", "value": "all_assets"},
-                ],
+                    {"label": "From Current asset", "value": "context_asset"},
+                    {"label": "From Linked assets", "value": "linked_asset"},
+                    {"label": "From Others assets", "value": "all_assets"},
+                ] + libraries_project_items,
                 tooltip=(
                     "Asset Builder Type\n"
                     "\nBuilder type describe what template loader will look"
@@ -1324,6 +1335,10 @@ class PlaceholderLoadMixin(object):
                     " linked to current context asset."
                     "\nLinked asset are looked in database under"
                     " field \"inputLinks\""
+                    "\nAll assets : Template loader will look for all assets"
+                    " in database."
+                    "\nLibraries assets : Template loader will look for assets"
+                    "in libraries."
                 )
             ),
             attribute_definitions.EnumDef(
@@ -1456,7 +1471,7 @@ class PlaceholderLoadMixin(object):
                 from placeholder data.
         """
 
-        project_name = self.builder.project_name
+        project_name = self.builder.current_project_name
         current_asset_doc = self.builder.current_asset_doc
         linked_asset_docs = self.builder.linked_asset_docs
 
@@ -1485,8 +1500,9 @@ class PlaceholderLoadMixin(object):
                 "representation": [placeholder.data["representation"]],
                 "family": [placeholder.data["family"]],
             }
-
         else:
+            if builder_type != "all_assets":
+                project_name = builder_type
             context_filters = {
                 "asset": [re.compile(placeholder.data["asset"])],
                 "subset": [re.compile(placeholder.data["subset"])],
@@ -1575,7 +1591,7 @@ class PlaceholderLoadMixin(object):
             return
 
         repre_load_contexts = get_contexts_for_repre_docs(
-            self.project_name, filtered_representations
+            self.current_project_name, filtered_representations
         )
         loaders_by_name = self.builder.get_loaders_by_name()
         for repre_load_context in repre_load_contexts.values():
@@ -1881,3 +1897,13 @@ class CreatePlaceholderItem(PlaceholderItem):
 
     def create_failed(self, creator_data):
         self._failed_created_publish_instances.append(creator_data)
+
+
+def get_library_project_names():
+    libraries = list()
+
+    for project in get_projects(fields=["name", "data.library_project"]):
+        if project.get("data", {}).get("library_project", False):
+            libraries.append(project["name"])
+
+    return libraries
