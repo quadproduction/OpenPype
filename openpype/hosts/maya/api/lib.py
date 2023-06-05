@@ -3934,3 +3934,163 @@ def get_all_children(nodes):
             iterator.next()  # noqa: B305
 
     return list(traversed)
+
+
+def get_capture_preset(task_name, task_type, subset, project_settings, log):
+    """Get capture preset for playblasting.
+
+    Logic for transitioning from old style capture preset to new capture preset
+    profiles.
+
+    Args:
+        task_name (str): Task name.
+        take_type (str): Task type.
+        subset (str): Subset name.
+        project_settings (dict): Project settings.
+        log (object): Logging object.
+    """
+    capture_preset = None
+    filtering_criteria = {
+        "hosts": "maya",
+        "families": "review",
+        "task_names": task_name,
+        "task_types": task_type,
+        "subset": subset
+    }
+
+    plugin_settings = project_settings["maya"]["publish"]["ExtractPlayblast"]
+    if plugin_settings["profiles"]:
+        profile = filter_profiles(
+            plugin_settings["profiles"],
+            filtering_criteria,
+            logger=log
+        )
+        capture_preset = profile.get("capture_preset")
+    else:
+        log.warning("No profiles present for Extract Playblast")
+
+    # Backward compatibility for deprecated Extract Playblast settings
+    # without profiles.
+    if capture_preset is None:
+        log.debug(
+            "Falling back to deprecated Extract Playblast capture preset "
+            "because no new style playblast profiles are defined."
+        )
+        capture_preset = plugin_settings["capture_preset"]
+
+    return capture_preset or {}
+
+
+def get_reference_node(members, log=None):
+    """Get the reference node from the container members
+    Args:
+        members: list of node names
+
+    Returns:
+        str: Reference node name.
+
+    """
+
+    # Collect the references without .placeHolderList[] attributes as
+    # unique entries (objects only) and skipping the sharedReferenceNode.
+    references = set()
+    for ref in cmds.ls(members, exactType="reference", objectsOnly=True):
+
+        # Ignore any `:sharedReferenceNode`
+        if ref.rsplit(":", 1)[-1].startswith("sharedReferenceNode"):
+            continue
+
+        # Ignore _UNKNOWN_REF_NODE_ (PLN-160)
+        if ref.rsplit(":", 1)[-1].startswith("_UNKNOWN_REF_NODE_"):
+            continue
+
+        references.add(ref)
+
+    assert references, "No reference node found in container"
+
+    # Get highest reference node (least parents)
+    highest = min(references,
+                  key=lambda x: len(get_reference_node_parents(x)))
+
+    # Warn the user when we're taking the highest reference node
+    if len(references) > 1:
+        if not log:
+            log = logging.getLogger(__name__)
+
+        log.warning("More than one reference node found in "
+                    "container, using highest reference node: "
+                    "%s (in: %s)", highest, list(references))
+
+    return highest
+
+
+def get_reference_node_parents(ref):
+    """Return all parent reference nodes of reference node
+
+    Args:
+        ref (str): reference node.
+
+    Returns:
+        list: The upstream parent reference nodes.
+
+    """
+    parent = cmds.referenceQuery(ref,
+                                 referenceNode=True,
+                                 parent=True)
+    parents = []
+    while parent:
+        parents.append(parent)
+        parent = cmds.referenceQuery(parent,
+                                     referenceNode=True,
+                                     parent=True)
+    return parents
+
+
+def create_rig_animation_instance(nodes, context, namespace, log=None):
+    """Create an animation publish instance for loaded rigs.
+
+    See the RecreateRigAnimationInstance inventory action on how to use this
+    for loaded rig containers.
+
+    Arguments:
+        nodes (list): Member nodes of the rig instance.
+        context (dict): Representation context of the rig container
+        namespace (str): Namespace of the rig container
+        log (logging.Logger, optional): Logger to log to if provided
+
+    Returns:
+        None
+
+    """
+    output = next((node for node in nodes if
+                   node.endswith("out_SET")), None)
+    controls = next((node for node in nodes if
+                     node.endswith("controls_SET")), None)
+
+    assert output, "No out_SET in rig, this is a bug."
+    assert controls, "No controls_SET in rig, this is a bug."
+
+    # Find the roots amongst the loaded nodes
+    roots = (
+        cmds.ls(nodes, assemblies=True, long=True) or
+        get_highest_in_hierarchy(nodes)
+    )
+    assert roots, "No root nodes in rig, this is a bug."
+
+    asset = legacy_io.Session["AVALON_ASSET"]
+    dependency = str(context["representation"]["_id"])
+
+    if log:
+        log.info("Creating subset: {}".format(namespace))
+
+    # Create the animation instance
+    creator_plugin = get_legacy_creator_by_name("CreateAnimation")
+    with maintained_selection():
+        cmds.select([output, controls] + roots, noExpand=True)
+        legacy_create(
+            creator_plugin,
+            name=namespace,
+            asset=asset,
+            options={"useSelection": True},
+            data={"dependencies": dependency}
+        )
