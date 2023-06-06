@@ -21,7 +21,7 @@ read -p "Enter your choice: (1 or 2)
 # si l'utilisateur veut les settings de wizz alors la variable host prend la valeur mongodb si l'utilisateur veut les settings de fixstudio alors la variable host prend la valeur dockerquad
 if [ $choice -eq 1 ]
 then
-    HOST="mongodb"
+    HOST="openpype-mongo"
     PORT=27017
 elif [ $choice -eq 2 ]
 then
@@ -34,8 +34,6 @@ fi
 echo $HOST
 
 # dump mongodb on remote server and restore it locally
-mongoexport --host=$HOST --port=$PORT --db=openpype --collection=settings --type=json --pretty --out=/tmp/OpenPype-dump/settings.json
-mongoimport --host=$HOST --port=$PORT --db=openpype --collection=settings --type=json --file=/tmp/OpenPype-dump/settings.json
-# mongodump --host="dockerquad" --port=27027 --db=openpype --collection=settings | mongodbrestore --host="localhost" --port=27017 --db=openpype --collection=settings
+mongodump --host=$HOST --port=$PORT --db=openpype --collection=settings --archive | mongorestore --host="localhost" --port=27017 --archive
 
-# traduit recupération des settings depuis mongo en anglais
+exit 0
