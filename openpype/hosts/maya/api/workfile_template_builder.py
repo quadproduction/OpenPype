@@ -14,8 +14,6 @@ from openpype.tools.workfile_template_build import (
     WorkfileBuildPlaceholderDialog,
 )
 
-from .lib import read, imprint, reset_frame_range, get_reference_node
-
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
 
 
@@ -108,6 +106,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         return placeholder_nodes
 
     def _parse_placeholder_node_data(self, node_name):
+        from .lib import read
         placeholder_data = read(node_name)
         parent_name = (
             cmds.getAttr(node_name + ".parent", asString=True)
@@ -192,7 +191,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
             + "|"
             + placeholder.replace("|", "")
         )
-
+        from .lib import imprint
         imprint(placeholder_full_name, placeholder_data)
 
         # Add helper attributes to keep placeholder info
@@ -223,7 +222,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
 
         for key in new_values.keys():
             cmds.deleteAttr(node_name + "." + key)
-
+        from .lib import imprint
         imprint(node_name, new_values)
 
     def collect_placeholders(self):
@@ -258,6 +257,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         cmds.sets(node, addElement=PLACEHOLDER_SET)
         cmds.hide(node)
         cmds.setAttr(node + ".hiddenInOutliner", True)
+        from .lib import reset_frame_range
         reset_frame_range(playback=False, render=False, fps=False)
 
     def delete_placeholder(self, placeholder):
@@ -280,6 +280,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
             return
 
         roots = cmds.sets(container, q=True)
+        from .lib import get_reference_node
         ref_node = get_reference_node(roots)
         nodes_to_parent = []
         for root in roots:
