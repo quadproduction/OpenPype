@@ -34,8 +34,8 @@ fi
 echo $HOST
 
 # dump mongodb on remote server and restore it locally
-mongoexport --host=$HOST --port=$PORT --db=openpype --collection=settings --type=json --pretty --out=/users_roaming/chector/Documents/src/OpenPype/dump/settings.json
-mongoimport --host=$HOST --port=$PORT --db=openpype --collection=settings --type=json --file=/users_roaming/chector/Documents/src/OpenPype/dump/settings.json
+mongoexport --host=$HOST --port=$PORT --db=openpype --collection=settings --type=json --pretty --out=/tmp/OpenPype-dump/settings.json
+mongoimport --host=$HOST --port=$PORT --db=openpype --collection=settings --type=json --file=/tmp/OpenPype-dump/settings.json
 # mongodump --host="dockerquad" --port=27027 --db=openpype --collection=settings | mongodbrestore --host="localhost" --port=27017 --db=openpype --collection=settings
 
 # traduit recupération des settings depuis mongo en anglais
