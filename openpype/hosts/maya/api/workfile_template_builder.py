@@ -15,7 +15,6 @@ from openpype.tools.workfile_template_build import (
 )
 
 from .lib import read, imprint, get_reference_node
-from .apply_look import apply_look
 
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
 
@@ -331,7 +330,6 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
 def build_workfile_template(*args):
     builder = MayaTemplateBuilder(registered_host())
     builder.build_template()
-    apply_look()
 
 
 def update_workfile_template(*args):
