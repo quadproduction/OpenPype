@@ -350,10 +350,6 @@
                     "name": "template_validate_plugin",
                     "template_data": [
                         {
-                            "key": "CollectAnatomyFrameRange",
-                            "label": "Collect Anatomy frame range"
-                        },
-                        {
                             "key": "ValidateFrameRange",
                             "label": "Validate frame range"
                         },
