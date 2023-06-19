@@ -3,12 +3,14 @@ name: 📦 Build Zip Patch
 on:
   push:
     tags:
-      - '*'
+      - '*.*.*'
+      - '*.*.*-*'
+      - 'CI/*.*.*-*'
 
 jobs:
   build-zip-patch:
-
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    # runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.9]
