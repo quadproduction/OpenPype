@@ -25,7 +25,7 @@ jobs:
       with:
         default: "${{ matrix.python }}"
         command: pip install -U pip
-        versions: ${{ matrix.python-version }}
+#         versions: ${{ matrix.python-version }}
 
     - name: test python
       run: |
