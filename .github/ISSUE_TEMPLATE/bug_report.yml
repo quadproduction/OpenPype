@@ -8,15 +8,15 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report! Please fill this form carefully in order to help us work more efficiently.
-  - type: checkboxes
+  - type: dropdown
     attributes:
       label: Before posting a new ticket, have you looked through the documentation to find an answer?
       description: >-
-        You can fin the documentation in here > ...
+        You can fin the documentation in the fix wiki > fixwiki/drive/tools/openpype/decouverte_openpype/
       options:
         - label: Yes I have
           required: true
-  - type: checkboxes
+  - type: dropdown
     attributes:
       label: Have you looked through the existing tickets to find any related issues?
       options:
@@ -159,7 +159,7 @@ body:
       description: A concise description of what you expected to happen.
     validations:
       required: false
-  - type: checkboxes
+  - type: dropdown
     attributes:
       label: What type of bug is it ?
       options:
