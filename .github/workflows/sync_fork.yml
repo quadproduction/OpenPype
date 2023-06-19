@@ -23,3 +23,4 @@ jobs:
         run: |
           git remote set-url upstream https://github.com/ynput/OpenPype.git
           git fetch --tags upstream
+          git push origin --tags
