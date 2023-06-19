@@ -3,9 +3,7 @@ name: 📦 Build Zip Patch
 on:
   push:
     tags:
-      - '*.*.*'
-      - '*.*.*-*'
-  workflow_dispatch:
+      - '*'
 
 jobs:
   build-zip-patch:
