@@ -29,6 +29,8 @@ jobs:
 
     - name: test python
       run: |
+        pyenv versions
+        pyenv install 3.9.16
         python --version
         python3 --version
         python3.9 --version
