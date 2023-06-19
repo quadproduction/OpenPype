@@ -25,6 +25,13 @@ jobs:
       with:
         default: "${{ matrix.python }}"
         command: pip install -U pip
+        versions: ${{ matrix.python-version }}
+
+    - name: test python
+      run: |
+        - python --version
+        - python3 --version
+        - python3.9 --version
 
     - name: 📝 Install Poetry
       uses: snok/install-poetry@v1
