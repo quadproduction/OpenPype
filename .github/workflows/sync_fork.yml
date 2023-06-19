@@ -18,3 +18,9 @@ jobs:
           head: develop
           pr_message: Automatic synchronization requires conflict resolution.
           merge_method: rebase
+
+      - name: fetch tags
+        run: |
+          git remote set-url upstream https://github.com/ynput/OpenPype.git
+          git fetch --tags upstream
+          git push origin --tags
