@@ -20,27 +20,26 @@ jobs:
     - name: 🚛 Checkout Code
       uses: actions/checkout@v3
 
-    - name: 🐍 Set up Python
-      uses: gabrielfalcao/pyenv-action@v14
-      with:
-        default: "${{ matrix.python }}"
-        command: pip install -U pip
-#         versions: ${{ matrix.python-version }}
+#     - name: 🐍 Set up Python
+#       uses: gabrielfalcao/pyenv-action@v14
+#       with:
+#         default: "${{ matrix.python }}"
+#         command: pip install -U pip
 
-    - name: test python
-      run: |
-        pyenv versions
-        pyenv install 3.9.16
-        python --version
-        python3 --version
-        python3.9 --version
+#     - name: test python
+#       run: |
+#         pyenv versions
+#         pyenv install 3.9.16
+#         python --version
+#         python3 --version
+#         python3.9 --version
 
-    - name: 📝 Install Poetry
-      uses: snok/install-poetry@v1
-      env:
-        POETRY_HOME: ${PWD}/.poetry
-      with:
-        version: 1.3.2
+#     - name: 📝 Install Poetry
+#       uses: snok/install-poetry@v1
+#       env:
+#         POETRY_HOME: ${PWD}/.poetry
+#       with:
+#         version: 1.3.2
 
     - name: 🧵 Install Requirements
       run: ./tools/create_env.sh && ./tools/fetch_thirdparty_libs.sh
