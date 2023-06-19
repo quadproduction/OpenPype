@@ -6,6 +6,7 @@ on:
       - '*.*.*'
       - '*.*.*-*'
       - 'CI/*.*.*-*'
+  workflow_dispatch:
 
 jobs:
   build-zip-patch:
