@@ -24,16 +24,19 @@ jobs:
       uses: gabrielfalcao/pyenv-action@v14
       with:
         default: "${{ matrix.python }}"
-        command: pip install -U pip
+        command: |
+          pyenv global 3.9.16
+          pip install -U pip
+          pip3 install -U pip
 
-    - name: test python
-      run: |
-        pyenv versions
-        # pyenv install 3.9.16
-        pyenv global 3.9.16
-        python --version
-        python3 --version
-        python3.9 --version
+#     - name: test python
+#       run: |
+#         pyenv versions
+#         # pyenv install 3.9.16
+#         pyenv global 3.9.16
+#         python --version
+#         python3 --version
+#         python3.9 --version
 
     - name: 📝 Install Poetry
       uses: snok/install-poetry@v1
