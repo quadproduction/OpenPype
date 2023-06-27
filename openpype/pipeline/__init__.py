@@ -64,6 +64,8 @@ from .actions import (
 
     InventoryAction,
 
+    BuilderAction,
+
     discover_launcher_actions,
     register_launcher_action,
     register_launcher_action_path,
@@ -73,6 +75,12 @@ from .actions import (
     register_inventory_action_path,
     deregister_inventory_action,
     deregister_inventory_action_path,
+
+    discover_builder_actions,
+    register_builder_action,
+    register_builder_action_path,
+    deregister_builder_action,
+    deregister_builder_action_path,
 )
 
 from .context_tools import (
@@ -164,6 +172,7 @@ __all__ = (
     # --- Actions ---
     "LauncherAction",
     "InventoryAction",
+    "BuilderAction",
 
     "discover_launcher_actions",
     "register_launcher_action",
@@ -174,6 +183,12 @@ __all__ = (
     "register_inventory_action_path",
     "deregister_inventory_action",
     "deregister_inventory_action_path",
+
+    "discover_builder_actions",
+    "register_builder_action",
+    "register_builder_action_path",
+    "deregister_builder_action",
+    "deregister_builder_action_path",
 
     # --- Process context ---
     "install_openpype_plugins",
