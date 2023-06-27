@@ -14,8 +14,7 @@ from openpype.tools.workfile_template_build import (
     WorkfileBuildPlaceholderDialog,
 )
 
-from .lib import read, imprint, get_main_window, get_reference_node
-
+from .lib import read, imprint, get_main_window, get_reference_node, reset_frame_range
 
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
 
@@ -252,6 +251,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         cmds.sets(node, addElement=PLACEHOLDER_SET)
         cmds.hide(node)
         cmds.setAttr(node + ".hiddenInOutliner", True)
+        reset_frame_range(playback=False, render=False, fps=False)
 
     def delete_placeholder(self, placeholder):
         """Remove placeholder if building was successful"""
