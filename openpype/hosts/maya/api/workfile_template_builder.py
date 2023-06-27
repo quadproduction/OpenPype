@@ -16,6 +16,7 @@ from openpype.tools.workfile_template_build import (
 
 from .lib import read, imprint, get_main_window, get_reference_node
 
+
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
 
 
