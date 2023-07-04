@@ -47,6 +47,9 @@ from openpype.pipeline.create import (
     discover_legacy_creator_plugins,
     CreateContext,
 )
+from openpype.pipeline.action import (
+    utils,
+)
 
 
 class TemplateNotFound(Exception):
@@ -1272,6 +1275,12 @@ class PlaceholderLoadMixin(object):
         # Sort for readability
         families = list(sorted(families))
 
+        actions_by_name = utils.get_actions_by_name()
+        actions_items = [
+            {"value": action_name, "label": action.label or action_name}
+            for action_name, action in actions_by_name.items()
+        ]
+
         return [
             attribute_definitions.UISeparatorDef(),
             attribute_definitions.UILabelDef("Main attributes"),
@@ -1321,6 +1330,17 @@ class PlaceholderLoadMixin(object):
                     " load assets."
                     "\nUseable loader depends on current host's loader list."
                     "\nField is case sensitive."
+                )
+            ),
+            attribute_definitions.EnumDef(
+                "action",
+                label="Builder Action",
+                default=options.get("action"),
+                items=actions_items,
+                tooltip=(
+                    "Builder Action"
+                    "\nUsed to do actions before or after processing"
+                    " the placeholders."
                 )
             ),
             attribute_definitions.TextDef(
