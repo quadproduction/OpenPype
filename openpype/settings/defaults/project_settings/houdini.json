@@ -41,6 +41,10 @@
             "enabled": true,
             "defaults": []
         },
+        "CreateBgeoCache": {
+            "enabled": true,
+            "defaults": []
+        },
         "CreateUSD": {
             "enabled": false,
             "defaults": []

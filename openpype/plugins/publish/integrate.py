@@ -95,6 +95,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
                 "layout",
                 "ass",
                 "vdbcache",
+                "bgeocache",
                 "scene",
                 "vrayproxy",
                 "vrayscene_layer",

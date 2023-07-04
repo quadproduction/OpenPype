@@ -68,6 +68,10 @@
             "label": "Create VDB Cache"
           },
           {
+            "key": "CreateBgeoCache",
+            "label": "Create Bgeo Cache"
+          },
+          {
             "key": "CreateUSD",
             "label": "Create USD"
           },

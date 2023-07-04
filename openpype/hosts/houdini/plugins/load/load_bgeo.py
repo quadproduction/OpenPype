@@ -13,7 +13,7 @@ class BgeoLoader(load.LoaderPlugin):
     """Load bgeo files to Houdini."""
 
     label = "Load bgeo"
-    families = ["model", "pointcache", "bgeo"]
+    families = ["model", "pointcache", "bgeocache"]
     representations = [
         "bgeo", "bgeosc", "bgeogz",
         "bgeo.sc", "bgeo.gz", "bgeo.lzma", "bgeo.bz2"]

@@ -28,7 +28,8 @@ class HoudiniLegacyConvertor(SubsetConvertorPlugin):
         "redshift_rop": "io.openpype.creators.houdini.redshift_rop",
         "usd": "io.openpype.creators.houdini.usd",
         "usdrender": "io.openpype.creators.houdini.usdrender",
-        "vdbcache": "io.openpype.creators.houdini.vdbcache"
+        "vdbcache": "io.openpype.creators.houdini.vdbcache",
+        "bgeocache": "io.openpype.creators.houdini.bgeocache"
     }
 
     def __init__(self, *args, **kwargs):

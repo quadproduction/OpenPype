@@ -13,7 +13,7 @@ class CollectFrames(pyblish.api.InstancePlugin):
 
     order = pyblish.api.CollectorOrder + 0.01
     label = "Collect Frames"
-    families = ["vdbcache", "imagesequence", "ass", "redshiftproxy", "review"]
+    families = ["vdbcache", "imagesequence", "ass", "redshiftproxy", "review", "bgeocache"]
 
     def process(self, instance):
 
@@ -33,7 +33,7 @@ class CollectFrames(pyblish.api.InstancePlugin):
 
         _, ext = lib.splitext(
             output,
-            allowed_multidot_extensions=[".ass.gz"]
+            allowed_multidot_extensions=[".ass.gz",".bgeo.sc"]
         )
         file_name = os.path.basename(output)
         result = file_name

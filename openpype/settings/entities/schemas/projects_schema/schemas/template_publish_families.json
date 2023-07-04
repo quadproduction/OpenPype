@@ -39,6 +39,7 @@
              {"take": "take"},
              {"usdShade": "usdShade"},
              {"vdbcache": "vdbcache"},
+             {"bgeocache": "bgeocache"},
              {"vrayproxy": "vrayproxy"},
              {"workfile": "workfile"},
              {"xgen": "xgen"},
