@@ -1,10 +1,10 @@
 
 from maya import cmds
 
-from openpype.pipeline.action import ActionPlugin
+from openpype.pipeline.action import BuilderAction
 
 
-class ConnectGeometry(ActionPlugin):
+class ConnectGeometry(BuilderAction):
     """Connect geometries within containers.
 
     Source container will connect to the target containers, by searching for

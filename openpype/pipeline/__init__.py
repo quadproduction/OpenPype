@@ -64,8 +64,6 @@ from .actions import (
 
     InventoryAction,
 
-    BuilderAction,
-
     discover_launcher_actions,
     register_launcher_action,
     register_launcher_action_path,
@@ -75,12 +73,6 @@ from .actions import (
     register_inventory_action_path,
     deregister_inventory_action,
     deregister_inventory_action_path,
-
-    discover_builder_actions,
-    register_builder_action,
-    register_builder_action_path,
-    deregister_builder_action,
-    deregister_builder_action_path,
 )
 
 from .context_tools import (
@@ -105,13 +97,15 @@ from .context_tools import (
     get_current_task_name
 )
 from .action import (
-    ActionPlugin,
+    BuilderAction,
 
-    discover_action_plugins,
-    register_action_plugin,
-    deregister_action_plugin_path,
-    register_action_plugin_path,
-    deregister_action_plugin,
+    discover_builder_plugins,
+    register_builder_action,
+    register_builder_action_path,
+    deregister_builder_action,
+    deregister_builder_action_path,
+
+    get_actions_by_name,
 )
 install = install_host
 uninstall = uninstall_host
@@ -181,7 +175,6 @@ __all__ = (
     # --- Actions ---
     "LauncherAction",
     "InventoryAction",
-    "BuilderAction",
 
     "discover_launcher_actions",
     "register_launcher_action",
@@ -192,12 +185,6 @@ __all__ = (
     "register_inventory_action_path",
     "deregister_inventory_action",
     "deregister_inventory_action_path",
-
-    "discover_builder_actions",
-    "register_builder_action",
-    "register_builder_action_path",
-    "deregister_builder_action",
-    "deregister_builder_action_path",
 
     # --- Process context ---
     "install_openpype_plugins",
@@ -221,13 +208,15 @@ __all__ = (
     "get_current_task_name",
 
     # --- Action ---
-    "ActionPlugin",
+    "BuilderAction",
 
-    "discover_action_plugins",
-    "register_action_plugin",
-    "deregister_action_plugin_path",
-    "register_action_plugin_path",
-    "deregister_action_plugin",
+    "discover_builder_plugins",
+    "register_builder_action",
+    "register_builder_action_path",
+    "deregister_builder_action",
+    "deregister_builder_action_path",
+
+    "get_actions_by_name",
 
     # Backwards compatible function names
     "install",

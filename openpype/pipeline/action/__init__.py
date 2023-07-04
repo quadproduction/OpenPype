@@ -1,21 +1,26 @@
-from .action_plugin import (
-    ActionPlugin,
+from .utils import get_actions_by_name
 
-    discover_action_plugins,
-    register_action_plugin,
-    deregister_action_plugin_path,
-    register_action_plugin_path,
-    deregister_action_plugin,
+from .action_plugin import (
+    BuilderAction,
+
+    discover_builder_plugins,
+    register_builder_action,
+    deregister_builder_action,
+    register_builder_action_path,
+    deregister_builder_action_path,
 )
 
 
 __all__ = (
-    # action_plugin.py
-    "ActionPlugin",
+    # utils.py
+    "get_actions_by_name",
 
-    "discover_action_plugins",
-    "register_action_plugin",
-    "deregister_action_plugin_path",
-    "register_action_plugin_path",
-    "deregister_action_plugin",
+    # action_plugin.py
+    "BuilderAction",
+
+    "discover_builder_plugins",
+    "register_builder_action",
+    "deregister_builder_action",
+    "register_builder_action_path",
+    "deregister_builder_action_path",
 )

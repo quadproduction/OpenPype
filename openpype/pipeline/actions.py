@@ -95,9 +95,6 @@ class InventoryAction(object):
         return True
 
 
-class BuilderAction(object):
-    pass
-
 # Launcher action
 def discover_launcher_actions():
     return discover(LauncherAction)
@@ -136,19 +133,3 @@ def register_inventory_action_path(path):
 
 def deregister_inventory_action_path(path):
     return deregister_plugin_path(InventoryAction, path)
-
-# Builder action
-def discover_builder_actions():
-    return discover(BuilderAction)
-
-def register_builder_action(plugin):
-    return register_plugin(BuilderAction, plugin)
-
-def deregister_builder_action(plugin):
-    deregister_plugin(BuilderAction, plugin)
-
-def register_builder_action_path(path):
-    return register_plugin_path(BuilderAction, path)
-
-def deregister_builder_action_path(path):
-    deregister_plugin(BuilderAction, path)
