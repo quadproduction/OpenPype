@@ -1,3 +1,5 @@
+import logging
+
 from openpype.pipeline.plugin_discover import (
     discover,
     register_plugin,
@@ -7,7 +9,18 @@ from openpype.pipeline.plugin_discover import (
 )
 
 
-class ActionPlugin():
+class ActionPlugin(list):
+    families = []
+    representations = []
+    extensions = {"*"}
+    order = 0
+    is_multiple_contexts_compatible = False
+    enabled = True
+
+    options = []
+
+    log = logging.getLogger("SubsetLoader")
+    log.propagate = True
 
     def __init__(self, name, label, description, icon=None):
         self.name = name
@@ -19,12 +32,19 @@ class ActionPlugin():
         return "<ActionPlugin name={}>".format(self.name)
 
 
+def discover_action_plugins(project_name=None):
+    from openpype.lib import Logger
 
-def discover_action_plugin(*args, **kwargs):
-    return discover(ActionPlugin, *args, **kwargs)
+    log = Logger.get_logger("ActionDiscover")
+    plugins = discover(ActionPlugin)
+    for plugin in plugins:
+        log.info("PLUGIN: {}".format(plugin))
+    return plugins
+
 
 def register_action_plugin(plugin):
     register_plugin(ActionPlugin, plugin)
+
 
 def deregister_action_plugin(plugin):
     deregister_plugin(ActionPlugin, plugin)

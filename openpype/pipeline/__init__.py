@@ -104,6 +104,15 @@ from .context_tools import (
     get_current_asset_name,
     get_current_task_name
 )
+from .action import (
+    ActionPlugin,
+
+    discover_action_plugins,
+    register_action_plugin,
+    deregister_action_plugin_path,
+    register_action_plugin_path,
+    deregister_action_plugin,
+)
 install = install_host
 uninstall = uninstall_host
 
@@ -210,6 +219,15 @@ __all__ = (
     "get_current_project_name",
     "get_current_asset_name",
     "get_current_task_name",
+
+    # --- Action ---
+    "ActionPlugin",
+
+    "discover_action_plugins",
+    "register_action_plugin",
+    "deregister_action_plugin_path",
+    "register_action_plugin_path",
+    "deregister_action_plugin",
 
     # Backwards compatible function names
     "install",
