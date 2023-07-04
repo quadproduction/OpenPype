@@ -149,14 +149,6 @@
             "defaults": [],
             "help": "Hierarchical data structure for the efficient storage and manipulation of sparse volumetric data discretized on three-dimensional grids"
         },
-        "create_bgeo": {
-            "name": "bgeocache",
-            "label": "Bgeo geometric Data",
-            "family": "bgeocache",
-            "icon": "code-fork",
-            "defaults": [],
-            "help": "Default format for Houdini geometry"
-        },
         "__dynamic_keys_labels__": {
             "create_workfile": "Workfile",
             "create_model": "Model",
