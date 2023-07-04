@@ -19,7 +19,7 @@ class BuilderAction(list):
 
     options = []
 
-    log = logging.getLogger("SubsetLoader")
+    log = logging.getLogger("BuilderAction")
     log.propagate = True
 
     def __init__(self, name, label, description, icon=None):
