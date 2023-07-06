@@ -67,6 +67,11 @@ class CreateReview(plugin.HoudiniCreator):
                     if camera:
                         continue
                     camera = path
+                # Add child of subnet as force objects
+                elif node.type().name() == "subnet":
+                    for child in node.children():
+                        path = child.path()
+                        force_objects.append(path)
                 else:
                     force_objects.append(path)
 
