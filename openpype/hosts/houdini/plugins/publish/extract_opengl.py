@@ -2,6 +2,7 @@ import os
 
 import pyblish.api
 
+from openpype.pipeline import registered_host
 from openpype.pipeline import publish
 from openpype.hosts.houdini.api.lib import render_rop
 
@@ -34,7 +35,7 @@ class ExtractOpenGL(publish.Extractor):
         if not instance.data.get("keepImages"):
             tags.append("delete")
 
-        representation = {
+        review_representation = {
             "name": instance.data["imageFormat"],
             "ext": instance.data["imageFormat"],
             "files": output,
@@ -46,6 +47,18 @@ class ExtractOpenGL(publish.Extractor):
             "camera_name": instance.data.get("review_camera")
         }
 
+        current_file = hou.hipFile.name()
+        folder, file = os.path.split(current_file)
+
+        hip_representation = {
+            'name': 'hip',
+            'ext': 'hip',
+            'files': file,
+            "stagingDir": folder,
+        }    
+
         if "representations" not in instance.data:
             instance.data["representations"] = []
-        instance.data["representations"].append(representation)
+            
+        instance.data["representations"].append(review_representation)
+        instance.data["representations"].append(hip_representation)
