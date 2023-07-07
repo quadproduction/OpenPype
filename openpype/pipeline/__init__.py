@@ -106,6 +106,7 @@ from .action import (
     deregister_builder_action_path,
 
     get_actions_by_name,
+    action_with_repre_context,
 )
 install = install_host
 uninstall = uninstall_host
@@ -217,6 +218,7 @@ __all__ = (
     "deregister_builder_action_path",
 
     "get_actions_by_name",
+    "action_with_repre_context",
 
     # Backwards compatible function names
     "install",
