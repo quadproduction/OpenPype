@@ -41,4 +41,19 @@ class ExtractAlembic(publish.Extractor):
             'files': file_name,
             "stagingDir": staging_dir,
         }
+
+        current_file = hou.hipFile.name()
+        folder, file = os.path.split(current_file)
+
+        hip_representation = {
+            'name': 'hip',
+            'ext': 'hip',
+            'files': file,
+            "stagingDir": folder,
+        }    
+
+        if "representations" not in instance.data:
+            instance.data["representations"] = []
+            
+        instance.data["representations"].append(hip_representation)
         instance.data["representations"].append(representation)
