@@ -2,7 +2,6 @@ import os
 
 import pyblish.api
 
-from openpype.pipeline import registered_host
 from openpype.pipeline import publish
 from openpype.hosts.houdini.api.lib import render_rop
 
