@@ -609,6 +609,19 @@ def on_new():
     """Set project resolution and fps when create a new file"""
     log.info("Running callback on new..")
     with lib.suspended_refresh():
+        cmds.evalDeferred(
+            "from openpype.hosts.maya.api import lib;"
+            "lib.remove_render_layer_observer()")
+        cmds.evalDeferred(
+            "from openpype.hosts.maya.api import lib;"
+            "lib.add_render_layer_observer()")
+        cmds.evalDeferred(
+            "from openpype.hosts.maya.api import lib;"
+            "lib.add_render_layer_change_observer()")
+        cmds.evalDeferred(
+            "from openpype.hosts.maya.api import lib;"
+            "lib.build_first_workfile_from_template_builder()"
+        )
         lib.set_context_settings()
 
     utils.executeDeferred(_update_render_layer_observers)
