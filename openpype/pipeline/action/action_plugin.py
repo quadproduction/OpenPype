@@ -7,6 +7,7 @@ from openpype.pipeline.plugin_discover import (
     deregister_plugin,
     deregister_plugin_path
 )
+from .utils import get_representation_path_from_context
 
 
 class BuilderAction(list):
@@ -22,14 +23,28 @@ class BuilderAction(list):
     log = logging.getLogger("BuilderAction")
     log.propagate = True
 
-    def __init__(self, name, label, description, icon=None):
-        self.name = name
-        self.label = label
-        self.description = description
-        self.icon = icon
+    def __init__(self, context, name=None, namespace=None, options=None):
+        self.fname = self.filepath_from_context(context)
 
     def __repr__(self):
         return "<ActionPlugin name={}>".format(self.name)
+
+    @classmethod
+    def filepath_from_context(cls, context):
+        return get_representation_path_from_context(context)
+
+    def load(self, context, name=None, namespace=None, options=None):
+        """Load asset via database
+
+        Arguments:
+            context (dict): Full parenthood of representation to load
+            name (str, optional): Use pre-defined name
+            namespace (str, optional): Use pre-defined namespace
+            options (dict, optional): Additional settings dictionary
+
+        """
+        raise NotImplementedError("Loader.load() must be "
+                                  "implemented by subclass")
 
 
 def discover_builder_plugins():
