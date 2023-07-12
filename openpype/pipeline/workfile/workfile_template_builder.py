@@ -45,6 +45,13 @@ from openpype.pipeline.load import (
     load_with_repre_context,
 )
 
+from openpype.pipeline.context_tools import (
+    get_current_asset_name,
+    get_current_project_name,
+    get_current_task_name,
+    get_current_host_name
+)
+
 from openpype.pipeline.create import (
     discover_legacy_creator_plugins,
     CreateContext,
@@ -1919,3 +1926,49 @@ def get_library_project_names():
             libraries.append(project["name"])
 
     return libraries
+def should_build_first_workfile(
+        project_name=None,
+        project_settings=None,
+        asset_doc=None,
+        asset_name=None,
+        task_name=None,
+        host_name=None
+):
+    """Return whether first workfile should be created for given context"""
+
+    project_name = project_name or get_current_project_name()
+    if project_settings is None:
+        project_settings = get_project_settings(project_name)
+
+    host_name = host_name or get_current_host_name()
+    build_workfile_profiles = project_settings[host_name]['templated_workfile_build']  # noqa
+
+    if not build_workfile_profiles['profiles']:
+        return False
+
+    asset_name = asset_name or get_current_asset_name()
+    asset_doc = asset_doc or get_asset_by_name(project_name, asset_name)
+    task_name = task_name or get_current_task_name()
+    current_tasks = asset_doc.get("data").get("tasks")
+    task_type = current_tasks[task_name]['type']
+
+    filtering_criteria = {
+        "task_names": task_name,
+        "task_types": task_type
+    }
+
+    profile = filter_profiles(
+        build_workfile_profiles["profiles"],
+        filtering_criteria
+    )
+
+    if not profile or not profile.get("autobuild_first_version"):
+        return False
+
+    is_task_name = task_name in profile['task_names']
+    is_task_type = task_type in profile['task_types']
+
+    if not is_task_name and not is_task_type:
+        return False
+
+    return True
