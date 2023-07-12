@@ -966,6 +966,7 @@ class ReferenceLoader(Loader):
 
 class ActionBase(BuilderAction):
     """Base class for all actions."""
+    label = "Action Base"
     options = [
         qargparse.Integer(
             "count",
