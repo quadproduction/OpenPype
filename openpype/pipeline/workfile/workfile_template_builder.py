@@ -51,9 +51,6 @@ from openpype.pipeline.create import (
     discover_legacy_creator_plugins,
     CreateContext,
 )
-from openpype.pipeline.action import (
-    utils,
-)
 
 
 class TemplateNotFound(Exception):
@@ -1286,7 +1283,7 @@ class PlaceholderLoadMixin(object):
         # Sort for readability
         families = list(sorted(families))
 
-        actions_by_name = utils.get_actions_by_name()
+        actions_by_name = get_actions_by_name()
         actions_items = [{"value": "", "label": ""}]
         actions_items.extend(
             {"value": action_name, "label": action.label or action_name}
