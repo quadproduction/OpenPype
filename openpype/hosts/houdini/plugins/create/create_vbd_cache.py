@@ -2,6 +2,9 @@
 """Creator plugin for creating VDB Caches."""
 from openpype.hosts.houdini.api import plugin
 from openpype.pipeline import CreatedInstance
+from openpype.client import get_project, get_assets
+from openpype.pipeline import legacy_io
+from openpype.lib import EnumDef, TextDef, BoolDef
 
 import hou
 
@@ -41,4 +44,41 @@ class CreateVDBCache(plugin.HoudiniCreator):
         return [
             hou.ropNodeTypeCategory(),
             hou.sopNodeTypeCategory()
+        ]
+    
+    def get_pre_create_attr_defs(self):
+        attrs = super(CreateVDBCache, self).get_pre_create_attr_defs()
+
+        project_name = legacy_io.active_project()
+        asset_list = [""]
+        for asset in get_assets(project_name, fields=["name"]):
+            asset_list.append(asset["name"])
+        
+        fx_list = ["","Hair", "Cloth", "Other"]
+
+        order_list = ['Asset Fx Variant', 'Asset Variant Fx', 'Fx Asset Variant', 
+                      'Fx Variant Asset', 'Variant Asset Fx', 'Variant Fx Asset']
+
+        return attrs + [
+            BoolDef("useSpecificName",
+                    label="Use Specific name",
+                    default=False),
+            EnumDef("nameOrder",
+                    order_list,
+                    default="Asset Fx Variant",
+                    label="Name order"),
+            EnumDef("specificAsset",
+                    asset_list,
+                    default="",
+                    label="Specific Asset"),
+            EnumDef("fxName",
+                    fx_list,
+                    default="",
+                    label="Fx name"),
+            BoolDef("useCustomFxName",
+                    label="Use Custom Fx name",
+                    default=False),
+            TextDef("customFxName",
+                    default="",
+                    label="Custom Fx name")
         ]

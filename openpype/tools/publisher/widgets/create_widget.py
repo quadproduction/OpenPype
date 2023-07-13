@@ -795,6 +795,24 @@ class CreateWidget(QtWidgets.QWidget):
         creator_identifier = index.data(CREATOR_IDENTIFIER_ROLE)
         family = index.data(FAMILY_ROLE)
         variant = self.variant_input.text()
+        
+        pre_create_data = self._pre_create_widget.current_value()
+        if index.data(CREATOR_THUMBNAIL_ENABLED_ROLE):
+            pre_create_data[PRE_CREATE_THUMBNAIL_KEY] = (
+                self._last_thumbnail_path
+            )
+
+        if "useSpecificName" in pre_create_data and pre_create_data["useSpecificName"]:
+            ordered_name = "".join(map(lambda x: "{{{}}}".format(x), pre_create_data["nameOrder"].split(" ")))
+
+            if pre_create_data["useCustomFxName"]:
+                Fx_name = pre_create_data["customFxName"]
+            else:
+                Fx_name = pre_create_data["fxName"]
+
+            variant = ordered_name.format( Variant=variant, Asset=pre_create_data["specificAsset"], Fx=Fx_name)
+            self.variant_input.setText(variant)
+        
         # Care about subset name only if context change is enabled
         subset_name = None
         asset_name = None
@@ -803,12 +821,6 @@ class CreateWidget(QtWidgets.QWidget):
             subset_name = self.subset_name_input.text()
             asset_name = self._get_asset_name()
             task_name = self._get_task_name()
-
-        pre_create_data = self._pre_create_widget.current_value()
-        if index.data(CREATOR_THUMBNAIL_ENABLED_ROLE):
-            pre_create_data[PRE_CREATE_THUMBNAIL_KEY] = (
-                self._last_thumbnail_path
-            )
 
         # Where to define these data?
         # - what data show be stored?
