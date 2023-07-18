@@ -876,6 +876,10 @@
                     "label": "Validate Instancer Cache Frame Ranges"
                 },
                 {
+                    "key": "ValidateNodeIdsInDatabase",
+                    "label": "Validate Instancer Node Ids in Database"
+                },
+                {
                     "key": "ValidateNoDefaultCameras",
                     "label": "Validate No Default Cameras"
                 },

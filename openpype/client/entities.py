@@ -135,6 +135,17 @@ def get_project(project_name, active=True, inactive=True, fields=None):
     return conn.find_one(query_filter, _prepare_fields(fields))
 
 
+def get_library_project_names():
+    """Return list of library project names."""
+    libraries = list()
+
+    for project in get_projects(fields=["name", "data.library_project"]):
+        if project.get("data", {}).get("library_project", False):
+            libraries.append(project["name"])
+
+    return libraries
+
+
 def get_whole_project(project_name):
     """Receive all documents from project.
 

@@ -1184,6 +1184,9 @@
             "optional": false,
             "active": true
         },
+        "ValidateNodeIdsInDatabase": {
+            "check_in_library_project": false
+        },
         "ValidateNoDefaultCameras": {
             "enabled": true,
             "optional": false,

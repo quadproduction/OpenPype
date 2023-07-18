@@ -5,7 +5,7 @@ from openpype.pipeline import legacy_io
 from openpype.pipeline.publish import ValidatePipelineOrder
 import openpype.hosts.maya.api.action
 from openpype.hosts.maya.api import lib
-from openpype.client.entities import get_projects
+from openpype.client.entities import get_library_project_names
 
 
 class ValidateNodeIdsInDatabase(pyblish.api.InstancePlugin):
@@ -23,6 +23,8 @@ class ValidateNodeIdsInDatabase(pyblish.api.InstancePlugin):
     label = 'Node Ids in Database'
     hosts = ['maya']
     families = ["*"]
+
+    check_in_library_project = False
 
     actions = [openpype.hosts.maya.api.action.SelectInvalidAction,
                openpype.hosts.maya.api.action.GenerateUUIDsOnInvalidAction]
@@ -45,15 +47,17 @@ class ValidateNodeIdsInDatabase(pyblish.api.InstancePlugin):
 
         # check ids against database ids
         projects_list = [legacy_io.active_project()]
-        for project in get_projects(fields=["name", "data.library_project"]):
-            if project.get("data", {}).get("library_project", False):
-                projects_list.append(project["name"])
+        if cls.check_in_library_project:
+            libraries = get_library_project_names()
+            cls.log.debug("Validate Asset in library project: {}".format(
+                ",".join(libraries))
+            )
+            projects_list.extend(libraries)
 
         db_asset_ids = set()
         for project_name in projects_list:
             asset_docs = get_assets(project_name, fields=["_id"])
-            assets_ids = set( str(asset_doc["_id"]) for asset_doc in asset_docs )
-            db_asset_ids.update(assets_ids)
+            db_asset_ids.update(str(asset_doc["_id"]) for asset_doc in asset_docs)
 
         # Get all asset IDs
         for node in id_required_nodes:
@@ -69,12 +73,3 @@ class ValidateNodeIdsInDatabase(pyblish.api.InstancePlugin):
                 invalid.append(node)
 
         return invalid
-
-    def get_library_project_names(self):
-        libraries = list()
-
-        for project in get_projects(fields=["name", "data.library_project"]):
-            if project.get("data", {}).get("library_project", False):
-                libraries.append(project["name"])
-
-        return libraries
