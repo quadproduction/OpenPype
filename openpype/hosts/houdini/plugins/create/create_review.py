@@ -82,7 +82,9 @@ class CreateReview(plugin.HoudiniCreator):
                 "camera": camera or "",
                 "scenepath": "/obj",
                 "forceobjects": " ".join(force_objects),
-                "vobjects": ""  # clear candidate objects from '*' value
+                "vobjects": "" , # clear candidate objects from '*' value
+                "colorcorrect": 2,
+                "ociocolorspace": "Output - sRGB"
             })
 
         instance_node.setParms(parms)
