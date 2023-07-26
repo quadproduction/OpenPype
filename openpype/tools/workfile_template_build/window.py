@@ -267,6 +267,8 @@ class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
         if not family_widget or not builder_widget:
             return
 
+
+        self.update_builder_action(family_widget, builder_widget)
         family_widget._input_widget.currentIndexChanged.connect(
             lambda index, family=family_widget, builder=builder_widget: self.update_builder_action(family, builder)
         )
