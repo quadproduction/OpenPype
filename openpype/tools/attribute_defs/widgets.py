@@ -411,7 +411,6 @@ class BoolAttrWidget(_BaseAttrDefWidget):
 class EnumAttrWidget(_BaseAttrDefWidget):
     def __init__(self, *args, **kwargs):
         self._multivalue = False
-        self._parent = args[1]
         super(EnumAttrWidget, self).__init__(*args, **kwargs)
 
     @property
@@ -456,7 +455,6 @@ class EnumAttrWidget(_BaseAttrDefWidget):
         if self._multivalue:
             self._multivalue = False
             self._input_widget.set_custom_text(None)
-
         self.value_changed.emit(new_value, self.attr_def.id)
 
     def current_value(self):

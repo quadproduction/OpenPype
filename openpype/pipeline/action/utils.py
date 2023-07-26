@@ -44,37 +44,6 @@ def get_actions_by_family(family):
     return actions_by_family
 
 
-def filter_actions_by_families_widget(parent=None):
-    """Filter actions by families  """
-    family_widget = None
-    builder_widget = None
-    children_widgets = parent.parentWidget().children()
-    for widget in children_widgets[-1]._widgets:
-        if not widget.attr_def.label:
-            continue
-
-        if 'family' in widget.attr_def.label.lower():
-            family_widget = widget
-
-        if 'builder action' in widget.attr_def.label.lower():
-            builder_widget = widget
-
-        if family_widget and builder_widget:
-            break
-
-    if not family_widget:
-        return
-
-    actions_dict = get_actions_by_family(family_widget.current_value())
-    builder_widget._input_widget.clear()
-
-    if not actions_dict:
-        return
-
-    for action_name, action in actions_dict.items():
-        builder_widget._input_widget.addItem(action_name)
-
-
 def action_with_repre_context(
     Action, repre_context, name=None, namespace=None, options=None, **kwargs
 ):
