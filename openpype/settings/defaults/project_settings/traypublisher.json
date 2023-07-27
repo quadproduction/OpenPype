@@ -210,21 +210,6 @@
             ]
         },
         {
-            "family": "bgeocache",
-            "identifier": "",
-            "label": "Bgeo Geometry",
-            "icon": "fa.cloud",
-            "default_variants": [],
-            "description": "Houdini default geometry format",
-            "detailed_description": "Default geometry format supported by houdini",
-            "allow_sequences": true,
-            "allow_multiple_items": true,
-            "allow_version_control": false,
-            "extensions": [
-                ".bgeo.sc"
-            ]
-        },
-        {
             "family": "matchmove",
             "identifier": "",
             "label": "Matchmove",

@@ -13,7 +13,6 @@ class SetFrameRangeLoader(load.LoaderPlugin):
         "camera",
         "pointcache",
         "vdbcache",
-        "bgeocache",
         "usd",
     ]
     representations = ["abc", "vdb", "usd"]
@@ -52,7 +51,6 @@ class SetFrameRangeWithHandlesLoader(load.LoaderPlugin):
         "camera",
         "pointcache",
         "vdbcache",
-        "bgeocache",
         "usd",
     ]
     representations = ["abc", "vdb", "usd"]

@@ -35,7 +35,6 @@ class CollectResourcesPath(pyblish.api.InstancePlugin):
                 "layout",
                 "ass",
                 "vdbcache",
-                "bgeocache",
                 "scene",
                 "vrayproxy",
                 "render",

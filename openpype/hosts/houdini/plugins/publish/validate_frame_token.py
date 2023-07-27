@@ -24,7 +24,7 @@ class ValidateFrameToken(pyblish.api.InstancePlugin):
 
     order = pyblish.api.ValidatorOrder
     label = "Validate Frame Token"
-    families = ["vdbcache","bgeocache"]
+    families = ["vdbcache"]
 
     def process(self, instance):
 

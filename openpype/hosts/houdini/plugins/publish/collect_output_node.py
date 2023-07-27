@@ -9,7 +9,6 @@ class CollectOutputSOPPath(pyblish.api.InstancePlugin):
         "pointcache",
         "camera",
         "vdbcache",
-        "bgeocache",
         "imagesequence",
         "usd",
         "usdrender",

@@ -1,33 +1,31 @@
-    # -*- coding: utf-8 -*-
-"""Creator plugin for creating Bgeo Cache."""
+# -*- coding: utf-8 -*-
+"""Creator plugin for creating pointcache bgeo files."""
 from openpype.hosts.houdini.api import plugin
 from openpype.pipeline import CreatedInstance, CreatorError
 from openpype.lib import EnumDef
-# from openpype.pipeline import CreatedInstance
-
-import hou
 
 
-class CreateBgeoCache(plugin.HoudiniCreator):
-    """Geometry to Bgeo"""
-    identifier = "io.openpype.creators.houdini.bgeocache"
-    name = "bgeocache"
-    label = "BGEO Cache"
-    family = "bgeocache"
+class CreateBGEO(plugin.HoudiniCreator):
+    """BGEO pointcache creator."""
+    identifier = "io.openpype.creators.houdini.bgeo"
+    label = "BGEO PointCache"
+    family = "pointcache"
     icon = "gears"
 
     def create(self, subset_name, instance_data, pre_create_data):
         import hou
 
         instance_data.pop("active", None)
+
         instance_data.update({"node_type": "geometry"})
 
-        instance = super(CreateBgeoCache, self).create(
+        instance = super(CreateBGEO, self).create(
             subset_name,
             instance_data,
             pre_create_data)  # type: CreatedInstance
 
         instance_node = hou.node(instance.get("instance_node"))
+
         file_path = "{}{}".format(
             hou.text.expandString("$HIP/pyblish/"),
             "{}.$F4.{}".format(

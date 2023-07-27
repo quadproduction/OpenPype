@@ -29,7 +29,6 @@ class HoudiniLegacyConvertor(SubsetConvertorPlugin):
         "usd": "io.openpype.creators.houdini.usd",
         "usdrender": "io.openpype.creators.houdini.usdrender",
         "vdbcache": "io.openpype.creators.houdini.vdbcache",
-        "bgeocache": "io.openpype.creators.houdini.bgeocache"
     }
 
     def __init__(self, *args, **kwargs):
@@ -70,6 +69,8 @@ class HoudiniLegacyConvertor(SubsetConvertorPlugin):
                         "creator_identifier": self.family_to_id[family],
                         "instance_node": subset.path()
                     }
+                    if family == "pointcache":
+                        data["families"] = ["abc"]
                     self.log.info("Converting {} to {}".format(
                         subset.path(), self.family_to_id[family]))
                     imprint(subset, data)

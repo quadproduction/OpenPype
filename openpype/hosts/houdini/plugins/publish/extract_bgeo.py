@@ -9,26 +9,27 @@ from openpype.hosts.houdini.api import lib
 import hou
 
 
-class ExtractBgeoCache(publish.Extractor):
+class ExtractBGEO(publish.Extractor):
 
-    order = pyblish.api.ExtractorOrder + 0.1
-    label = "Extract Bgeo Cache"
-    families = ["bgeocache"]
+    order = pyblish.api.ExtractorOrder
+    label = "Extract BGEO"
     hosts = ["houdini"]
+    families = ["bgeo"]
 
     def process(self, instance):
 
         ropnode = hou.node(instance.data["instance_node"])
 
         # Get the filename from the filename parameter
-        # `.evalParm(parameter)` will make sure all tokens are resolved
-        sop_output = ropnode.evalParm("sopoutput")
-        staging_dir = os.path.normpath(os.path.dirname(sop_output))
+        output = ropnode.evalParm("sopoutput")
+        staging_dir, file_name = os.path.split(output)
         instance.data["stagingDir"] = staging_dir
-        file_name = os.path.basename(sop_output)
 
-        self.log.info("Writing Bgeo files '%s' to '%s'" % (file_name, staging_dir))
+        # We run the render
+        self.log.info("Writing bgeo files '{}' to '{}'.".format(
+            file_name, staging_dir))
 
+        # write files
         render_rop(ropnode)
 
         output = instance.data["frames"]
