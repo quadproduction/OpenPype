@@ -14,9 +14,14 @@ class ExtractAlembic(publish.Extractor):
     label = "Extract Alembic"
     hosts = ["houdini"]
     families = ["abc", "camera"]
+    families = ["pointcache", "camera"]
+    targets = ["local", "remote"]
 
     def process(self, instance):
-
+        if instance.data.get("farm"):
+            self.log.debug("Should be processed on farm, skipping.")
+            return
+        
         ropnode = hou.node(instance.data["instance_node"])
 
         # Get the filename from the filename parameter

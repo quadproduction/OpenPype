@@ -2,6 +2,7 @@
 """Creator plugin for creating VDB Caches."""
 from openpype.hosts.houdini.api import plugin
 from openpype.pipeline import CreatedInstance
+from openpype.lib import BoolDef
 
 import hou
 
@@ -19,6 +20,7 @@ class CreateVDBCache(plugin.HoudiniCreator):
 
         instance_data.pop("active", None)
         instance_data.update({"node_type": "geometry"})
+        instance_data["farm"] = pre_create_data.get("farm")
 
         instance = super(CreateVDBCache, self).create(
             subset_name,
@@ -41,4 +43,12 @@ class CreateVDBCache(plugin.HoudiniCreator):
         return [
             hou.ropNodeTypeCategory(),
             hou.sopNodeTypeCategory()
+        ]
+
+    def get_pre_create_attr_defs(self):
+        attrs = super(CreateVDBCache, self).get_pre_create_attr_defs()
+        return attrs + [
+            BoolDef("farm",
+                    label="Submitting to Farm",
+                    default=False)
         ]
