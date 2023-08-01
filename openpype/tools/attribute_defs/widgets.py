@@ -185,7 +185,6 @@ class AttributeDefinitionsWidget(QtWidgets.QWidget):
             attr_def = widget.attr_def
             if not isinstance(attr_def, UIDef):
                 output[attr_def.key] = widget.current_value()
-
         return output
 
 

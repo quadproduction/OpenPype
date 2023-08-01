@@ -267,7 +267,6 @@ class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
         if not family_widget or not builder_widget:
             return
 
-
         self.update_builder_action(family_widget, builder_widget)
         family_widget._input_widget.currentIndexChanged.connect(
             lambda index, family=family_widget, builder=builder_widget: self.update_builder_action(family, builder)
@@ -275,11 +274,16 @@ class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
 
     def update_builder_action(self, family_widget, builder_widget):
         """Update builder action widget by family widget value"""
-        actions_dict = get_actions_by_family(family_widget.current_value())
         builder_widget._input_widget.clear()
+        actions_by_family = get_actions_by_family(family_widget.current_value())
 
-        if not actions_dict:
+        if not actions_by_family:
             return
 
-        for action_name, action in actions_dict.items():
-            builder_widget._input_widget.addItem(action_name)
+        action_items = [
+            {"value": action_name, "label": action.label or action_name}
+            for action_name, action in actions_by_family.items()
+        ]
+
+        for item in action_items:
+            builder_widget._input_widget.addItem(item["label"], item["value"])

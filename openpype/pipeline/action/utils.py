@@ -28,19 +28,22 @@ def get_actions_by_name():
         actions_by_name[action_name] = action
     return actions_by_name
 
+
 def get_actions_by_family(family):
     """Return all actions by family"""
     from .action_plugin import discover_builder_plugins
+
     actions_by_family = {}
     for action in discover_builder_plugins():
-        if action.__name__ in actions_by_family:
+        action_name = action.__name__
+        if action_name in actions_by_family:
             raise KeyError(
-                "Duplicated loader family {} !".format(action.__name__)
+                "Duplicated loader family {} !".format(action_name)
             )
 
         action_families_list = action.families
         if family in action_families_list:
-            actions_by_family[action.__name__] = action
+            actions_by_family[action_name] = action
     return actions_by_family
 
 
