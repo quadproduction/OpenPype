@@ -21,7 +21,8 @@ class ValidateDeadlinePools(OptionalPyblishPluginMixin,
                 "render.farm",
                 "renderFarm",
                 "renderlayer",
-                "maxrender"]
+                "maxrender",
+                "publish.hou"]
     optional = True
 
     def process(self, instance):

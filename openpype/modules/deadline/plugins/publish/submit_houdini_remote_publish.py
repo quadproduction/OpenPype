@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 
 import requests
+import getpass
 import hou
 
 import pyblish.api
@@ -65,17 +66,21 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin):
         batch_name = "{code} - {scene}".format(code=code, scene=scenename)
         if is_in_tests():
             batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
-        deadline_user = "roy"  # todo: get deadline user dynamically
+        deadline_user = context.data.get(
+            "deadlineUser", getpass.getuser())
 
         # Get only major.minor version of Houdini, ignore patch version
         version = hou.applicationVersionString()
         version = ".".join(version.split(".")[:2])
 
         # Generate the payload for Deadline submission
+        secondary_pool = (self.deadline_pool_secondary or instance.data.get("secondaryPool"))
+        
         payload = {
             "JobInfo": {
                 "Plugin": "Houdini",
-                "Pool": "houdini",  # todo: remove hardcoded pool
+                "Pool": self.deadline_pool or instance.data.get("primaryPool"),
+                "SecondaryPool": secondary_pool,
                 "BatchName": batch_name,
                 "Comment": context.data.get("comment", ""),
                 "Priority": 50,

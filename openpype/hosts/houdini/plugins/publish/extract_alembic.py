@@ -14,7 +14,6 @@ class ExtractAlembic(publish.Extractor):
     label = "Extract Alembic"
     hosts = ["houdini"]
     families = ["abc", "camera"]
-    families = ["pointcache", "camera"]
     targets = ["local", "remote"]
 
     def process(self, instance):

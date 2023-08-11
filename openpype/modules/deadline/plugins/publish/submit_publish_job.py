@@ -128,7 +128,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                 "vrayscene", "maxrender",
                 "arnold_rop", "mantra_rop",
                 "karma_rop", "vray_rop",
-                "redshift_rop"]
+                "redshift_rop", "publish.hou"]
 
     aov_filter = {"maya": [r".*([Bb]eauty).*"],
                   "aftereffects": [r".*"],  # for everything from AE
@@ -242,7 +242,15 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             'render',
             override_version
         )
-
+        if instance.data.get("expected_families", []):
+            output_dir = self._get_publish_folder(
+                instance.context.data['anatomy'],
+                deepcopy(instance.data["anatomyData"]),
+                instance.data.get("asset"),
+                instance.data["subset"],
+                instance.data["family"],
+                override_version
+            )
         # Transfer the environment from the original job to this dependent
         # job so they use the same environment
         metadata_path, rootless_metadata_path = \
@@ -445,7 +453,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             "Finished copying %i files" % len(resource_files))
 
     def _create_instances_for_aov(
-        self, instance_data, exp_files, additional_data, do_not_add_review
+        self, instance_data, exp_files, additional_data, do_not_add_review, farm_cache=False
     ):
         """Create instance for each AOV found.
 
@@ -539,6 +547,13 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             new_instance = deepcopy(instance_data)
             new_instance["subset"] = subset_name
             new_instance["subsetGroup"] = group_name
+            if farm_cache:
+                new_instance["subset"] = instance_data.name
+                new_instance["subsetGroup"] = instance_data.name
+                if instance_data.get("expected_families"):
+                    new_instance["family"] = instance_data["family"]
+                    families = instance_data["expected_families"]
+                    new_instance["families"].extend(families)           # noqa
 
             preview = preview and not do_not_add_review
             if preview:
@@ -834,7 +849,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                 " This may cause issues."
             ).format(source))
 
-        family = "render"
+        family = instance.data["family"]
         if ("prerender" in instance.data["families"] or
                 "prerender.farm" in instance.data["families"]):
             family = "prerender"
@@ -1006,6 +1021,13 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                 additional_data,
                 do_not_add_review
             )
+            if instance.data.get("expected_families", []):
+                instances = self._create_instances_for_aov(
+                    instance_skeleton_data,
+                    self.aov_filter,
+                    self.skip_integration_repre_list,
+                    do_not_add_review,
+                    True)
             self.log.info("got {} instance{}".format(
                 len(instances),
                 "s" if len(instances) > 1 else ""))
@@ -1231,10 +1253,15 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                 version = 1
 
         template_data["subset"] = subset
-        template_data["family"] = "render"
+        template_data["family"] = family
         template_data["version"] = version
 
-        render_templates = anatomy.templates_obj["render"]
+        render_templates = anatomy.templates_obj["publish"]
+        """
+        template_obj = anatomy.templates_obj["publish"]
+        template_filled = template_obj["folder"].format_strict(template_data)
+        publish_folder = template_filled
+        """
         if "folder" in render_templates:
             publish_folder = render_templates["folder"].format_strict(
                 template_data
