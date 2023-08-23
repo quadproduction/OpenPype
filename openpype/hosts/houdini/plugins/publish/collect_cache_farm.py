@@ -24,6 +24,8 @@ class CollectDataforCache(pyblish.api.InstancePlugin):
                 instance.data["subset"] = instance.name
             # instance.data["expected_families"]
             # only created for farm caching
+            instance.data["families"] = list()
+            instance.data["families"].append(instance.data["family"])
             instance.data["expected_families"] = list()
             instance.data["expected_families"].extend(
                 instance.data["families"])
@@ -69,7 +71,6 @@ class CollectDataforCache(pyblish.api.InstancePlugin):
             instance.data["colorspaceConfig"] = colorspace_data["config"]
             instance.data["colorspaceDisplay"] = colorspace_data["display"]
             instance.data["colorspaceView"] = colorspace_data["view"]
-            self.log.debug("{}".format(instance.data["dependencies"]))
             self.log.debug("{}".format(instance.data))
             
         else:

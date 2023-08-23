@@ -548,12 +548,12 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             new_instance["subset"] = subset_name
             new_instance["subsetGroup"] = group_name
             if farm_cache:
-                new_instance["subset"] = instance_data.name
-                new_instance["subsetGroup"] = instance_data.name
+                new_instance["subset"] = instance_data["subset"]
+                #new_instance["subsetGroup"] = instance_data["family"]
                 if instance_data.get("expected_families"):
                     new_instance["family"] = instance_data["family"]
                     families = instance_data["expected_families"]
-                    new_instance["families"].extend(families)           # noqa
+                    new_instance["families"].extend(families)           # noqa      # noqa
 
             preview = preview and not do_not_add_review
             if preview:
@@ -1024,8 +1024,8 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             if instance.data.get("expected_families", []):
                 instances = self._create_instances_for_aov(
                     instance_skeleton_data,
-                    self.aov_filter,
-                    self.skip_integration_repre_list,
+                    data.get("expectedFiles"),
+                    additional_data,
                     do_not_add_review,
                     True)
             self.log.info("got {} instance{}".format(

@@ -650,8 +650,8 @@ def get_color_management_preferences():
     view_regex = re.compile(r"^(?P<name>.+- )(?P<view>.+)$")
     view_match = view_regex.match(view)
     data.update({
-        "display": disp_match.group("display"),
-        "view": view_match.group("view")
+        "display": display, #disp_match.group("display"),
+        "view": view #view_match.group("view")
 
     })
 

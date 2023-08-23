@@ -32,11 +32,6 @@ class HoudiniPluginInfo(object):
     OutputDriver = attr.ib(default=None)
     Version = attr.ib(default=None)  # Mandatory for Deadline
     ProjectPath = attr.ib(default=None)
-"""
-@attr.s
-class ArnoldPluginInfo(object):
-    ArnoldFile = attr.ib(default=None)
-"""
 class HoudiniCacheSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,   # noqa
                                  OpenPypePyblishPluginMixin):
     """Submit Houdini scene to perform a local publish in Deadline.
@@ -122,8 +117,7 @@ class HoudiniCacheSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline
             "AVALON_TASK",
             "AVALON_APP_NAME",
             "OPENPYPE_DEV",
-            "OPENPYPE_LOG_NO_COLORS",
-            "PYTHONPATH"
+            "OPENPYPE_LOG_NO_COLORS"
         ]
 
         # Add OpenPype version if we are running from build.
@@ -145,6 +139,25 @@ class HoudiniCacheSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline
         job_info.EnvironmentKeyValue["OPENPYPE_REMOTE_JOB"] = "1"
         # "3.15.12-nightly.2" doesn't work temporary define it to  "3.15.12-quad.3.3" 
         job_info.EnvironmentKeyValue["OPENPYPE_VERSION"] = "3.15.12-quad.3.3"
+
+        # Add dependencies
+        if len(instance.data["dependencies"]) > 0 :
+            dependencies_id_list = []
+            for dependency in instance.data["dependencies"]:
+                dependency_id = dependency.data["deadlineSubmissionJob"]["_id"] 
+                dependencies_id_list.append(dependency_id)
+
+            # Add dependencies to job info
+            dependencies = ",".join(dependencies_id_list)
+            job_info.JobDependencies = dependencies
+
+            # Add Prejob to reload asset
+            prejob_script = "/users_roaming/elambert/openpype/OpenPype/openpype/modules/deadline/scripts/houdini_update_scene.py"
+            job_info.PreJobScript = prejob_script
+            self.log.debug("prejob_script : " + prejob_script)
+
+            self.log.debug("dependencies check ? : " + str(instance.data["dependenciesName"]))
+            job_info.ExtraInfo[0]= instance.data["dependenciesName"] 
 
         return job_info
 
