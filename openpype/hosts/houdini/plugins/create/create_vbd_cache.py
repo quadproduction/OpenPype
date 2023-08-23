@@ -39,6 +39,26 @@ class CreateVDBCache(plugin.HoudiniCreator):
 
         instance_node.setParms(parms)
 
+        selectedNode = hou.selectedNodes()[0]
+        parentNode = selectedNode.parent()
+        filenode = parentNode.createNode("file")
+        filenode.setName("FILE_{}".format(subset_name), unique_name=True)
+
+        filenode.setInput(0,selectedNode,0)
+        filenode.moveToGoodPosition()
+
+        if len(selectedNode.outputs()) > 0:
+            for outNode in selectedNode.outputs():
+                outNode.setInput(0,filenode,0)
+                
+        filenode.setInput(0,selectedNode,0)
+        filenode.moveToGoodPosition()
+
+        newPath = parms["sopoutput"]
+        hip = hou.text.expandString("$HIP")
+        newPath = newPath.replace("$HIP", hip)
+        filenode.parm("file").set(newPath)
+
     def get_network_categories(self):
         return [
             hou.ropNodeTypeCategory(),
