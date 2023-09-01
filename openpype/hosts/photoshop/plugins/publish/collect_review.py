@@ -30,3 +30,4 @@ class CollectReview(pyblish.api.ContextPlugin):
             if (creator_attributes.get("mark_for_review") and
                     "review" not in instance.data["families"]):
                 instance.data["families"].append("review")
+                instance.data["families"].append("image")
