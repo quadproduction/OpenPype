@@ -7,7 +7,11 @@ import maya.utils
 import maya.cmds as cmds
 
 from openpype.settings import get_project_settings
-from openpype.pipeline import legacy_io
+from openpype.pipeline import (
+    get_current_project_name,
+    get_current_asset_name,
+    get_current_task_name
+)
 from openpype.pipeline.workfile import BuildWorkfile
 from openpype.tools.utils import host_tools
 from openpype.hosts.maya.api import lib, lib_rendersettings
@@ -36,6 +40,13 @@ def _get_menu(menu_name=None):
     return widgets.get(menu_name)
 
 
+def get_context_label():
+    return "{}, {}".format(
+        get_current_asset_name(),
+        get_current_task_name()
+    )
+
+
 def install():
     if cmds.about(batch=True):
         log.info("Skipping openpype.menu initialization in batch mode..")
@@ -46,19 +57,15 @@ def install():
         parent_widget = get_main_window()
         cmds.menu(
             MENU_NAME,
-            label=legacy_io.Session["AVALON_LABEL"],
+            label=os.environ.get("AVALON_LABEL") or "OpenPype",
             tearOff=True,
             parent="MayaWindow"
         )
 
         # Create context menu
-        context_label = "{}, {}".format(
-            legacy_io.Session["AVALON_ASSET"],
-            legacy_io.Session["AVALON_TASK"]
-        )
         cmds.menuItem(
             "currentContext",
-            label=context_label,
+            label=get_context_label(),
             parent=MENU_NAME,
             enable=False
         )
@@ -67,10 +74,12 @@ def install():
 
         cmds.menuItem(divider=True)
 
-        # Create default items
         cmds.menuItem(
             "Create...",
-            command=lambda *args: host_tools.show_creator(parent=parent_widget)
+            command=lambda *args: host_tools.show_publisher(
+                parent=parent_widget,
+                tab="create"
+            )
         )
 
         cmds.menuItem(
@@ -83,8 +92,9 @@ def install():
 
         cmds.menuItem(
             "Publish...",
-            command=lambda *args: host_tools.show_publish(
-                parent=parent_widget
+            command=lambda *args: host_tools.show_publisher(
+                parent=parent_widget,
+                tab="publish"
             ),
             image=pyblish_icon
         )
@@ -202,7 +212,8 @@ def install():
             return
 
         # load configuration of custom menu
-        project_settings = get_project_settings(os.getenv("AVALON_PROJECT"))
+        project_name = get_current_project_name()
+        project_settings = get_project_settings(project_name)
         config = project_settings["maya"]["scriptsmenu"]["definition"]
         _menu = project_settings["maya"]["scriptsmenu"]["name"]
 
@@ -259,8 +270,5 @@ def update_menu_task_label():
         log.warning("Can't find menuItem: {}".format(object_name))
         return
 
-    label = "{}, {}".format(
-        legacy_io.Session["AVALON_ASSET"],
-        legacy_io.Session["AVALON_TASK"]
-    )
+    label = get_context_label()
     cmds.menuItem(object_name, edit=True, label=label)
