@@ -9,7 +9,7 @@ body:
       value: "Vous n'êtes plus au bon endroit pour créer un ticket. RDV dans le repo issue tracker"
   - type: dropdown
     attributes:
-      label: Si jamais vous avez un doute, demandez à...
+      label: Si jamais vous avez un doute, demandez à
       options:
         - Louise
         - Louise
