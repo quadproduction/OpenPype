@@ -1,6 +1,9 @@
 name: Enhancement
 description: form
+title: 'Enhancement: '
+labels:
+  - 'type: enhancement'
 body:
   - type: markdown
     attributes:
-      value: Merci de remplir le formulaire dans le repo issue tracker
+      value: "Merci de remplir le formulaire dans le repo issue tracker"
