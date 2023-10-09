@@ -697,6 +697,8 @@ class PublishClip:
         # adding ui inputs if any
         self.ui_inputs = kwargs.get("ui_inputs", {})
 
+        self.symlink = self.ui_inputs['hierarchyData']['value'].get('symlink')
+
         # populate default data before we get other attributes
         self._populate_track_item_default_data()
 
@@ -751,7 +753,8 @@ class PublishClip:
             "_track_": self.track_name,
             "_clip_": self.ti_name,
             "_trackIndex_": self.track_index,
-            "_clipIndex_": self.ti_index
+            "_clipIndex_": self.ti_index,
+            "_symlink_": self.symlink["value"]
         }
 
     def _populate_attributes(self):
@@ -775,6 +778,7 @@ class PublishClip:
         self.hierarchy_data = self.ui_inputs.get(
             "hierarchyData", {}).get("value") or \
             self.track_item_default_data.copy()
+        self.hierarchy_data["symlink"].update({"value": "{_symlink_}"})
         self.count_from = self.ui_inputs.get(
             "countFrom", {}).get("value") or self.count_from_default
         self.count_steps = self.ui_inputs.get(
