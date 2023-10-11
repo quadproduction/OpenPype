@@ -14,7 +14,7 @@ from openpype.tools.workfile_template_build import (
     WorkfileBuildPlaceholderDialog,
 )
 
-from .lib import read, imprint, get_reference_node, get_main_window
+from .lib import get_reference_node, get_main_window
 
 PLACEHOLDER_SET = "PLACEHOLDERS_SET"
 
@@ -108,6 +108,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         return placeholder_nodes
 
     def _parse_placeholder_node_data(self, node_name):
+        from .lib import read
         placeholder_data = read(node_name)
         parent_name = (
             cmds.getAttr(node_name + ".parent", asString=True)
@@ -183,10 +184,18 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         placeholder_name = self._create_placeholder_name(placeholder_data)
 
         placeholder = cmds.spaceLocator(name=placeholder_name)[0]
-        if parent:
-            placeholder = cmds.parent(placeholder, selection[0])[0]
 
-        imprint(placeholder, placeholder_data)
+        # TODO: this can crash if selection can't be used
+        cmds.parent(placeholder, selection[0])
+
+        # get the long name of the placeholder (with the groups)
+        placeholder_full_name = (
+            cmds.ls(selection[0], long=True)[0]
+            + "|"
+            + placeholder.replace("|", "")
+        )
+        from .lib import imprint
+        imprint(placeholder_full_name, placeholder_data)
 
         # Add helper attributes to keep placeholder info
         cmds.addAttr(
@@ -206,6 +215,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
         cmds.setAttr(placeholder + ".parent", "", type="string")
 
     def update_placeholder(self, placeholder_item, placeholder_data):
+
         node_name = placeholder_item.scene_identifier
         new_values = {}
         for key, value in placeholder_data.items():
@@ -216,7 +226,7 @@ class MayaPlaceholderLoadPlugin(PlaceholderPlugin, PlaceholderLoadMixin):
 
         for key in new_values.keys():
             cmds.deleteAttr(node_name + "." + key)
-
+        from .lib import imprint
         imprint(node_name, new_values)
 
     def collect_placeholders(self):
