@@ -11,6 +11,7 @@ from openpype.lib import (
     run_subprocess,
     path_to_subprocess_arg,
 )
+from openpype.lib.transcoding import convert_colorspace
 
 
 class ExtractThumbnail(pyblish.api.InstancePlugin):
@@ -99,8 +100,18 @@ class ExtractThumbnail(pyblish.api.InstancePlugin):
                 self.log.debug("Trying to convert with OIIO")
                 # If the input can read by OIIO then use OIIO method for
                 # conversion otherwise use ffmpeg
+                colorspace_data = repre["colorspaceData"]
+                source_colorspace = colorspace_data["colorspace"]
+                config_path = colorspace_data.get("config", {}).get("path")
+                display = colorspace_data["display"]
+                view = colorspace_data["view"]
                 thumbnail_created = self.create_thumbnail_oiio(
-                    full_input_path, full_output_path
+                    full_input_path,
+                    full_output_path,
+                    config_path,
+                    source_colorspace,
+                    display,
+                    view
                 )
 
             # Try to use FFMPEG if OIIO is not supported or for cases when

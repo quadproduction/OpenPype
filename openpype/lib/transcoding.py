@@ -14,6 +14,7 @@ from .vendor_bin_utils import (
     get_ffmpeg_tool_args,
     get_oiio_tool_args,
     is_oiio_supported,
+    get_oiio_tools_path,
 )
 
 # Max length of string that is supported by ffmpeg
@@ -1150,7 +1151,8 @@ def convert_colorspace(
     view=None,
     display=None,
     additional_command_args=None,
-    logger=None
+    logger=None,
+    input_args=None
 ):
     """Convert source file from one color space to another.
 
@@ -1178,13 +1180,17 @@ def convert_colorspace(
     if logger is None:
         logger = logging.getLogger(__name__)
 
-    oiio_cmd = get_oiio_tool_args(
-        "oiiotool",
+    oiio_cmd = [get_oiio_tools_path()]
+
+    if input_args:
+        oiio_cmd.extend(input_args)
+
+    oiio_cmd.extend([
         input_path,
         # Don't add any additional attributes
         "--nosoftwareattrib",
         "--colorconfig", config_path
-    )
+    ])
 
     if all([target_colorspace, view, display]):
         raise ValueError("Colorspace and both screen and display"
