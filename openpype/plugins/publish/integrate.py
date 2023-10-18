@@ -283,7 +283,9 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
             for src, dst in prepared["transfers"]:
                 # todo: add support for hardlink transfers
-                if is_symlink_mode and repre['name'] != "thumbnail":
+                family = instance.data.get("family")
+                if is_symlink_mode == "True" and family == "plate" \
+                        and repre['name'] != "thumbnail":
                     file_transactions.add(
                         src,
                         dst,
