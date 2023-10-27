@@ -11,9 +11,7 @@ from openpype.pipeline import (
 )
 from openpype.pipeline.context_tools import (
     get_current_task_name,
-    get_current_asset_name,
-    get_current_context,
-    get_global_context
+    get_current_asset_name
 )
 from openpype.pipeline.workfile import get_last_workfile_with_version
 from openpype.pipeline.template_data import get_template_data_with_names
@@ -244,6 +242,7 @@ class SaveAsDialog(QtWidgets.QDialog):
         target_task_name = self.data.get("task").get("name")
         current_asset_name = get_current_asset_name()
         target_asset_name = self.data.get("asset")
+        hierarchy = self.data.get("hierarchy").split('/')[0]
         task_warning_label = QtWidgets.QLabel(
             "<font color='red'>Warning: You are saving to a different task "
             "than the current one. "
@@ -251,10 +250,13 @@ class SaveAsDialog(QtWidgets.QDialog):
             "</font>".format(current_task_name, target_task_name)
         )
         asset_warning_label = QtWidgets.QLabel(
-            "<font color='red'>Warning: You are saving to a different asset "
-            "than the current one. "
-            "Current asset: {}. Target asset: {}"
-            "</font>".format(current_asset_name, target_asset_name)
+            "<font color='red'>Warning: You are saving to a "
+            "different {hierarchy} than the current one. "
+            "Current {hierarchy}: {current}. Target {hierarchy}: {target}"
+            "</font>".format(
+                hierarchy=hierarchy,
+                current=current_asset_name,
+                target=target_asset_name)
         )
         # Subversion input
         subversion = SubversionLineEdit(inputs_widget)
