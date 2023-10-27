@@ -264,11 +264,6 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
             )
         }
 
-        is_symlink_mode = False
-        hierarchy_data = instance.data.get("hierarchyData")
-        if hierarchy_data:
-            is_symlink_mode = hierarchy_data.get("symlink")
-
         # Prepare all representations
         prepared_representations = []
         for repre in filtered_repres:
@@ -283,7 +278,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
             for src, dst in prepared["transfers"]:
                 # todo: add support for hardlink transfers
-                if is_symlink_mode == "True" and src.startswith("/prod"):
+                if self._is_symlink_allowed(instance, src):
                     file_transactions.add(
                         src,
                         dst,
@@ -412,6 +407,17 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
                           for p in prepared_representations)
             )
         )
+
+    def _is_symlink_allowed(self, instance, src):
+        is_symlink_mode = False
+        hierarchy_data = instance.data.get("hierarchyData")
+        if hierarchy_data:
+            is_symlink_mode = hierarchy_data.get("symlink")
+
+        if is_symlink_mode == "True" and src.startswith("/prod"):
+            return True
+
+        return False
 
     def prepare_subset(self, instance, op_session, project_name):
         asset_doc = instance.data["assetEntity"]
