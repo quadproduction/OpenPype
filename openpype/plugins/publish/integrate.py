@@ -278,10 +278,10 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
             for src, dst in prepared["transfers"]:
                 # todo: add support for hardlink transfers
-                self.log.debug("-----------------------------------------------------------------------------")
-                self.log.debug(instance.context.data["project_settings"]["global"]["tools"]["publish"]["symlink"][
-                                   "file_regex_pattern"])
-                file_transaction_mode = self.get_file_transaction_mode(instance, src)
+                file_transaction_mode = self.get_file_transaction_mode(
+                    instance,
+                    src
+                )
                 file_transactions.add(src, dst, mode=file_transaction_mode)
 
             prepared_representations.append(prepared)
