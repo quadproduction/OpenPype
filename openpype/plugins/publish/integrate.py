@@ -278,14 +278,11 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
             for src, dst in prepared["transfers"]:
                 # todo: add support for hardlink transfers
-                if self._is_symlink_allowed(instance, src):
-                    file_transactions.add(
-                        src,
-                        dst,
-                        mode=FileTransaction.MODE_SYMLINK
-                    )
-                else:
-                    file_transactions.add(src, dst)
+                self.log.debug("-----------------------------------------------------------------------------")
+                self.log.debug(instance.context.data["project_settings"]["global"]["tools"]["publish"]["symlink"][
+                                   "file_regex_pattern"])
+                file_transaction_mode = self.get_file_transaction_mode(instance, src)
+                file_transactions.add(src, dst, mode=file_transaction_mode)
 
             prepared_representations.append(prepared)
 
@@ -408,16 +405,27 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
             )
         )
 
-    def _is_symlink_allowed(self, instance, src):
-        is_symlink_mode = False
+    @staticmethod
+    def get_file_transaction_mode(instance, src):
+        import re
+        is_symlink_mode_enable = False
         hierarchy_data = instance.data.get("hierarchyData")
         if hierarchy_data:
-            is_symlink_mode = hierarchy_data.get("symlink")
+            is_symlink_mode_enable = (hierarchy_data.get("symlink") == "True")
 
-        if is_symlink_mode == "True" and src.startswith("/prod"):
-            return True
+        if not is_symlink_mode_enable:
+            return FileTransaction.MODE_COPY
 
-        return False
+        pattern = instance.context.data["project_settings"]["global"]["tools"]["publish"]["symlink"]["file_regex_pattern"]
+        if not pattern:
+            is_valid_symlink_path = True
+        else:
+            is_valid_symlink_path = bool(re.match(pattern, src))
+
+        if is_symlink_mode_enable and is_valid_symlink_path:
+            return FileTransaction.MODE_SYMLINK
+
+        return FileTransaction.MODE_COPY
 
     def prepare_subset(self, instance, op_session, project_name):
         asset_doc = instance.data["assetEntity"]
