@@ -42,6 +42,10 @@ from openpype.pipeline.load import (
     get_contexts_for_repre_docs,
     load_with_repre_context,
 )
+from openpype.pipeline.action import (
+    get_actions_by_name,
+    action_with_repre_context,
+)
 
 from openpype.pipeline.create import (
     discover_legacy_creator_plugins,
@@ -115,6 +119,7 @@ class AbstractTemplateBuilder(object):
         # Where created objects of placeholder plugins will be stored
         self._placeholder_plugins = None
         self._loaders_by_name = None
+        self._actions_by_name = None
         self._creators_by_name = None
         self._create_context = None
 
@@ -250,6 +255,7 @@ class AbstractTemplateBuilder(object):
 
         self._placeholder_plugins = None
         self._loaders_by_name = None
+        self._actions_by_name = None
         self._creators_by_name = None
 
         self._current_asset_doc = None
@@ -266,6 +272,11 @@ class AbstractTemplateBuilder(object):
         if self._loaders_by_name is None:
             self._loaders_by_name = get_loaders_by_name()
         return self._loaders_by_name
+
+    def get_actions_by_name(self):
+        if self._actions_by_name is None:
+            self._actions_by_name = get_actions_by_name()
+        return self._actions_by_name
 
     def _collect_legacy_creators(self):
         creators_by_name = {}
@@ -1276,10 +1287,11 @@ class PlaceholderLoadMixin(object):
         families = list(sorted(families))
 
         actions_by_name = utils.get_actions_by_name()
-        actions_items = [
+        actions_items = [{"value": "", "label": ""}]
+        actions_items.extend(
             {"value": action_name, "label": action.label or action_name}
             for action_name, action in actions_by_name.items()
-        ]
+        )
 
         return [
             attribute_definitions.UISeparatorDef(),
@@ -1599,6 +1611,10 @@ class PlaceholderLoadMixin(object):
             else:
                 failed = False
                 self.load_succeed(placeholder, container)
+            self.populate_action_placeholder(
+                placeholder,
+                repre_load_contexts
+            )
             self.post_placeholder_process(placeholder, failed)
 
         if failed:
@@ -1607,8 +1623,28 @@ class PlaceholderLoadMixin(object):
                 "population."
             )
             return
+
         if not placeholder.data.get("keep_placeholder", True):
             self.delete_placeholder(placeholder)
+            self.cleanup_placeholder(placeholder, failed)
+
+
+    def populate_action_placeholder(self, placeholder, repre_load_contexts):
+        action_name = placeholder.data["action"]
+
+        if not action_name:
+            return
+
+        actions_by_name = self.builder.get_actions_by_name()
+
+        for context in repre_load_contexts.values():
+            try:
+                action_with_repre_context(
+                    actions_by_name[action_name],
+                    context
+                )
+            except Exception as e:
+                self.log.warning(f"Action {action_name} failed: {e}")
 
     def load_failed(self, placeholder, representation):
         if hasattr(placeholder, "load_failed"):
