@@ -128,8 +128,7 @@ class AbstractAttrDef(object):
         tooltip=None,
         is_label_horizontal=None,
         hidden=False,
-        disabled=False,
-        on_value_changed_callback=None
+        disabled=False
     ):
         if is_label_horizontal is None:
             is_label_horizontal = True
@@ -144,7 +143,6 @@ class AbstractAttrDef(object):
         self.is_label_horizontal = is_label_horizontal
         self.hidden = hidden
         self.disabled = disabled
-        self.on_value_changed_callback = on_value_changed_callback
         self._id = uuid.uuid4().hex
 
         self.__init__class__ = AbstractAttrDef
@@ -202,8 +200,7 @@ class AbstractAttrDef(object):
             "default": self.default,
             "is_label_horizontal": self.is_label_horizontal,
             "hidden": self.hidden,
-            "disabled": self.disabled,
-            "on_value_changed_callback": self.on_value_changed_callback
+            "disabled": self.disabled
         }
         for attr in self.type_attributes:
             data[attr] = getattr(self, attr)

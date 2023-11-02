@@ -1321,8 +1321,7 @@ class PlaceholderLoadMixin(object):
                 "family",
                 label="Family",
                 default=options.get("family"),
-                items=families,
-                on_value_changed_callback=lambda parent=None: filter_actions_by_families_widget(parent=parent)
+                items=families
             ),
             attribute_definitions.TextDef(
                 "representation",

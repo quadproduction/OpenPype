@@ -3,6 +3,7 @@ from qtpy import QtWidgets
 from openpype import style
 from openpype.lib import Logger
 from openpype.pipeline import legacy_io
+from openpype.pipeline.action.utils import get_actions_by_family
 from openpype.tools.attribute_defs import AttributeDefinitionsWidget
 
 
@@ -171,6 +172,7 @@ class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
         self._content_layout.addStretch(1)
         self._attr_defs_widget = widget
         self._last_selected_plugin = plugin.identifier
+        self.filter_actions_by_families_widget()
 
     def _update_ui_visibility(self):
         create_mode = self._mode == 0
@@ -239,3 +241,43 @@ class WorkfileBuildPlaceholderDialog(QtWidgets.QDialog):
             self._first_show = False
             self.setStyleSheet(style.load_stylesheet())
             self.resize(390, 450)
+
+    def filter_actions_by_families_widget(self):
+        """Filter builder actions by families  """
+        family_widget = None
+        builder_widget = None
+        children_widgets = self._attr_defs_widget.children()
+        for widget in children_widgets:
+
+            if not hasattr(widget, 'attr_def') or not hasattr(widget.attr_def, 'label'):
+                continue
+
+            if not widget.attr_def.label:
+                continue
+
+            if 'family' in widget.attr_def.label.lower():
+                family_widget = widget
+
+            if 'builder action' in widget.attr_def.label.lower():
+                builder_widget = widget
+
+            if family_widget and builder_widget:
+                break
+
+        if not family_widget or not builder_widget:
+            return
+
+        family_widget._input_widget.currentIndexChanged.connect(
+            lambda index, family=family_widget, builder=builder_widget: self.update_builder_action(family, builder)
+        )
+
+    def update_builder_action(self, family_widget, builder_widget):
+        """Update builder action widget by family widget value"""
+        actions_dict = get_actions_by_family(family_widget.current_value())
+        builder_widget._input_widget.clear()
+
+        if not actions_dict:
+            return
+
+        for action_name, action in actions_dict.items():
+            builder_widget._input_widget.addItem(action_name)

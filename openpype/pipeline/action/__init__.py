@@ -19,7 +19,6 @@ __all__ = (
     # utils.py
     "get_actions_by_name",
     "action_with_repre_context",
-    "filter_actions_by_families_widget",
 
     # action_plugin.py
     "BuilderAction",
