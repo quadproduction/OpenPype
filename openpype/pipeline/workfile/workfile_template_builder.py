@@ -45,6 +45,7 @@ from openpype.pipeline.load import (
 from openpype.pipeline.action import (
     get_actions_by_name,
     action_with_repre_context,
+    filter_actions_by_families_widget
 )
 
 from openpype.pipeline.create import (
@@ -1320,7 +1321,8 @@ class PlaceholderLoadMixin(object):
                 "family",
                 label="Family",
                 default=options.get("family"),
-                items=families
+                items=families,
+                on_value_changed_callback=lambda parent=None: filter_actions_by_families_widget(parent=parent)
             ),
             attribute_definitions.TextDef(
                 "representation",
@@ -1350,7 +1352,7 @@ class PlaceholderLoadMixin(object):
                     "Builder Action"
                     "\nUsed to do actions before or after processing"
                     " the placeholders."
-                )
+                ),
             ),
             attribute_definitions.TextDef(
                 "loader_args",

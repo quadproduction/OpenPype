@@ -1,3 +1,4 @@
+import os
 import logging
 
 from openpype.pipeline.plugin_discover import (

@@ -411,6 +411,8 @@ class BoolAttrWidget(_BaseAttrDefWidget):
 class EnumAttrWidget(_BaseAttrDefWidget):
     def __init__(self, *args, **kwargs):
         self._multivalue = False
+        self._on_value_change_custom = None
+        self._parent = args[1]
         super(EnumAttrWidget, self).__init__(*args, **kwargs)
 
     @property
@@ -439,8 +441,12 @@ class EnumAttrWidget(_BaseAttrDefWidget):
 
         if self.multiselection:
             input_widget.value_changed.connect(self._on_value_change)
-        else:
-            input_widget.currentIndexChanged.connect(self._on_value_change)
+
+        if self.attr_def.on_value_changed_callback:
+            self._on_value_change_custom = self.attr_def.on_value_changed_callback
+
+        input_widget.currentIndexChanged.connect(self._on_value_change)
+
 
         self._input_widget = input_widget
 
@@ -451,6 +457,10 @@ class EnumAttrWidget(_BaseAttrDefWidget):
         if self._multivalue:
             self._multivalue = False
             self._input_widget.set_custom_text(None)
+
+        if self._on_value_change_custom:
+            self._on_value_change_custom(parent=self._parent)
+
         self.value_changed.emit(new_value, self.attr_def.id)
 
     def current_value(self):

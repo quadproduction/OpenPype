@@ -18,7 +18,6 @@ log = logging.getLogger(__name__)
 
 def get_actions_by_name():
     from .action_plugin import discover_builder_plugins
-
     actions_by_name = {}
     for action in discover_builder_plugins():
         action_name = action.__name__
@@ -28,6 +27,52 @@ def get_actions_by_name():
             )
         actions_by_name[action_name] = action
     return actions_by_name
+
+def get_actions_by_family(family):
+    """Return all actions by family"""
+    from .action_plugin import discover_builder_plugins
+    actions_by_family = {}
+    for action in discover_builder_plugins():
+        if action.__name__ in actions_by_family:
+            raise KeyError(
+                "Duplicated loader family {} !".format(action.__name__)
+            )
+
+        action_families_list = action.families
+        if family in action_families_list:
+            actions_by_family[action.__name__] = action
+    return actions_by_family
+
+
+def filter_actions_by_families_widget(parent=None):
+    """Filter actions by families  """
+    family_widget = None
+    builder_widget = None
+    children_widgets = parent.parentWidget().children()
+    for widget in children_widgets[-1]._widgets:
+        if not widget.attr_def.label:
+            continue
+
+        if 'family' in widget.attr_def.label.lower():
+            family_widget = widget
+
+        if 'builder action' in widget.attr_def.label.lower():
+            builder_widget = widget
+
+        if family_widget and builder_widget:
+            break
+
+    if not family_widget:
+        return
+
+    actions_dict = get_actions_by_family(family_widget.current_value())
+    builder_widget._input_widget.clear()
+
+    if not actions_dict:
+        return
+
+    for action_name, action in actions_dict.items():
+        builder_widget._input_widget.addItem(action_name)
 
 
 def action_with_repre_context(

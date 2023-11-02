@@ -1,6 +1,7 @@
 from .utils import (
     get_actions_by_name,
     action_with_repre_context,
+    filter_actions_by_families_widget
 )
 
 from .action_plugin import (
@@ -18,6 +19,7 @@ __all__ = (
     # utils.py
     "get_actions_by_name",
     "action_with_repre_context",
+    "filter_actions_by_families_widget",
 
     # action_plugin.py
     "BuilderAction",
