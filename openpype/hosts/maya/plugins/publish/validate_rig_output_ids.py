@@ -9,7 +9,6 @@ from openpype.hosts.maya.api.lib import get_id, set_id
 from openpype.pipeline.publish import (
     RepairAction,
     ValidateContentsOrder,
-    PublishValidationError
 )
 
 
@@ -35,7 +34,7 @@ class ValidateRigOutputIds(pyblish.api.InstancePlugin):
     def process(self, instance):
         invalid = self.get_invalid(instance, compute=True)
         if invalid:
-            raise PublishValidationError("Found nodes with mismatched IDs.")
+            raise RuntimeError("Found nodes with mismatched IDs.")
 
     @classmethod
     def get_invalid(cls, instance, compute=False):
@@ -47,10 +46,7 @@ class ValidateRigOutputIds(pyblish.api.InstancePlugin):
         invalid = {}
 
         if compute:
-            out_set = instance.data["rig_sets"].get("out_SET")
-            if not out_set:
-                instance.data["mismatched_output_ids"] = invalid
-                return invalid
+            out_set = next(x for x in instance if x.startswith("out_SET"))
 
             instance_nodes = cmds.sets(out_set, query=True, nodesOnly=True)
             instance_nodes = cmds.ls(instance_nodes, long=True)
@@ -111,7 +107,7 @@ class ValidateRigOutputIds(pyblish.api.InstancePlugin):
             set_id(instance_node, id_to_set, overwrite=True)
 
         if multiple_ids_match:
-            raise PublishValidationError(
+            raise RuntimeError(
                 "Multiple matched ids found. Please repair manually: "
                 "{}".format(multiple_ids_match)
             )

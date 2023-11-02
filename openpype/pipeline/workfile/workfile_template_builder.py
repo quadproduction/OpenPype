@@ -24,11 +24,13 @@ from openpype.client import (
     get_linked_assets,
     get_representations,
 )
+from openpype.client.entities import get_projects
 from openpype.settings import (
     get_project_settings,
     get_system_settings,
 )
-from openpype.host import IWorkfileHost, HostBase
+from openpype.host import IWorkfileHost
+from openpype.host import HostBase
 from openpype.lib import (
     Logger,
     StringTemplate,
@@ -36,15 +38,11 @@ from openpype.lib import (
     attribute_definitions,
 )
 from openpype.lib.attribute_definitions import get_attributes_keys
-from openpype.pipeline import Anatomy
+from openpype.pipeline import legacy_io, Anatomy
 from openpype.pipeline.load import (
     get_loaders_by_name,
     get_contexts_for_repre_docs,
     load_with_repre_context,
-)
-from openpype.pipeline.action import (
-    get_actions_by_name,
-    action_with_repre_context
 )
 
 from openpype.pipeline.create import (
@@ -116,7 +114,6 @@ class AbstractTemplateBuilder(object):
         # Where created objects of placeholder plugins will be stored
         self._placeholder_plugins = None
         self._loaders_by_name = None
-        self._actions_by_name = None
         self._creators_by_name = None
         self._create_context = None
 
@@ -127,32 +124,23 @@ class AbstractTemplateBuilder(object):
         self._linked_asset_docs = None
         self._task_type = None
 
+        self._project_name = legacy_io.active_project()
+
     @property
     def project_name(self):
-        if isinstance(self._host, HostBase):
-            return self._host.get_current_project_name()
-        return os.getenv("AVALON_PROJECT")
+        return self._project_name
+
+    @project_name.setter
+    def project_name(self, name):
+        self._project_name = name
 
     @property
     def current_asset_name(self):
-        if isinstance(self._host, HostBase):
-            return self._host.get_current_asset_name()
-        return os.getenv("AVALON_ASSET")
+        return legacy_io.Session["AVALON_ASSET"]
 
     @property
     def current_task_name(self):
-        if isinstance(self._host, HostBase):
-            return self._host.get_current_task_name()
-        return os.getenv("AVALON_TASK")
-
-    def get_current_context(self):
-        if isinstance(self._host, HostBase):
-            return self._host.get_current_context()
-        return {
-            "project_name": self.project_name,
-            "asset_name": self.current_asset_name,
-            "task_name": self.current_task_name
-        }
+        return legacy_io.Session["AVALON_TASK"]
 
     @property
     def system_settings(self):
@@ -252,7 +240,6 @@ class AbstractTemplateBuilder(object):
 
         self._placeholder_plugins = None
         self._loaders_by_name = None
-        self._actions_by_name = None
         self._creators_by_name = None
 
         self._current_asset_doc = None
@@ -269,11 +256,6 @@ class AbstractTemplateBuilder(object):
         if self._loaders_by_name is None:
             self._loaders_by_name = get_loaders_by_name()
         return self._loaders_by_name
-
-    def get_actions_by_name(self):
-        if self._actions_by_name is None:
-            self._actions_by_name = get_actions_by_name()
-        return self._actions_by_name
 
     def _collect_legacy_creators(self):
         creators_by_name = {}
@@ -815,8 +797,9 @@ class AbstractTemplateBuilder(object):
         fill_data["root"] = anatomy.roots
         fill_data["project"] = {
             "name": project_name,
-            "code": anatomy.project_code,
+            "code": anatomy["attributes"]["code"]
         }
+
 
         result = StringTemplate.format_template(path, fill_data)
         if result.solved:
@@ -876,6 +859,7 @@ class PlaceholderPlugin(object):
 
     def __init__(self, builder):
         self._builder = builder
+        self._project_name = self.builder.project_name
 
     @property
     def builder(self):
@@ -889,7 +873,11 @@ class PlaceholderPlugin(object):
 
     @property
     def project_name(self):
-        return self._builder.project_name
+        return self._project_name
+
+    @project_name.setter
+    def project_name(self, name):
+        self._project_name = name
 
     @property
     def log(self):
@@ -1272,6 +1260,14 @@ class PlaceholderLoadMixin(object):
         ]
 
         loader_items = list(sorted(loader_items, key=lambda i: i["label"]))
+        libraries_project_items = [
+            {
+                "label": "From Library : {}".format(project_name),
+                "value": project_name
+            }
+            for project_name in get_library_project_names()
+        ]
+
         options = options or {}
 
         # Get families from all loaders excluding "*"
@@ -1283,13 +1279,6 @@ class PlaceholderLoadMixin(object):
         # Sort for readability
         families = list(sorted(families))
 
-        actions_by_name = get_actions_by_name()
-        actions_items = [{"value": "", "label": ""}]
-        actions_items.extend(
-            {"value": action_name, "label": action.label or action_name}
-            for action_name, action in actions_by_name.items()
-        )
-
         return [
             attribute_definitions.UISeparatorDef(),
             attribute_definitions.UILabelDef("Main attributes"),
@@ -1297,13 +1286,13 @@ class PlaceholderLoadMixin(object):
 
             attribute_definitions.EnumDef(
                 "builder_type",
-                label="Asset Builder Type",
+                label="Asset Builder Source",
                 default=options.get("builder_type"),
                 items=[
-                    {"label": "Current asset", "value": "context_asset"},
-                    {"label": "Linked assets", "value": "linked_asset"},
-                    {"label": "All assets", "value": "all_assets"},
-                ],
+                    {"label": "From Current asset", "value": "context_asset"},
+                    {"label": "From Linked assets", "value": "linked_asset"},
+                    {"label": "From Others assets", "value": "all_assets"},
+                ] + libraries_project_items,
                 tooltip=(
                     "Asset Builder Type\n"
                     "\nBuilder type describe what template loader will look"
@@ -1314,6 +1303,10 @@ class PlaceholderLoadMixin(object):
                     " linked to current context asset."
                     "\nLinked asset are looked in database under"
                     " field \"inputLinks\""
+                    "\nAll assets : Template loader will look for all assets"
+                    " in database."
+                    "\nLibraries assets : Template loader will look for assets"
+                    "in libraries."
                 )
             ),
             attribute_definitions.EnumDef(
@@ -1340,17 +1333,6 @@ class PlaceholderLoadMixin(object):
                     "\nUseable loader depends on current host's loader list."
                     "\nField is case sensitive."
                 )
-            ),
-            attribute_definitions.EnumDef(
-                "action",
-                label="Builder Action",
-                default=options.get("action"),
-                items=actions_items,
-                tooltip=(
-                    "Builder Action"
-                    "\nUsed to do actions before or after processing"
-                    " the placeholders."
-                ),
             ),
             attribute_definitions.TextDef(
                 "loader_args",
@@ -1457,7 +1439,7 @@ class PlaceholderLoadMixin(object):
                 from placeholder data.
         """
 
-        project_name = self.builder.project_name
+        self.project_name = self.builder.project_name
         current_asset_doc = self.builder.current_asset_doc
         linked_asset_docs = self.builder.linked_asset_docs
 
@@ -1486,8 +1468,9 @@ class PlaceholderLoadMixin(object):
                 "representation": [placeholder.data["representation"]],
                 "family": [placeholder.data["family"]],
             }
-
         else:
+            if builder_type != "all_assets":
+                self.project_name = builder_type
             context_filters = {
                 "asset": [re.compile(placeholder.data["asset"])],
                 "subset": [re.compile(placeholder.data["subset"])],
@@ -1497,7 +1480,7 @@ class PlaceholderLoadMixin(object):
             }
 
         return list(get_representations(
-            project_name,
+            self.project_name,
             context_filters=context_filters
         ))
 
@@ -1586,7 +1569,7 @@ class PlaceholderLoadMixin(object):
                 placeholder, representation
             )
             self.log.info(
-                "Loading {} from {} with loader {}\n"
+                "Loading {} from {} with loader {} with"
                 "Loader arguments used : {}".format(
                     repre_context["subset"],
                     repre_context["asset"],
@@ -1608,10 +1591,6 @@ class PlaceholderLoadMixin(object):
             else:
                 failed = False
                 self.load_succeed(placeholder, container)
-            self.populate_action_placeholder(
-                placeholder,
-                repre_load_contexts
-            )
             self.post_placeholder_process(placeholder, failed)
 
         if failed:
@@ -1620,28 +1599,8 @@ class PlaceholderLoadMixin(object):
                 "population."
             )
             return
-
         if not placeholder.data.get("keep_placeholder", True):
             self.delete_placeholder(placeholder)
-            self.cleanup_placeholder(placeholder, failed)
-
-
-    def populate_action_placeholder(self, placeholder, repre_load_contexts):
-        action_name = placeholder.data["action"]
-
-        if not action_name:
-            return
-
-        actions_by_name = self.builder.get_actions_by_name()
-
-        for context in repre_load_contexts.values():
-            try:
-                action_with_repre_context(
-                    actions_by_name[action_name],
-                    context
-                )
-            except Exception as e:
-                self.log.warning(f"Action {action_name} failed: {e}")
 
     def load_failed(self, placeholder, representation):
         if hasattr(placeholder, "load_failed"):
@@ -1665,7 +1624,7 @@ class PlaceholderLoadMixin(object):
 
         pass
 
-    def delete_placeholder(self, placeholder):
+    def delete_placeholder(self, placeholder, failed):
         """Called when all item population is done."""
         self.log.debug("Clean up of placeholder is not implemented.")
 
@@ -1771,10 +1730,9 @@ class PlaceholderCreateMixin(object):
         creator_plugin = self.builder.get_creators_by_name()[creator_name]
 
         # create subset name
-        context = self._builder.get_current_context()
-        project_name = context["project_name"]
-        asset_name = context["asset_name"]
-        task_name = context["task_name"]
+        project_name = legacy_io.Session["AVALON_PROJECT"]
+        task_name = legacy_io.Session["AVALON_TASK"]
+        asset_name = legacy_io.Session["AVALON_ASSET"]
 
         if legacy_create:
             asset_doc = get_asset_by_name(
@@ -1834,17 +1792,6 @@ class PlaceholderCreateMixin(object):
 
         self.post_placeholder_process(placeholder, failed)
 
-        if failed:
-            self.log.debug(
-                "Placeholder cleanup skipped due to failed placeholder "
-                "population."
-            )
-            return
-
-        if not placeholder.data.get("keep_placeholder", True):
-            self.delete_placeholder(placeholder)
-
-
     def create_failed(self, placeholder, creator_data):
         if hasattr(placeholder, "create_failed"):
             placeholder.create_failed(creator_data)
@@ -1864,11 +1811,8 @@ class PlaceholderCreateMixin(object):
                 representation.
             failed (bool): Loading of representation failed.
         """
-        pass
 
-    def delete_placeholder(self, placeholder):
-        """Called when all item population is done."""
-        self.log.debug("Clean up of placeholder is not implemented.")
+        pass
 
     def _before_instance_create(self, placeholder):
         """Can be overriden. Is called before instance is created."""
@@ -1924,3 +1868,13 @@ class CreatePlaceholderItem(PlaceholderItem):
 
     def create_failed(self, creator_data):
         self._failed_created_publish_instances.append(creator_data)
+
+
+def get_library_project_names():
+    libraries = list()
+
+    for project in get_projects(fields=["name", "data.library_project"]):
+        if project.get("data", {}).get("library_project", False):
+            libraries.append(project["name"])
+
+    return libraries

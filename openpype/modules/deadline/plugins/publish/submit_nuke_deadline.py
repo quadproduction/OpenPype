@@ -8,8 +8,6 @@ import requests
 import pyblish.api
 
 import nuke
-
-from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline import legacy_io
 from openpype.pipeline.publish import (
     OpenPypePyblishPluginMixin
@@ -20,6 +18,7 @@ from openpype.lib import (
     BoolDef,
     NumberDef
 )
+from openpype.modules.deadline.utils import set_custom_deadline_name
 
 
 class NukeSubmitDeadline(pyblish.api.InstancePlugin,
@@ -90,6 +89,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         if not instance.data.get("farm"):
             self.log.debug("Skipping local instance.")
             return
+
         instance.data["attributeValues"] = self.get_attr_values_from_data(
             instance.data)
 
@@ -97,6 +97,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         instance.data["suspend_publish"] = instance.data["attributeValues"][
             "suspend_publish"]
 
+        instance.data["toBeRenderedOn"] = "deadline"
         families = instance.data["families"]
 
         node = instance.data["transientData"]["node"]
@@ -121,10 +122,13 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         render_path = instance.data['path']
         script_path = context.data["currentFile"]
 
-        for item_ in context:
-            if "workfile" in item_.data["family"]:
-                template_data = item_.data.get("anatomyData")
-                rep = item_.data.get("representations")[0].get("name")
+        for item in context:
+            if "workfile" in item.data["families"]:
+                msg = "Workfile (scene) must be published along"
+                assert item.data["publish"] is True, msg
+
+                template_data = item.data.get("anatomyData")
+                rep = item.data.get("representations")[0].get("name")
                 template_data["representation"] = rep
                 template_data["ext"] = rep
                 template_data["comment"] = None
@@ -136,24 +140,19 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                     "Using published scene for render {}".format(script_path)
                 )
 
-        # only add main rendering job if target is not frames_farm
-        r_job_response_json = None
-        if instance.data["render_target"] != "frames_farm":
-            r_job_response = self.payload_submit(
-                instance,
-                script_path,
-                render_path,
-                node.name(),
-                submit_frame_start,
-                submit_frame_end
-            )
-            r_job_response_json = r_job_response.json()
-            instance.data["deadlineSubmissionJob"] = r_job_response_json
-
-            # Store output dir for unified publisher (filesequence)
-            instance.data["outputDir"] = os.path.dirname(
-                render_path).replace("\\", "/")
-            instance.data["publishJobState"] = "Suspended"
+        response = self.payload_submit(
+            instance,
+            script_path,
+            render_path,
+            node.name(),
+            submit_frame_start,
+            submit_frame_end
+        )
+        # Store output dir for unified publisher (filesequence)
+        instance.data["deadlineSubmissionJob"] = response.json()
+        instance.data["outputDir"] = os.path.dirname(
+            render_path).replace("\\", "/")
+        instance.data["publishJobState"] = "Suspended"
 
         if instance.data.get("bakingNukeScripts"):
             for baking_script in instance.data["bakingNukeScripts"]:
@@ -161,20 +160,18 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                 script_path = baking_script["bakeScriptPath"]
                 exe_node_name = baking_script["bakeWriteNodeName"]
 
-                b_job_response = self.payload_submit(
+                resp = self.payload_submit(
                     instance,
                     script_path,
                     render_path,
                     exe_node_name,
                     submit_frame_start,
                     submit_frame_end,
-                    r_job_response_json,
-                    baking_submission=True
+                    response.json()
                 )
 
                 # Store output dir for unified publisher (filesequence)
-                instance.data["deadlineSubmissionJob"] = b_job_response.json()
-
+                instance.data["deadlineSubmissionJob"] = resp.json()
                 instance.data["publishJobState"] = "Suspended"
 
                 # add to list of job Id
@@ -182,7 +179,7 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                     instance.data["bakingSubmissionJobs"] = []
 
                 instance.data["bakingSubmissionJobs"].append(
-                    b_job_response.json()["_id"])
+                    resp.json()["_id"])
 
         # redefinition of families
         if "render" in instance.data["family"]:
@@ -201,32 +198,21 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         exe_node_name,
         start_frame,
         end_frame,
-        response_data=None,
-        baking_submission=False,
+        response_data=None
     ):
-        """Submit payload to Deadline
-
-        Args:
-            instance (pyblish.api.Instance): pyblish instance
-            script_path (str): path to nuke script
-            render_path (str): path to rendered images
-            exe_node_name (str): name of the node to render
-            start_frame (int): start frame
-            end_frame (int): end frame
-            response_data Optional[dict]: response data from
-                                          previous submission
-            baking_submission Optional[bool]: if it's baking submission
-
-        Returns:
-            requests.Response
-        """
         render_dir = os.path.normpath(os.path.dirname(render_path))
+        filename = os.path.basename(script_path)
 
-        # batch name
-        src_filepath = instance.context.data["currentFile"]
-        batch_name = os.path.basename(src_filepath)
-        job_name = os.path.basename(render_path)
-
+        job_name = set_custom_deadline_name(
+            instance,
+            filename,
+            "deadline_job_name"
+        )
+        batch_name = set_custom_deadline_name(
+            instance,
+            filename,
+            "deadline_batch_name"
+        )
         if is_in_tests():
             batch_name += datetime.now().strftime("%d%m%Y%H%M%S")
 
@@ -243,12 +229,15 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
 
         # resolve any limit groups
         limit_groups = self.get_limit_groups()
-        self.log.debug("Limit groups: `{}`".format(limit_groups))
+        self.log.info("Limit groups: `{}`".format(limit_groups))
 
         payload = {
             "JobInfo": {
                 # Top-level group name
-                "BatchName": batch_name,
+                "BatchName": "Group: " + batch_name,
+
+                # Asset dependency to wait for at least the scene file to sync.
+                # "AssetDependency0": script_path,
 
                 # Job name, as seen in Monitor
                 "Name": job_name,
@@ -313,17 +302,12 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             "AuxFiles": []
         }
 
-        # TODO: rewrite for baking with sequences
-        if baking_submission:
-            payload["JobInfo"].update({
-                "JobType": "Normal",
-                "ChunkSize": 99999999
-            })
-
         if response_data.get("_id"):
             payload["JobInfo"].update({
+                "JobType": "Normal",
                 "BatchName": response_data["Props"]["Batch"],
                 "JobDependency0": response_data["_id"],
+                "ChunkSize": 99999999
             })
 
         # Include critical environment variables with submission
@@ -363,14 +347,8 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
             if _path.lower().startswith('openpype_'):
                 environment[_path] = os.environ[_path]
 
-        # to recognize render jobs
-        if AYON_SERVER_ENABLED:
-            environment["AYON_BUNDLE_NAME"] = os.environ["AYON_BUNDLE_NAME"]
-            render_job_label = "AYON_RENDER_JOB"
-        else:
-            render_job_label = "OPENPYPE_RENDER_JOB"
-
-        environment[render_job_label] = "1"
+        # to recognize job from PYPE for turning Event On/Off
+        environment["OPENPYPE_RENDER_JOB"] = "1"
 
         # finally search replace in values of any key
         if self.env_search_replace_values:
@@ -386,10 +364,10 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         })
 
         plugin = payload["JobInfo"]["Plugin"]
-        self.log.debug("using render plugin : {}".format(plugin))
+        self.log.info("using render plugin : {}".format(plugin))
 
-        self.log.debug("Submitting..")
-        self.log.debug(json.dumps(payload, indent=4, sort_keys=True))
+        self.log.info("Submitting..")
+        self.log.info(json.dumps(payload, indent=4, sort_keys=True))
 
         # adding expectied files to instance.data
         self.expected_files(
