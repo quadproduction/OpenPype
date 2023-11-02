@@ -185,6 +185,7 @@ class AttributeDefinitionsWidget(QtWidgets.QWidget):
             attr_def = widget.attr_def
             if not isinstance(attr_def, UIDef):
                 output[attr_def.key] = widget.current_value()
+
         return output
 
 
@@ -410,6 +411,7 @@ class BoolAttrWidget(_BaseAttrDefWidget):
 class EnumAttrWidget(_BaseAttrDefWidget):
     def __init__(self, *args, **kwargs):
         self._multivalue = False
+        self._parent = args[1]
         super(EnumAttrWidget, self).__init__(*args, **kwargs)
 
     @property
@@ -436,17 +438,9 @@ class EnumAttrWidget(_BaseAttrDefWidget):
         if idx >= 0:
             input_widget.setCurrentIndex(idx)
 
-        if self.multiselection:
-            input_widget.value_changed.connect(self._on_value_change)
-
-        if self.attr_def.on_value_changed_callback:
-            self._on_value_change_custom = self.attr_def.on_value_changed_callback
-
         input_widget.currentIndexChanged.connect(self._on_value_change)
 
-
         self._input_widget = input_widget
-
         self.main_layout.addWidget(input_widget, 0)
 
     def _on_value_change(self):
@@ -454,6 +448,7 @@ class EnumAttrWidget(_BaseAttrDefWidget):
         if self._multivalue:
             self._multivalue = False
             self._input_widget.set_custom_text(None)
+
         self.value_changed.emit(new_value, self.attr_def.id)
 
     def current_value(self):
