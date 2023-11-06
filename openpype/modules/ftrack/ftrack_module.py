@@ -12,6 +12,7 @@ from openpype.modules import (
     ISettingsChangeListener
 )
 from openpype.settings import SaveWarningExc
+from openpype.settings.lib import get_system_settings
 from openpype.lib import Logger
 
 FTRACK_MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -290,6 +291,15 @@ class FtrackModule(
     ):
         """Implementation of ISettingsChangeListener interface."""
         if not project_name:
+            return
+
+        system_settings = get_system_settings()
+        protected_attrs = system_settings[
+            "general"].get("project", {}).get("protect_anatomy_attributes", False)
+        if protected_attrs:
+            self.log.warning(
+                "Anatomy attributes are protected. The only way to modify them is through Ftrack"
+            )
             return
 
         new_attr_values = new_value.get("attributes")
