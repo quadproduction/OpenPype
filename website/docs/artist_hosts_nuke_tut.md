@@ -283,7 +283,7 @@ You can configure Nuke validators like Output Resolution in **Studio Settings â†
 ![Write Node Review](assets/nuke_tut/nuke_WriteNodeReview.png)
 
 When you turn the review checkbox on in your OpenPype write node, here is what happens:
-- OpenPype uses the current Nuke script to
+- OpenPype uses the current Nuke script to:
   - Load the render
   - Optionally apply LUT
   - Render Prores 4444 with the same resolution as your render
