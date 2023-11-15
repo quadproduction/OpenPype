@@ -276,7 +276,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             if mongo_url:
                 environment["OPENPYPE_MONGO"] = mongo_url
 
-        priority = self.deadline_priority or instance.data.get("priority", 50)
+        priority = instance.data.get("priority", 50)
 
         args = [
             "--headless",
