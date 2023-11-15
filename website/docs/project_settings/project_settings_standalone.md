@@ -1,5 +1,5 @@
 ---
-id: project_settings_standalone
+id: settings_project_standalone
 title: Project Standalone Publisher Setting
 sidebar_label: Standalone Publisher
 ---

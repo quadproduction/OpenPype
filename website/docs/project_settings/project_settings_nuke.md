@@ -1,5 +1,5 @@
 ---
-id: project_settings_nuke
+id: settings_project_nuke
 title: Project Nuke Setting
 sidebar_label: Nuke
 ---
