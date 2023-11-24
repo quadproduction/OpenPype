@@ -71,7 +71,7 @@ class SettingsController:
         self._edit_mode = None
 
     def set_edit_mode(self, mode):
-        if self._edit_mode == mode:
+        if self._edit_mode == mode and self._opened_info:
             return
 
         opened_info = None
