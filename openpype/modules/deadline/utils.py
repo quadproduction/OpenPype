@@ -15,7 +15,7 @@ def set_custom_deadline_name(instance, filename, setting):
     subversion = basename.split("_")[-1]
     version = "v" + str(instance.data.get("version")).zfill(3)
 
-    if subversion == version:
+    if re.match(r'^_v[0-9]{3}$', subversion):
         subversion = ""
 
     anatomy_data = context.data.get("anatomyData")
