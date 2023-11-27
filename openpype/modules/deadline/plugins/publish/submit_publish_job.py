@@ -276,7 +276,13 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             if mongo_url:
                 environment["OPENPYPE_MONGO"] = mongo_url
 
-        priority = instance.data.get("priority", 50)
+        # Using instance priority, of if not set, project priority
+        priority = instance.data.get("priority", self.deadline_priority)
+        if not priority:
+            # This shouldn't happen, but let's be extra careful
+            priority = 50
+            self.log.warning("job priority isn't set on instance and project, "
+                             "this shouldn't happen, using a fallback value of {}".format(priority))
 
         args = [
             "--headless",
