@@ -2682,7 +2682,7 @@ class SyncToAvalonEvent(BaseEvent):
         for ftrack_id, mongo_id in ftrack_mongo_mapping_found.items():
             filter = {"_id": mongo_id}
             change_data = {"$set": {}}
-            change_data["$set"]["data.active"] = False
+            change_data["$set"]["data.tasks"] = tasks_per_ftrack_id[ftrack_id]
             mongo_changes_bulk.append(UpdateOne(filter, change_data))
 
         if mongo_changes_bulk:
