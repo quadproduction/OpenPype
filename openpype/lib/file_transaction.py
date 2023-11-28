@@ -203,6 +203,10 @@ class FileTransaction(object):
     def _create_folder_for_file(self, path):
         dirname = os.path.dirname(path)
         try:
+            # TEMP DEBUG
+            self.log.debug('User : {0}'.format(os.getlogin()))
+            self.log.debug('Python Version : {0}'.format(sys.version))
+            os.umask(0)
             os.makedirs(dirname)
         except OSError as e:
             if e.errno == errno.EEXIST:
