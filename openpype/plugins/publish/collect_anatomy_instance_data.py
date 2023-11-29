@@ -33,6 +33,8 @@ from openpype.client import (
     get_last_versions
 )
 from openpype.pipeline.version_start import get_versioning_start
+from openpype.pipeline.latest_version import get_lastest_version_number
+from openpype.modules import ModulesManager
 
 
 class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
@@ -242,6 +244,8 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
                 if latest_version is not None:
                     version_number = int(latest_version) + 1
 
+            version_number = self.get_lastest_version_number(instance)
+
             # If version is not specified for instance or context
             if version_number is None:
                 version_number = get_versioning_start(
@@ -290,3 +294,92 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
                 instance_name,
                 json.dumps(anatomy_data, indent=4)
             ))
+
+    def get_lastest_version_number(self, instance):
+        """Delete version on ftrack.
+
+        Handling of ftrack logic in this plugin is not ideal. But in OP3 it is
+        almost impossible to solve the issue other way.
+
+        Note:
+            Asset versions on ftrack are not deleted but marked as
+                "not published" which cause that they're invisible.
+
+        Args:
+            data (dict): Data sent to subset loader with full context.
+        """
+        self.log.debug("#" * 50)
+        # First check for ftrack id on asset document
+        #   - skip if ther is none
+
+        # if instance.data['name'] == "renderLightMasterLayer":
+        #     self.log.debug(f"ASSET: {instance.data['asset']}")
+        #     self.log.debug(f"ID: {instance.data['id']}")
+        #     self.log.debug(f"RENDER_LAYER: {instance.data['renderlayer']}")
+        #     self.log.debug(f"INSTANCE_ID: {instance.data['instance_id']}")
+        #     self.log.debug(f"ASSET_ENTITY: {instance.data['assetEntity']}")
+        #     self.log.debug(f"LATEST_VERSION: {instance.data['latestVersion']}")
+        asset_ftrack_id = instance.data["assetEntity"]["data"].get("ftrackId")
+        self.log.debug(f"ASSET_FTRACK_ID: {asset_ftrack_id}")
+
+        if not asset_ftrack_id:
+            self.log.info((
+                "Asset does not have filled ftrack id. Skipped getting"
+                " ftrack latest version."
+            ))
+            return
+
+        # Check if ftrack module is enabled
+        modules_manager = ModulesManager()
+        ftrack_module = modules_manager.modules_by_name.get("ftrack")
+        if not ftrack_module or not ftrack_module.enabled:
+            return
+        self.log.debug("FTRACK MODULE ENABLED")
+        import ftrack_api
+
+        session = ftrack_api.Session()
+        subset_name = instance.data["subset"]
+        self.log.debug(f"SUBSET_NAME: {subset_name}")
+        # self.log.debug(f"VERSIONS: {instance.data['versions']}")
+        # versions = {
+        #     '"{}"'.format(version_doc["name"])
+        #     for version_doc in instance["versions"]
+        # }
+        # asset_versions = session.query(
+        #     (
+        #         "select id, is_published from AssetVersion where"
+        #         " asset.parent.id is \"{}\""
+        #         " and asset.name is \"{}\""
+        #         # " and version in ({})"
+        #     ).format(
+        #         asset_ftrack_id,
+        #         subset_name,
+        #         # ",".join(versions)
+        #     )
+        # ).all()
+        asset_versions = session.query(
+            "select id, name, versions, latest_version from Asset where"
+            f" id is '{asset_ftrack_id}'"
+        ).all()
+
+        # # Set attribute `is_published` to `False` on ftrack AssetVersions
+        for asset_version in asset_versions:
+            for version in asset_version['versions']:
+                self.log.debug(f"VERSION: {version}")
+                asset_query = session.query(
+                    "select id, version from AssetVersion where"
+                    f" id is '{version['id']}'"
+                ).all()
+                for a in asset_query:
+                    self.log.debug(f"ASSET_QUERY: {a['version']}")
+        #     asset_version["is_published"] = False
+
+        # try:
+        #     session.commit()
+
+        # except Exception:
+        #     msg = (
+        #         "Could not set `is_published` attribute to `False`"
+        #         " for selected AssetVersions."
+        #     )
+        #     log.error(msg)
