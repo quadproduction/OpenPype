@@ -207,7 +207,15 @@ class FileTransaction(object):
             self.log.debug('User : {0}'.format(os.getlogin()))
             self.log.debug('Python Version : {0}'.format(sys.version))
             os.umask(0)
-            os.makedirs(dirname)
+            os.makedirs(dirname, mode=0o777)
+            import datetime
+            from pathlib import Path
+            debug_filepath = Path(path).joinpath("debug.txt")
+            with open(debug_filepath, "a") as f:
+                f.write("User : {}\nDate : {%Y-%m-%d %H:%M:%S (Timezone: %Z)}\nPython Version : {}\n".format(
+                    os.getlogin(),
+                    datetime.datetime.now(),
+                    sys.version))
         except OSError as e:
             if e.errno == errno.EEXIST:
                 pass
