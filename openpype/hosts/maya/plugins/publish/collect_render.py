@@ -175,7 +175,6 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
                 publish_meta_path = os.path.dirname(full_path)
             aov_dict[aov_first_key] = full_paths
         full_exp_files = [aov_dict]
-        self.log.debug(full_exp_files)
 
         if publish_meta_path is None:
             raise KnownPublishError("Unable to detect any expected output "
@@ -307,6 +306,7 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
         if self.sync_workfile_version:
             data["version"] = context.data["version"]
             for _instance in context:
+                self.log.debug("WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
                 if _instance.data['family'] == "workfile":
                     _instance.data["version"] = context.data["version"]
 

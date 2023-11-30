@@ -30,10 +30,10 @@ import pyblish.api
 from openpype.client import (
     get_assets,
     get_subsets,
-    get_last_versions
+    get_last_versions,
+    get_subset_by_name
 )
 from openpype.pipeline.version_start import get_versioning_start
-from openpype.pipeline.latest_version import get_lastest_version_number
 from openpype.modules import ModulesManager
 
 
@@ -54,6 +54,8 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
         project_name = context.data["projectName"]
         self.fill_missing_asset_docs(context, project_name)
         self.fill_latest_versions(context, project_name)
+        for instance in context:
+            self.log.debug(instance)
         self.fill_anatomy_data(context)
 
         self.log.debug("Anatomy Data collection finished.")
@@ -139,13 +141,25 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
             instance.data["latestVersion"] = latest_version
 
             # Skip instances without "assetEntity"
+            #self.log.debug(instance)
+            #self.log.debug(instance.data)
+            import ftrack_api
+
+            session = ftrack_api.Session()
+            asset = session.get('TypedContext', instance.data.get("instance_id"))
+            self.log.debug("WAAAAT")
+            self.log.debug(asset)
             asset_doc = instance.data.get("assetEntity")
             if not asset_doc:
                 continue
 
+            self.log.debug("WUT")
+
             # Store asset ids and subset names for queries
             asset_id = asset_doc["_id"]
             subset_name = instance.data["subset"]
+            if subset_name == "workfileLight":
+                continue
 
             # Prepare instance hierarchy for faster filling latest versions
             if asset_id not in hierarchy:
@@ -154,31 +168,52 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
                 hierarchy[asset_id][subset_name] = []
             hierarchy[asset_id][subset_name].append(instance)
             names_by_asset_ids[asset_id].add(subset_name)
+            self.log.debug(asset_id)
+            self.log.debug(subset_name)
 
         subset_docs = []
+        self.log.debug("TUTUT")
+
+        self.log.debug(names_by_asset_ids)
         if names_by_asset_ids:
             subset_docs = list(get_subsets(
                 project_name, names_by_asset_ids=names_by_asset_ids
             ))
+            self.log.debug("QQQQQ")
+            self.log.debug(subset_docs)
 
         subset_ids = [
             subset_doc["_id"]
             for subset_doc in subset_docs
         ]
+        self.log.debug("YOOLO")
+        self.log.debug(subset_ids)
 
         last_version_docs_by_subset_id = get_last_versions(
             project_name, subset_ids, fields=["name"]
         )
+        self.log.debug("PROUT")
+        self.log.debug(last_version_docs_by_subset_id)
         for subset_doc in subset_docs:
             subset_id = subset_doc["_id"]
             last_version_doc = last_version_docs_by_subset_id.get(subset_id)
             if last_version_doc is None:
+                self.log.debug("it's none")
+                self.log.debug(subset_id)
                 continue
 
             asset_id = subset_doc["parent"]
             subset_name = subset_doc["name"]
             _instances = hierarchy[asset_id][subset_name]
+            self.log.debug("OUI")
+            self.log.debug(hierarchy[asset_id][subset_name])
+            self.log.debug(hierarchy)
+            self.log.debug(asset_id)
+            self.log.debug(subset_name)
             for _instance in _instances:
+                self.log.debug("WHEREEEEEEEEEEEEEE")
+                self.log.debug(_instance)
+                self.log.debug(last_version_doc["name"])
                 _instance.data["latestVersion"] = last_version_doc["name"]
 
     def fill_anatomy_data(self, context):
@@ -233,6 +268,8 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
                 }
 
             # Define version
+            self.log.debug("ROUUUUUUUUUUUUUUUUU")
+            self.log.debug(self.follow_workfile_version)
             if self.follow_workfile_version:
                 version_number = context.data('version')
             else:
@@ -241,10 +278,12 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
             # use latest version (+1) if already any exist
             if version_number is None:
                 latest_version = instance.data["latestVersion"]
+
                 if latest_version is not None:
                     version_number = int(latest_version) + 1
 
-            version_number = self.get_lastest_version_number(instance)
+            if latest_version is None:
+                version_number = self.get_lastest_version_number(instance)
 
             # If version is not specified for instance or context
             if version_number is None:
@@ -320,6 +359,12 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
         #     self.log.debug(f"ASSET_ENTITY: {instance.data['assetEntity']}")
         #     self.log.debug(f"LATEST_VERSION: {instance.data['latestVersion']}")
         asset_ftrack_id = instance.data["assetEntity"]["data"].get("ftrackId")
+        self.log.debug(instance.data)
+        self.log.debug(dir(instance.data))
+        project_name = instance.context.data["projectName"]
+        asset_id = instance.data["assetEntity"]["_id"]
+        subset = get_subset_by_name(
+            project_name, instance.data["subset"], asset_id)
         self.log.debug(f"ASSET_FTRACK_ID: {asset_ftrack_id}")
 
         if not asset_ftrack_id:
@@ -357,21 +402,13 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
         #         # ",".join(versions)
         #     )
         # ).all()
-        asset_versions = session.query(
-            "select id, name, versions, latest_version from Asset where"
-            f" id is '{asset_ftrack_id}'"
-        ).all()
 
-        # # Set attribute `is_published` to `False` on ftrack AssetVersions
-        for asset_version in asset_versions:
-            for version in asset_version['versions']:
-                self.log.debug(f"VERSION: {version}")
-                asset_query = session.query(
-                    "select id, version from AssetVersion where"
-                    f" id is '{version['id']}'"
-                ).all()
-                for a in asset_query:
-                    self.log.debug(f"ASSET_QUERY: {a['version']}")
+        asset = session.get('TypedContext', asset_ftrack_id)
+        self.log.debug(asset)
+        #asset_version = session.query(
+        #    "select asset.latest_version.version from Task where id is '{}'".format(asset_ftrack_id)).first()
+        #self.log.debug(f"ASSET_Version: {asset_version}")
+        #return asset_version
         #     asset_version["is_published"] = False
 
         # try:

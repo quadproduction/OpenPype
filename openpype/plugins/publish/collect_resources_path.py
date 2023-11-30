@@ -68,6 +68,8 @@ class CollectResourcesPath(pyblish.api.InstancePlugin):
     def process(self, instance):
         anatomy = instance.context.data["anatomy"]
 
+        self.log.debug(instance.data)
+        self.log.debug(instance.context)
         template_data = copy.deepcopy(instance.data["anatomyData"])
 
         # This is for cases of Deprecated anatomy without `folder`
