@@ -134,6 +134,8 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
         self.log.debug("Querying latest versions for instances.")
 
         hierarchy = {}
+        toto = []
+        tata = []
         names_by_asset_ids = collections.defaultdict(set)
         for instance in context:
             # Make sure `"latestVersion"` key is set
@@ -158,8 +160,6 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
             # Store asset ids and subset names for queries
             asset_id = asset_doc["_id"]
             subset_name = instance.data["subset"]
-            if subset_name == "workfileLight":
-                continue
 
             # Prepare instance hierarchy for faster filling latest versions
             if asset_id not in hierarchy:
@@ -168,6 +168,8 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
                 hierarchy[asset_id][subset_name] = []
             hierarchy[asset_id][subset_name].append(instance)
             names_by_asset_ids[asset_id].add(subset_name)
+            toto.append(asset_id)
+            tata.append(subset_name)
             self.log.debug(asset_id)
             self.log.debug(subset_name)
 
@@ -177,7 +179,7 @@ class CollectAnatomyInstanceData(pyblish.api.ContextPlugin):
         self.log.debug(names_by_asset_ids)
         if names_by_asset_ids:
             subset_docs = list(get_subsets(
-                project_name, names_by_asset_ids=names_by_asset_ids
+                project_name, asset_ids=toto, subset_names=tata
             ))
             self.log.debug("QQQQQ")
             self.log.debug(subset_docs)
