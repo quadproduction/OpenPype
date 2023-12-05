@@ -151,7 +151,7 @@ class MainWidget(QtWidgets.QWidget):
 
         current_settings = get_system_settings()
         production_version = current_settings.get('general').get("production_version")
-        if production_version != studio_widget._current_version:
+        if not is_running_locally() and production_version != studio_widget._current_version:
             self._protect_system_settings = True
             self._controller.set_edit_mode(EditMode.PROTECT)
 
