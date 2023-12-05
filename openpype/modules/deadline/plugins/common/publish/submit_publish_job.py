@@ -239,7 +239,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
         # Using instance priority, OR if not set, project priority
         priority = self.deadline_priority
         publish_attributes = instance.data['publish_attributes']
-        for plugin_name, attrs in publish_attributes:
+        for plugin_name, attrs in publish_attributes.items():
             priority = attrs.get('priority', None)
             if priority:
                 break
