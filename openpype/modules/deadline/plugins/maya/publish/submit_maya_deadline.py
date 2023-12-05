@@ -111,7 +111,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
     targets = ["local"]
 
     tile_assembler_plugin = "OpenPypeTileAssembler"
-    priority = 50
+    priority = abstract_submit_deadline.AbstractSubmitDeadline.default_priority
     tile_priority = 50
     limit = []  # limit groups
     jobInfo = {}
@@ -783,7 +783,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         defs.extend([
             NumberDef("priority",
                       label="Priority",
-                      default=cls.default_priority,
+                      default=cls.priority,
                       decimals=0),
             NumberDef("chunkSize",
                       label="Frames Per Task",

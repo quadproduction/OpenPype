@@ -25,6 +25,7 @@ from openpype.pipeline.farm.pyblish_functions import (
     prepare_representations,
     create_metadata_path
 )
+from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline
 
 
 def get_resource_files(resources, frame_range=None):
@@ -237,10 +238,16 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                 environment["OPENPYPE_MONGO"] = mongo_url
 
         # Using instance priority, OR if not set, project priority
-        priority = instance.data['publish_attributes']['MayaSubmitDeadline'].get('priority', self.deadline_priority)  # noqa
+        priority = self.deadline_priority
+        publish_attributes = instance.data['publish_attributes']
+        for plugin_name, attrs in publish_attributes:
+            priority = attrs.get('priority', None)
+            if priority:
+                break
+
         if priority is None:
             # This shouldn't happen, but let's be extra careful
-            priority = 50
+            priority = AbstractSubmitDeadline.default_priority
             self.log.warning("Job priority isn't set on instance and project settings, "
                              "this shouldn't happen, using fallback value ({}).".format(priority))
 
