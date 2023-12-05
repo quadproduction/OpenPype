@@ -51,8 +51,33 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
     env_search_replace_values = {}
 
     @classmethod
+    def apply_settings(cls, project_settings, system_settings):
+        settings = project_settings["deadline"]["publish"]["NukeSubmitDeadline"]  # noqa
+
+        # Take some defaults from settings
+        cls.priority = settings.get(
+            "priority",
+            cls.priority
+        )
+
+        cls.chunk_size = settings.get("chunk_size", cls.chunk_size)
+        print(cls.chunk_size)
+
+        cls.concurrent_tasks = settings.get(
+            "concurrent_tasks",
+            cls.concurrent_tasks
+        )
+
+        cls.group = settings.get("group", cls.group)
+
+        cls.department = settings.get("department", cls.department)
+        cls.use_gpu = settings.get("use_gpu", cls.use_gpu)
+        cls.env_allowed_keys = settings.get("env_allowed_keys", cls.env_allowed_keys)
+
+    @classmethod
     def get_attribute_defs(cls):
-        return [
+        defs = super(NukeSubmitDeadline, cls).get_attribute_defs()
+        defs.extend([
             NumberDef(
                 "priority",
                 label="Priority",
@@ -85,7 +110,8 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
                 default=False,
                 label="Suspend publish"
             )
-        ]
+        ])
+        return defs
 
     def process(self, instance):
         if not instance.data.get("farm"):
