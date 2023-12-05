@@ -25,7 +25,6 @@ from openpype.pipeline.farm.pyblish_functions import (
     prepare_representations,
     create_metadata_path
 )
-from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline
 
 
 def get_resource_files(resources, frame_range=None):
@@ -247,7 +246,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
 
         if priority is None:
             # This shouldn't happen, but let's be extra careful
-            priority = AbstractSubmitDeadline.default_priority
+            priority = 50
             self.log.warning("Job priority isn't set on instance and project settings, "
                              "this shouldn't happen, using fallback value ({}).".format(priority))
 
