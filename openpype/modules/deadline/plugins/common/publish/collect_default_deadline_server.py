@@ -21,8 +21,6 @@ class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
     order = pyblish.api.CollectorOrder + 0.0025
     label = "Default Deadline Webservice"
 
-    pass_mongo_url = False
-
     def process(self, context):
         try:
             deadline_module = context.data.get("openPypeModules")["deadline"]
@@ -34,7 +32,8 @@ class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
         self.log.debug(deadline_module.deadline_urls)
         context.data["defaultDeadline"] = deadline_module.deadline_urls["default"]  # noqa: E501
 
-        context.data["deadlinePassMongoUrl"] = self.pass_mongo_url
+        context.data["deadlinePassMongoUrl"] = (context.data["project_settings"]["deadline"]["publish"]
+                                                            ["CollectDefaultDeadlineServer"]["pass_mongo_url"])
 
         deadline_servers = (context.data
                             ["project_settings"]
