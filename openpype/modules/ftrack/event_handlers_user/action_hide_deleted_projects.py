@@ -70,8 +70,9 @@ class HideDeletedProjects(BaseAction):
             change_data = {"$set": {"data.active": False}}
             self.dbcon.Session["AVALON_PROJECT"] = project["name"]
             self.dbcon.bulk_write([UpdateOne(filter, change_data)])
-            self.log.debug(f"No FtrackId for project {project['name']}."
-                           " Project deactivated.")
+            self.log.debug(f"No FtrackId for project {project['name']}"
+                           " or project deleted from Ftrack."
+                           " Project hidden.")
 
 
 def register(session):
