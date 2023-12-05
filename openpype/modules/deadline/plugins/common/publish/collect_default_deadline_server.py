@@ -34,8 +34,8 @@ class CollectDefaultDeadlineServer(pyblish.api.ContextPlugin):
         self.log.debug(deadline_module.deadline_urls)
         context.data["defaultDeadline"] = deadline_module.deadline_urls["default"]  # noqa: E501
 
-        context.data["deadlinePassMongoUrl"] = self.pass_mongo_url
-
+        # TODO: Delete when Nuke will have his own CollectDeadlineServerFromInstance()
+        context.data["deadlinePassMongoUrl"] = context.data["project_settings"]["deadline"]["publish"]["CollectDefaultDeadlineServer"]["pass_mongo_url"]
         deadline_servers = (context.data
                             ["project_settings"]
                             ["deadline"]
