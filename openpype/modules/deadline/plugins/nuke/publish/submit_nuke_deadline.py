@@ -5,6 +5,7 @@ import getpass
 from datetime import datetime
 
 import requests
+import pyblish.api
 
 import nuke
 
@@ -13,7 +14,6 @@ from openpype.pipeline import legacy_io
 from openpype.pipeline.publish import (
     OpenPypePyblishPluginMixin
 )
-from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline
 from openpype.modules.deadline.utils import set_custom_deadline_name
 from openpype.tests.lib import is_in_tests
 from openpype.lib import (
@@ -23,7 +23,8 @@ from openpype.lib import (
 )
 
 
-class NukeSubmitDeadline(AbstractSubmitDeadline, OpenPypePyblishPluginMixin):
+class NukeSubmitDeadline(pyblish.api.InstancePlugin,
+                         OpenPypePyblishPluginMixin):
     """Submit write to Deadline
 
     Renders are submitted to a Deadline Web Service as
@@ -32,6 +33,8 @@ class NukeSubmitDeadline(AbstractSubmitDeadline, OpenPypePyblishPluginMixin):
     """
 
     label = "Submit Nuke to Deadline"
+    order = pyblish.api.IntegratorOrder + 0.1
+    plugin_type_name = "submitter"
     hosts = ["nuke"]
     families = ["render", "prerender"]
     optional = True

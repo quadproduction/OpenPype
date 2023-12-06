@@ -25,7 +25,6 @@ from openpype.lib.attribute_definitions import (
 from openpype.host import IPublishHost, IWorkfileHost
 from openpype.pipeline import legacy_io, Anatomy
 from openpype.pipeline.plugin_discover import DiscoverResult
-from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline
 from .creator_plugins import (
     Creator,
     AutoCreator,
@@ -795,8 +794,8 @@ class PublishAttributes:
                 plugin = plugin.__class__
 
             key = plugin.__name__
-            if issubclass(plugin, AbstractSubmitDeadline):
-                key = plugin.plugin_type_name
+            if hasattr(plugin, "plugin_type_name"):
+                key = getattr(plugin, "plugin_type_name")
             added_keys.add(key)
             self._plugin_names_order.append(key)
 
