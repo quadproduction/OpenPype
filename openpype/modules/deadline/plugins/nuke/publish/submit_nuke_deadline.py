@@ -367,6 +367,14 @@ class NukeSubmitDeadline(pyblish.api.InstancePlugin,
         if self.env_allowed_keys:
             keys += self.env_allowed_keys
 
+        # add all gizmo and plugin paths to the NUKE_PATH for the render farm
+        nuke_path = os.environ.get("NUKE_PATH") or ""
+        new_nuke_paths = [path for path in nuke_path.split(os.pathsep) if path]
+        for path in nuke.pluginPath():
+            if path not in new_nuke_paths:
+                new_nuke_paths.append(path)
+        os.environ["NUKE_PATH"] = os.pathsep.join(new_nuke_paths)
+
         environment = dict({key: os.environ[key] for key in keys
                             if key in os.environ}, **legacy_io.Session)
 
