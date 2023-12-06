@@ -8,8 +8,9 @@ from openpype import AYON_SERVER_ENABLED
 from openpype.pipeline import legacy_io, PublishXmlValidationError
 from openpype.tests.lib import is_in_tests
 from openpype.lib import is_running_from_build
-from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline, DeadlineJobInfo
-from openpype.modules.deadline.utils import set_custom_deadline_name
+from openpype_modules.deadline import abstract_submit_deadline
+from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype_modules.deadline.utils import set_custom_deadline_name
 
 import pyblish.api
 
@@ -27,7 +28,7 @@ class MayaPluginInfo(object):
     ScriptFilename = attr.ib(default=None)
 
 
-class MayaSubmitRemotePublishDeadline(AbstractSubmitDeadline):
+class MayaSubmitRemotePublishDeadline(abstract_submit_deadline.AbstractSubmitDeadline):
     """Submit Maya scene to perform a local publish in Deadline.
 
     Publishing in Deadline can be helpful for scenes that publish very slow.

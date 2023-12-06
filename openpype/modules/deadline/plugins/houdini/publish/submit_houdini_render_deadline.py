@@ -8,8 +8,9 @@ import pyblish.api
 
 from openpype.pipeline import legacy_io
 from openpype.tests.lib import is_in_tests
-from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline, DeadlineJobInfo
-from openpype.modules.deadline.utils import set_custom_deadline_name
+from openpype_modules.deadline import abstract_submit_deadline
+from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype_modules.deadline.utils import set_custom_deadline_name
 from openpype.lib import is_running_from_build
 
 
@@ -21,7 +22,7 @@ class DeadlinePluginInfo():
     IgnoreInputs = attr.ib(default=True)
 
 
-class HoudiniSubmitDeadline(AbstractSubmitDeadline):
+class HoudiniSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline):
     """Submit Solaris USD Render ROPs to Deadline.
 
     Renders are submitted to a Deadline Web Service as

@@ -9,8 +9,9 @@ from openpype.lib import (
     collect_frames,
 )
 from openpype.pipeline import legacy_io
-from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline, DeadlineJobInfo
-from openpype.modules.deadline.utils import set_custom_deadline_name
+from openpype_modules.deadline import abstract_submit_deadline
+from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype_modules.deadline.utils import set_custom_deadline_name
 from openpype.tests.lib import is_in_tests
 from openpype.lib import is_running_from_build
 
@@ -29,7 +30,7 @@ class DeadlinePluginInfo():
     MultiProcess = attr.ib(default=None)
 
 
-class AfterEffectsSubmitDeadline(AbstractSubmitDeadline):
+class AfterEffectsSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline):
 
     label = "Submit AE to Deadline"
     order = pyblish.api.IntegratorOrder + 0.1

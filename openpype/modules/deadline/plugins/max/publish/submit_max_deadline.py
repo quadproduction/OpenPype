@@ -20,8 +20,9 @@ from openpype.hosts.max.api.lib import (
     get_multipass_setting
 )
 from openpype.hosts.max.api.lib_rendersettings import RenderSettings
-from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline, DeadlineJobInfo
-from openpype.modules.deadline.utils import set_custom_deadline_name
+from openpype_modules.deadline import abstract_submit_deadline
+from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype_modules.deadline.utils import set_custom_deadline_name
 from openpype.lib import is_running_from_build
 
 
@@ -33,7 +34,8 @@ class MaxPluginInfo(object):
     IgnoreInputs = attr.ib(default=True)
 
 
-class MaxSubmitDeadline(AbstractSubmitDeadline, OpenPypePyblishPluginMixin):
+class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
+                        OpenPypePyblishPluginMixin):
 
     label = "Submit Render to Deadline"
     hosts = ["max"]

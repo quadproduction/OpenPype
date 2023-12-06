@@ -42,9 +42,9 @@ from openpype.lib import (
 )
 from openpype.hosts.maya.api.lib_rendersettings import RenderSettings
 from openpype.hosts.maya.api.lib import get_attr_in_layer
-
-from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline, DeadlineJobInfo
-from openpype.modules.deadline.utils import set_custom_deadline_name
+from openpype_modules.deadline import abstract_submit_deadline
+from openpype_modules.deadline.abstract_submit_deadline import DeadlineJobInfo
+from openpype_modules.deadline.utils import set_custom_deadline_name
 from openpype.tests.lib import is_in_tests
 from openpype.lib import is_running_from_build
 from openpype.pipeline.farm.tools import iter_expected_files
@@ -101,7 +101,8 @@ class ArnoldPluginInfo(object):
     ArnoldFile = attr.ib(default=None)
 
 
-class MayaSubmitDeadline(AbstractSubmitDeadline, OpenPypePyblishPluginMixin):
+class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
+                         OpenPypePyblishPluginMixin):
 
     label = "Submit Render to Deadline"
     hosts = ["maya"]
