@@ -50,10 +50,10 @@ class HideObsoleteProjects(BaseAction):
         )
         self.session.event_hub.subscribe(
             show_subscription,
-            self.hide_unwanted_projects
+            self.hide_obsolete_projects
         )
 
-    def hide_unwanted_projects(self, event):
+    def hide_obsolete_projects(self, event):
         ftrack_projects = self.session.query("Project").all()
         ftrack_projects_ids = [project["id"] for project in ftrack_projects]
         mongo_projects = get_projects()
@@ -66,10 +66,10 @@ class HideObsoleteProjects(BaseAction):
                 projects_to_hide.append(project)
 
         for project in projects_to_hide:
-            filter = {"_id": project["_id"]}
+            filter_dict = {"_id": project["_id"]}
             change_data = {"$set": {"data.active": False}}
             self.dbcon.Session["AVALON_PROJECT"] = project["name"]
-            self.dbcon.bulk_write([UpdateOne(filter, change_data)])
+            self.dbcon.bulk_write([UpdateOne(filter_dict, change_data)])
             self.log.debug(f"No FtrackId for project {project['name']}"
                            " or project deleted from Ftrack."
                            " Project has been hidden.")
