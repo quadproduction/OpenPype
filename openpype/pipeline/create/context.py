@@ -25,7 +25,7 @@ from openpype.lib.attribute_definitions import (
 from openpype.host import IPublishHost, IWorkfileHost
 from openpype.pipeline import legacy_io, Anatomy
 from openpype.pipeline.plugin_discover import DiscoverResult
-
+from openpype.modules.deadline import abstract_submit_deadline
 from .creator_plugins import (
     Creator,
     AutoCreator,
@@ -791,7 +791,12 @@ class PublishAttributes:
             if not attr_defs:
                 continue
 
+            if not inspect.isclass(plugin):
+                plugin = plugin.__class__
+
             key = plugin.__name__
+            if issubclass(plugin, abstract_submit_deadline.AbstractSubmitDeadline):
+                key = plugin.plugin_type_name
             added_keys.add(key)
             self._plugin_names_order.append(key)
 
@@ -921,8 +926,8 @@ class CreatedInstance:
 
         # Pop dictionary values that will be converted to objects to be able
         #   catch changes
-        orig_creator_attributes = data.pop("creator_attributes", None) or {}
-        orig_publish_attributes = data.pop("publish_attributes", None) or {}
+        orig_creator_attributes = data.pop("creator_attributes", {})
+        orig_publish_attributes = data.pop("publish_attributes", {})
 
         # QUESTION Does it make sense to have data stored as ordered dict?
         self._data = collections.OrderedDict()
@@ -1857,7 +1862,7 @@ class CreateContext:
         original_data = self.host.get_context_data() or {}
         self._original_context_data = copy.deepcopy(original_data)
 
-        publish_attributes = original_data.get("publish_attributes") or {}
+        publish_attributes = original_data.get("publish_attributes", {})
 
         attr_plugins = self._get_publish_plugins_with_attr_for_context()
         self._publish_attributes = PublishAttributes(

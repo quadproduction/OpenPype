@@ -2,8 +2,8 @@ import inspect
 from abc import ABCMeta
 import pyblish.api
 from pyblish.plugin import MetaPlugin, ExplicitMetaPlugin
-from openpype.lib.transcoding import VIDEO_EXTENSIONS, IMAGE_EXTENSIONS
 from openpype.lib import BoolDef
+from openpype.modules.deadline import abstract_submit_deadline
 
 from .lib import (
     load_help_content_from_plugin,
@@ -123,10 +123,13 @@ class OpenPypePyblishPluginMixin:
 
     @classmethod
     def convert_attribute_values(cls, attribute_values):
-        if cls.__name__ not in attribute_values:
+        plugin_name = cls.__name__
+        if issubclass(cls, abstract_submit_deadline.AbstractSubmitDeadline):
+            plugin_name = cls.plugin_type_name
+        if plugin_name not in attribute_values:
             return attribute_values
 
-        plugin_values = attribute_values[cls.__name__]
+        plugin_values = attribute_values[plugin_name]
 
         attr_defs = cls.get_attribute_defs()
         for attr_def in attr_defs:
@@ -150,10 +153,14 @@ class OpenPypePyblishPluginMixin:
         if not inspect.isclass(plugin):
             plugin = plugin.__class__
 
+        plugin_name = plugin.__name__
+        if issubclass(plugin, abstract_submit_deadline.AbstractSubmitDeadline):
+            plugin_name = plugin.plugin_type_name
+
         return (
             data
             .get("publish_attributes", {})
-            .get(plugin.__name__, {})
+            .get(plugin_name, {})
         )
 
     def get_attr_values_from_data(self, data):

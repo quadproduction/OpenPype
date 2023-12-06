@@ -415,6 +415,7 @@ class AbstractSubmitDeadline(pyblish.api.InstancePlugin,
 
     label = "Submit to Deadline"
     order = pyblish.api.IntegratorOrder + 0.1
+    plugin_type_name = "submitter"
 
     import_reference = False
     use_published = True

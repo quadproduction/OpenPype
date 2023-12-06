@@ -237,13 +237,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                 environment["OPENPYPE_MONGO"] = mongo_url
 
         # Using instance priority, OR if not set, project priority
-        priority = self.deadline_priority
-        publish_attributes = instance.data['publish_attributes']
-        for plugin_name, attrs in publish_attributes.items():
-            priority = attrs.get('priority', None)
-            if priority:
-                break
-
+        priority = instance.data["publish_attributes"]["submitter"].get('priority', self.deadline_priority)
         if priority is None:
             # This shouldn't happen, but let's be extra careful
             priority = 50
