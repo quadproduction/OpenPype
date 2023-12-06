@@ -5,17 +5,17 @@ from openpype.pipeline import AvalonMongoDB
 from openpype_modules.ftrack.lib import BaseAction, statics_icon
 
 
-class HideDeletedProjects(BaseAction):
-    """Hide projects on OP that no longer exsist in Ftrack
-    or have no FtrackId
+class HideObsoleteProjects(BaseAction):
+    """Hide projects on OP that no longer exist on Ftrack
+    or have an FtrackId
     """
 
-    identifier = "hide.deleted.projects"
-    show_identifier = "hide.deleted.projects"
+    identifier = "hide.obsolete.projects"
+    show_identifier = "hide.obsolete.projects"
     label = "OpenPype Admin"
-    variant = "- Hide deleted projects"
-    description = "Hide deleted projects from Ftrack in OP"
-    icon = statics_icon("ftrack", "action_icons", "DeleteAsset.svg")
+    variant = "- Hide Obsolete projects"
+    description = "Hide projects on OP that no longer exist on Ftrack or have an FtrackId."
+    icon = statics_icon("ftrack", "action_icons", "HideProjects.svg")
 
     def __init__(self, session):
         self.dbcon = AvalonMongoDB()
@@ -37,7 +37,7 @@ class HideDeletedProjects(BaseAction):
 
     def register(self):
         # Register default action callbacks
-        super(HideDeletedProjects, self).register()
+        super(HideObsoleteProjects, self).register()
 
         # # Add show identifier
         show_subscription = (
@@ -50,10 +50,10 @@ class HideDeletedProjects(BaseAction):
         )
         self.session.event_hub.subscribe(
             show_subscription,
-            self.hide_deleted_projects
+            self.hide_unwanted_projects
         )
 
-    def hide_deleted_projects(self, event):
+    def hide_unwanted_projects(self, event):
         ftrack_projects = self.session.query("Project").all()
         ftrack_projects_ids = [project["id"] for project in ftrack_projects]
         mongo_projects = get_projects()
@@ -72,8 +72,8 @@ class HideDeletedProjects(BaseAction):
             self.dbcon.bulk_write([UpdateOne(filter, change_data)])
             self.log.debug(f"No FtrackId for project {project['name']}"
                            " or project deleted from Ftrack."
-                           " Project hidden.")
+                           " Project has been hidden.")
 
 
 def register(session):
-    HideDeletedProjects(session).register()
+    HideObsoleteProjects(session).register()
