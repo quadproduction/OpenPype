@@ -13,7 +13,7 @@ from openpype.pipeline import legacy_io
 from openpype.pipeline.publish import (
     OpenPypePyblishPluginMixin
 )
-from openpype.modules.deadline import abstract_submit_deadline
+from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline
 from openpype.modules.deadline.utils import set_custom_deadline_name
 from openpype.tests.lib import is_in_tests
 from openpype.lib import (
@@ -23,8 +23,7 @@ from openpype.lib import (
 )
 
 
-class NukeSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
-                         OpenPypePyblishPluginMixin):
+class NukeSubmitDeadline(AbstractSubmitDeadline, OpenPypePyblishPluginMixin):
     """Submit write to Deadline
 
     Renders are submitted to a Deadline Web Service as

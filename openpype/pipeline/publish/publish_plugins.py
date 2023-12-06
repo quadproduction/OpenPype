@@ -3,7 +3,7 @@ from abc import ABCMeta
 import pyblish.api
 from pyblish.plugin import MetaPlugin, ExplicitMetaPlugin
 from openpype.lib import BoolDef
-from openpype.modules.deadline import abstract_submit_deadline
+from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline
 
 from .lib import (
     load_help_content_from_plugin,
@@ -124,7 +124,7 @@ class OpenPypePyblishPluginMixin:
     @classmethod
     def convert_attribute_values(cls, attribute_values):
         plugin_name = cls.__name__
-        if issubclass(cls, abstract_submit_deadline.AbstractSubmitDeadline):
+        if issubclass(cls, AbstractSubmitDeadline):
             plugin_name = cls.plugin_type_name
         if plugin_name not in attribute_values:
             return attribute_values
@@ -154,7 +154,7 @@ class OpenPypePyblishPluginMixin:
             plugin = plugin.__class__
 
         plugin_name = plugin.__name__
-        if issubclass(plugin, abstract_submit_deadline.AbstractSubmitDeadline):
+        if issubclass(plugin, AbstractSubmitDeadline):
             plugin_name = plugin.plugin_type_name
 
         return (

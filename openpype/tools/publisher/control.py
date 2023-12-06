@@ -41,7 +41,7 @@ from openpype.pipeline.create.context import (
     ConvertorsOperationFailed,
 )
 from openpype.pipeline.publish import get_publish_instance_label
-from openpype.modules.deadline import abstract_submit_deadline
+from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline
 
 # Define constant for plugin orders offset
 PLUGIN_ORDER_OFFSET = 0.5
@@ -2049,7 +2049,7 @@ class PublisherController(BasePublisherController):
         output = []
         for plugin in self._create_context.plugins_with_defs:
             plugin_name = plugin.__name__
-            if issubclass(plugin, abstract_submit_deadline.AbstractSubmitDeadline):
+            if issubclass(plugin, AbstractSubmitDeadline):
                 plugin_name = plugin.plugin_type_name
             if plugin_name not in all_defs_by_plugin_name:
                 continue

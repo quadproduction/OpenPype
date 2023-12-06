@@ -43,7 +43,7 @@ from openpype.lib import (
 from openpype.hosts.maya.api.lib_rendersettings import RenderSettings
 from openpype.hosts.maya.api.lib import get_attr_in_layer
 
-from openpype.modules.deadline import abstract_submit_deadline
+from openpype.modules.deadline.abstract_submit_deadline import AbstractSubmitDeadline, DeadlineJobInfo
 from openpype.modules.deadline.utils import set_custom_deadline_name
 from openpype.tests.lib import is_in_tests
 from openpype.lib import is_running_from_build
@@ -101,8 +101,7 @@ class ArnoldPluginInfo(object):
     ArnoldFile = attr.ib(default=None)
 
 
-class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
-                         OpenPypePyblishPluginMixin):
+class MayaSubmitDeadline(AbstractSubmitDeadline, OpenPypePyblishPluginMixin):
 
     label = "Submit Render to Deadline"
     hosts = ["maya"]
@@ -136,7 +135,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
                                                  cls.strict_error_checking)
 
     def get_job_info(self):
-        job_info = abstract_submit_deadline.DeadlineJobInfo(Plugin="MayaBatch")
+        job_info = DeadlineJobInfo(Plugin="MayaBatch")
 
         # todo: test whether this works for existing production cases
         #       where custom jobInfo was stored in the project settings
