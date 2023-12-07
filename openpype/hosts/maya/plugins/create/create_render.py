@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Create ``Render`` instance in Maya."""
+import logging
 
 from openpype.settings import (
     get_system_settings
@@ -15,6 +16,8 @@ from openpype.lib import (
     EnumDef
 )
 from openpype.pipeline.context_tools import _get_modules_manager
+
+log = logging.getLogger(__name__)
 
 
 class CreateRenderlayer(plugin.RenderlayerCreator):
@@ -40,6 +43,19 @@ class CreateRenderlayer(plugin.RenderlayerCreator):
 
     @classmethod
     def apply_settings(cls, project_settings):
+        settings_name = cls.__name__
+        settings = project_settings["maya"]["create"]
+        settings = settings.get(settings_name)
+
+        if settings is None:
+            log.debug(
+                "No settings found for {}".format(cls.__name__)
+            )
+            return
+
+        for key, value in settings.items():
+            setattr(cls, key, value)
+
         cls.render_settings = project_settings["maya"]["RenderSettings"]
 
     def create(self, subset_name, instance_data, pre_create_data):

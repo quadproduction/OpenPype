@@ -39,7 +39,7 @@
             "name": "template_create_plugin",
             "template_data": [
                 {
-                    "key": "CreateRender",
+                    "key": "CreateRenderlayer",
                     "label": "Create Render"
                 }
             ]

@@ -528,7 +528,7 @@
                 "Main"
             ]
         },
-        "CreateRender": {
+        "CreateRenderlayer": {
             "enabled": true,
             "default_variants": [
                 "Main"
