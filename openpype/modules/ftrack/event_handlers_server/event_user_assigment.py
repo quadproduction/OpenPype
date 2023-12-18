@@ -177,7 +177,7 @@ class UserAssigmentEvent(BaseEvent):
             )
 
             if not task_entity or not user_entity:
-                self.log.error("Task or User was not found.")
+                self.log.warning("Task or User was not found.")
                 continue
 
             # format directories to pass to shell script
