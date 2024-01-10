@@ -114,6 +114,10 @@ class CreateRenderlayer(plugin.RenderlayerCreator):
                       default=2,
                       minimum=1,
                       decimals=0),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=["N/A", "In Progress", "Pending", "Review"],
+                    default="N/A"),
 
             # Additional settings
             BoolDef("convertToScanline",
