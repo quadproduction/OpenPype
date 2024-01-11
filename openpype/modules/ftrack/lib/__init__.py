@@ -17,6 +17,7 @@ from .custom_attributes import (
     get_openpype_attr,
     query_custom_attributes
 )
+from .utils import get_ftrack_statuses
 
 from . import avalon_sync
 from . import credentials
@@ -41,6 +42,8 @@ __all__ = (
     "tool_definitions_from_app_manager",
     "get_openpype_attr",
     "query_custom_attributes",
+
+    "get_ftrack_statuses",
 
     "avalon_sync",
 

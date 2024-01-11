@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Create ``Render`` instance in Maya."""
 
+
 from openpype.settings import (
     get_system_settings
 )
@@ -15,6 +16,7 @@ from openpype.lib import (
     EnumDef
 )
 from openpype.pipeline.context_tools import _get_modules_manager
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 
 class CreateRenderlayer(plugin.RenderlayerCreator):
@@ -61,13 +63,13 @@ class CreateRenderlayer(plugin.RenderlayerCreator):
         modules_system_settings = get_system_settings()["modules"]
         deadline_enabled = modules_system_settings["deadline"]["enabled"]
         deadline_url = modules_system_settings["deadline"]["deadline_urls"].get("default")
-
         default_machine_limit = self._get_default_machine_limit(
             deadline_enabled
         )
         limit_groups = self._get_limit_groups(
             deadline_enabled, deadline_url
         )
+        statuses = get_ftrack_statuses()
 
         return [
             BoolDef("review",
@@ -116,8 +118,8 @@ class CreateRenderlayer(plugin.RenderlayerCreator):
                       decimals=0),
             EnumDef("ftrackStatus",
                     label="Ftrack Status",
-                    items=["N/A", "In Progress", "Pending", "Review"],
-                    default="N/A"),
+                    items=statuses,
+                    default="In progress"),
 
             # Additional settings
             BoolDef("convertToScanline",
