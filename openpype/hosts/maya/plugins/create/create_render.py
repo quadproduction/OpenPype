@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Create ``Render`` instance in Maya."""
 
-
 from openpype.settings import (
     get_system_settings
 )
@@ -15,7 +14,10 @@ from openpype.lib import (
     NumberDef,
     EnumDef
 )
-from openpype.pipeline.context_tools import _get_modules_manager
+from openpype.pipeline.context_tools import (
+    _get_modules_manager,
+    get_current_project_name
+)
 from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 
@@ -69,7 +71,9 @@ class CreateRenderlayer(plugin.RenderlayerCreator):
         limit_groups = self._get_limit_groups(
             deadline_enabled, deadline_url
         )
-        statuses = get_ftrack_statuses()
+
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
 
         return [
             BoolDef("review",
