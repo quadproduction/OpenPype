@@ -74,6 +74,7 @@ class CreateRenderlayer(plugin.RenderlayerCreator):
 
         project_name = get_current_project_name()
         statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
 
         return [
             BoolDef("review",

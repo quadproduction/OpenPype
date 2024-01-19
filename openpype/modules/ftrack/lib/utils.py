@@ -17,4 +17,4 @@ def get_ftrack_statuses(project_name):
     for status in statuses:
         statuses_name.append(status["name"])
 
-    return sorted(statuses_name)
+    return statuses
