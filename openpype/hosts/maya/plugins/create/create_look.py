@@ -4,8 +4,11 @@ from openpype.hosts.maya.api import (
 )
 from openpype.lib import (
     BoolDef,
-    TextDef
+    TextDef,
+    EnumDef
 )
+from openpype.pipeline.context_tools import get_current_project_name
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 
 class CreateLook(plugin.MayaCreator):
@@ -20,6 +23,9 @@ class CreateLook(plugin.MayaCreator):
     rs_tex = False
 
     def get_instance_attr_defs(self):
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
 
         return [
             # TODO: This value should actually get set on create!
@@ -37,7 +43,11 @@ class CreateLook(plugin.MayaCreator):
                     label="Convert textures to .rstex",
                     tooltip="Whether to generate Redshift .rstex files for "
                             "your textures",
-                    default=self.rs_tex)
+                    default=self.rs_tex),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
         ]
 
     def get_pre_create_attr_defs(self):
