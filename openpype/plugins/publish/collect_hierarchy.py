@@ -64,6 +64,34 @@ class CollectHierarchy(pyblish.api.ContextPlugin):
 
             actual = {instance.data["asset"]: shot_data}
 
+            # Fetch Tools from ftrack hierarchy
+            import ftrack_api
+            session = session = ftrack_api.Session(auto_connect_event_hub=False)
+            if session:
+                for parent in reversed(instance.data["parents"]):
+                    result = session.query(
+                        "select custom_attributes from TypedContext where "
+                        "name is {} and project.full_name is {}"
+                        .format(
+                            parent["entity_name"],
+                            project_name,
+                        )).all()
+                    if not result:
+                        continue
+                    tools_env = result[0]["custom_attributes"]["tools_env"]
+                    if tools_env:
+                        shot_data['custom_attributes']["tools_env"] = tools_env
+                        break
+
+                if not shot_data['custom_attributes'].get("tools_env"):
+                    result = session.query(
+                        "select custom_attributes from Project "
+                        "where full_name is {}".format(
+                            project_name,
+                        )).one()
+                    tools_env = result["custom_attributes"]["tools_env"]
+                    shot_data['custom_attributes']["tools_env"] = tools_env
+
             for parent in reversed(instance.data["parents"]):
                 next_dict = {}
                 parent_name = parent["entity_name"]
