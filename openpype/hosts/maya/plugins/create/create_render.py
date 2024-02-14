@@ -14,7 +14,11 @@ from openpype.lib import (
     NumberDef,
     EnumDef
 )
-from openpype.pipeline.context_tools import _get_modules_manager
+from openpype.pipeline.context_tools import (
+    _get_modules_manager,
+    get_current_project_name
+)
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 
 class CreateRenderlayer(plugin.RenderlayerCreator):
@@ -61,13 +65,16 @@ class CreateRenderlayer(plugin.RenderlayerCreator):
         modules_system_settings = get_system_settings()["modules"]
         deadline_enabled = modules_system_settings["deadline"]["enabled"]
         deadline_url = modules_system_settings["deadline"]["deadline_urls"].get("default")
-
         default_machine_limit = self._get_default_machine_limit(
             deadline_enabled
         )
         limit_groups = self._get_limit_groups(
             deadline_enabled, deadline_url
         )
+
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
 
         return [
             BoolDef("review",
@@ -114,6 +121,10 @@ class CreateRenderlayer(plugin.RenderlayerCreator):
                       default=2,
                       minimum=1,
                       decimals=0),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
 
             # Additional settings
             BoolDef("convertToScanline",

@@ -4,6 +4,8 @@ from openpype.lib import (
     EnumDef,
     TextDef
 )
+from openpype.pipeline.context_tools import get_current_project_name
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 from maya import cmds
 
@@ -45,6 +47,10 @@ class CreateMayaUsd(plugin.MayaCreator):
             self.cache["jobContextItems"] = job_context_items
 
         defs = lib.collect_animation_defs()
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
+
         defs.extend([
             EnumDef("defaultUSDFormat",
                     label="File format",
@@ -97,6 +103,10 @@ class CreateMayaUsd(plugin.MayaCreator):
                         "specific\ntask, a target renderer for example."
                     ),
                     multiselection=True),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
         ])
 
         return defs

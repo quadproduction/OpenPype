@@ -3,8 +3,11 @@
 from openpype.hosts.maya.api import plugin, lib
 from openpype.lib import (
     BoolDef,
-    TextDef
+    TextDef,
+    EnumDef
 )
+from openpype.pipeline.context_tools import get_current_project_name
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 from maya import cmds  # noqa
 
@@ -68,6 +71,9 @@ class CreateUnrealSkeletalMesh(plugin.MayaCreator):
     def get_instance_attr_defs(self):
 
         defs = lib.collect_animation_defs()
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
 
         defs.extend([
             BoolDef("renderableOnly",
@@ -96,7 +102,11 @@ class CreateUnrealSkeletalMesh(plugin.MayaCreator):
                     placeholder="attr1, attr2"),
             TextDef("attrPrefix",
                     label="Custom Attributes Prefix",
-                    placeholder="prefix1, prefix2")
+                    placeholder="prefix1, prefix2"),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
         ])
 
         return defs

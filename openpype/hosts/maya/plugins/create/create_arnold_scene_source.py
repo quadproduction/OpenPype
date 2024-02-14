@@ -4,8 +4,11 @@ from openpype.hosts.maya.api import (
 )
 from openpype.lib import (
     NumberDef,
-    BoolDef
+    BoolDef,
+    EnumDef
 )
+from openpype.pipeline.context_tools import get_current_project_name
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 
 class CreateArnoldSceneSource(plugin.MayaCreator):
@@ -36,6 +39,10 @@ class CreateArnoldSceneSource(plugin.MayaCreator):
 
         defs = lib.collect_animation_defs()
 
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
+
         defs.extend([
             BoolDef("expandProcedural",
                     label="Expand Procedural",
@@ -51,6 +58,10 @@ class CreateArnoldSceneSource(plugin.MayaCreator):
                       label="Motion Blur Length",
                       decimals=3,
                       default=self.motionBlurLength),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
 
             # Masks
             BoolDef("maskOptions",

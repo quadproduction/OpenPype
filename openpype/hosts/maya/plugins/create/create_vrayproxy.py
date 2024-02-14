@@ -2,7 +2,12 @@ from openpype.hosts.maya.api import (
     plugin,
     lib
 )
-from openpype.lib import BoolDef
+from openpype.lib import (
+    BoolDef,
+    EnumDef
+)
+from openpype.pipeline.context_tools import get_current_project_name
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 
 class CreateVrayProxy(plugin.MayaCreator):
@@ -17,6 +22,9 @@ class CreateVrayProxy(plugin.MayaCreator):
     alembic = True
 
     def get_instance_attr_defs(self):
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
 
         defs = [
             BoolDef("animation",
@@ -45,6 +53,10 @@ class CreateVrayProxy(plugin.MayaCreator):
                     tooltip="Publish a .abc (Alembic) file for "
                             "this VRayProxy",
                     default=self.alembic),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
         ])
 
         return defs

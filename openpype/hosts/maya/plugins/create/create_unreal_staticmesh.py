@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """Creator for Unreal Static Meshes."""
 from openpype.hosts.maya.api import plugin, lib
+from openpype.lib import EnumDef
+from openpype.pipeline.context_tools import get_current_project_name
+from openpype.modules.ftrack.lib import get_ftrack_statuses
+
+
 from maya import cmds  # noqa
 
 
@@ -88,3 +93,15 @@ class CreateUnrealStaticMesh(plugin.MayaCreator):
             if node_name.startswith(prefix):
                 return True
         return False
+
+    def get_instance_attr_defs(self):
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
+
+        return [
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
+        ]

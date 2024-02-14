@@ -5,6 +5,8 @@ from openpype.lib import (
     TextDef,
     EnumDef
 )
+from openpype.pipeline.context_tools import get_current_project_name
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 
 class CreateMultiverseUsd(plugin.MayaCreator):
@@ -22,6 +24,10 @@ class CreateMultiverseUsd(plugin.MayaCreator):
     def get_instance_attr_defs(self):
 
         defs = lib.collect_animation_defs(fps=True)
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
+
         defs.extend([
             EnumDef("fileFormat",
                     label="File format",
@@ -56,6 +62,10 @@ class CreateMultiverseUsd(plugin.MayaCreator):
                     label="Node Types to Ignore",
                     tooltip="Comma-separated list of node types to be ignored",
                     default=''),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
             BoolDef("writeMeshes",
                     label="Write Meshes",
                     default=True),

@@ -1,8 +1,11 @@
 from openpype.hosts.maya.api import plugin
 from openpype.lib import (
     BoolDef,
-    TextDef
+    TextDef,
+    EnumDef
 )
+from openpype.pipeline.context_tools import get_current_project_name
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 
 class CreateModel(plugin.MayaCreator):
@@ -18,6 +21,9 @@ class CreateModel(plugin.MayaCreator):
     write_face_sets = False
 
     def get_instance_attr_defs(self):
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
 
         return [
             BoolDef("writeColorSets",
@@ -33,6 +39,10 @@ class CreateModel(plugin.MayaCreator):
                     tooltip="Whether to include parent hierarchy of nodes in "
                             "the publish instance",
                     default=False),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
             TextDef("attr",
                     label="Custom Attributes",
                     default="",

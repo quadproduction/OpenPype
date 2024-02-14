@@ -6,7 +6,12 @@ from openpype.hosts.maya.api import (
     plugin
 )
 from openpype.pipeline import CreatorError
-from openpype.lib import BoolDef
+from openpype.lib import (
+    BoolDef,
+    EnumDef
+)
+from openpype.pipeline.context_tools import get_current_project_name
+from openpype.modules.ftrack.lib import get_ftrack_statuses
 
 
 class CreateVRayScene(plugin.RenderlayerCreator):
@@ -41,6 +46,9 @@ class CreateVRayScene(plugin.RenderlayerCreator):
 
     def get_instance_attr_defs(self):
         """Create instance settings."""
+        project_name = get_current_project_name()
+        statuses = get_ftrack_statuses(project_name)
+        statuses = sorted([status['name'] for status in statuses])
 
         return [
             BoolDef("vraySceneMultipleFiles",
@@ -48,5 +56,9 @@ class CreateVRayScene(plugin.RenderlayerCreator):
                     default=False),
             BoolDef("exportOnFarm",
                     label="Export on farm",
-                    default=False)
+                    default=False),
+            EnumDef("ftrackStatus",
+                    label="Ftrack Status",
+                    items=statuses,
+                    default="In progress"),
         ]
