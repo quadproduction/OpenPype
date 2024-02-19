@@ -130,6 +130,14 @@
                     ".*"
                 ]
             }
+        },
+        "ProcessSubmittedCacheJobOnFarm": {
+            "enabled": true,
+            "deadline_department": "",
+            "deadline_pool": "",
+            "deadline_group": "",
+            "deadline_chunk_size": 1,
+            "deadline_priority": 50
         }
     }
 }
