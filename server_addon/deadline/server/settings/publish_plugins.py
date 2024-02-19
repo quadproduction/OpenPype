@@ -242,6 +242,17 @@ class ProcessSubmittedJobOnFarmModel(BaseSettingsModel):
         return value
 
 
+class ProcessCacheJobFarmModel(BaseSettingsModel):
+    """Process submitted job on farm."""
+
+    enabled: bool = Field(title="Enabled")
+    deadline_department: str = Field(title="Department")
+    deadline_pool: str = Field(title="Pool")
+    deadline_group: str = Field(title="Group")
+    deadline_chunk_size: int = Field(title="Chunk Size")
+    deadline_priority: int = Field(title="Priority")
+
+
 class PublishPluginsModel(BaseSettingsModel):
     CollectDefaultDeadlineServer: CollectDefaultDeadlineServerModel = Field(
         default_factory=CollectDefaultDeadlineServerModel,
@@ -280,7 +291,12 @@ class PublishPluginsModel(BaseSettingsModel):
     )
     ProcessSubmittedJobOnFarm: ProcessSubmittedJobOnFarmModel = Field(
         default_factory=ProcessSubmittedJobOnFarmModel,
-        title="Process submitted job on farm.")
+        title="Process submitted job on farm."
+    )
+    ProcessSubmittedCacheJobOnFarm: ProcessCacheJobFarmModel = Field(
+        default_factory=ProcessCacheJobFarmModel,
+        title="Process submitted cache Job on farm."
+    )
 
 
 DEFAULT_DEADLINE_PLUGINS_SETTINGS = {
@@ -431,5 +447,13 @@ DEFAULT_DEADLINE_PLUGINS_SETTINGS = {
                 ]
             }
         ]
+    },
+    "ProcessSubmittedCacheJobOnFarm": {
+        "enabled": True,
+        "deadline_department": "",
+        "deadline_pool": "",
+        "deadline_group": "",
+        "deadline_chunk_size": 1,
+        "deadline_priority": 50
     }
 }
