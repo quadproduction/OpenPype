@@ -15,8 +15,12 @@ class ExtractBGEO(publish.Extractor):
     label = "Extract BGEO"
     hosts = ["houdini"]
     families = ["bgeo"]
+    targets = ["local", "remote"]
 
     def process(self, instance):
+        if instance.data.get("farm"):
+            self.log.debug("Should be processed on farm, skipping.")
+            return
 
         ropnode = hou.node(instance.data["instance_node"])
 
