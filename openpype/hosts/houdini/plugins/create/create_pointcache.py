@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating pointcache alembics."""
 from openpype.hosts.houdini.api import plugin
+from openpype.lib import BoolDef
 
 import hou
 
@@ -15,6 +16,10 @@ class CreatePointCache(plugin.HoudiniCreator):
     def create(self, subset_name, instance_data, pre_create_data):
         instance_data.pop("active", None)
         instance_data.update({"node_type": "alembic"})
+        creator_attributes = instance_data.setdefault(
+            "creator_attributes", dict()
+        )
+        creator_attributes["farm"] = pre_create_data["farm"]
 
         instance = super(CreatePointCache, self).create(
             subset_name,
@@ -48,7 +53,7 @@ class CreatePointCache(plugin.HoudiniCreator):
                 )
 
             # Allow object level paths to Geometry nodes (e.g. /obj/geo1)
-            # but do not allow other object level nodes types like cameras, etc.
+            # but do not allow other object level nodes types like cameras, etc
             elif isinstance(selected_node, hou.ObjNode) and \
                     selected_node.type().name() in ["geo"]:
 
@@ -105,3 +110,17 @@ class CreatePointCache(plugin.HoudiniCreator):
         else:
             return min(outputs,
                        key=lambda node: node.evalParm('outputidx'))
+
+    def get_instance_attr_defs(self):
+        return [
+            BoolDef(
+                "farm",
+                label="Submitting to Farm",
+                default=False
+            )
+        ]
+
+    def get_pre_create_attr_defs(self):
+        attrs = super().get_pre_create_attr_defs()
+        # Use same attributes as for instance attributes
+        return attrs + self.get_instance_attr_defs()
