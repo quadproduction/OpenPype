@@ -15,6 +15,7 @@ from openpype.client import (
     get_versions,
     get_hero_versions,
     get_version_by_name,
+    get_subset_by_name,
     get_representations
 )
 from openpype.pipeline import (
@@ -35,6 +36,7 @@ from openpype.tools.utils.constants import (
     LOCAL_AVAILABILITY_ROLE,
     REMOTE_AVAILABILITY_ROLE
 )
+from openpype.pipeline.context_tools import _get_modules_manager as get_modules_manager
 
 ITEM_ID_ROLE = QtCore.Qt.UserRole + 90
 
@@ -421,6 +423,53 @@ class SubsetsModel(BaseRepresentationModel, TreeModel):
         if repre_info:
             item["repre_info"] = repre_info
 
+
+    def get_latest_versions_from_ftrack(self, project_name, subset_docs_by_id):
+        if not subset_docs_by_id:
+            return
+        # Check if ftrack module is enabled
+        modules_manager = get_modules_manager()
+        ftrack_module = modules_manager.modules_by_name.get("ftrack")
+        if not ftrack_module or not ftrack_module.enabled:
+            return
+
+        import ftrack_api
+        session = ftrack_api.Session()
+
+        if not session:
+            return
+
+        subset_names = " ,".join('"{}"'.format(s["name"]) for s in subset_docs_by_id.values())
+        asset_ids = " ,".join(['"{}"'.format(id) for id in map(str, self._asset_ids)])
+
+        all_subsets = session.query(
+            "select name, versions from Asset"
+            " where project.full_name is {} and"
+            " parent.custom_attributes any (key=avalon_mongo_id and value in ({})) and"
+            " name in ({})".format(project_name, asset_ids, subset_names)
+        ).all()
+
+        all_versions = []
+        for subset in all_subsets:
+            print(subset["name"])
+            asset_id = subset["parent"]["custom_attributes"]["avalon_mongo_id"]
+            subset_doc = get_subset_by_name(
+                project_name, subset["name"], asset_id, fields=["_id"]
+            )
+            version_max = max(
+                [v["version"] for v in subset["versions"] if
+                 v["status"]["name"].lower() != "omitted"]
+            )
+            version_doc = get_version_by_name(
+                        project_name,
+                        version_max,
+                        subset_doc["_id"],
+                        fields=["_id", "parent", "name", "type", "data", "schema"]
+            )
+            all_versions.append(version_doc)
+
+        return all_versions
+
     def _fetch(self):
         project_name = self.dbcon.active_project()
         asset_docs = get_assets(
@@ -459,6 +508,14 @@ class SubsetsModel(BaseRepresentationModel, TreeModel):
             active=True,
             fields=["_id", "parent", "name", "type", "data", "schema"]
         )
+
+        non_omitted_versions = self.get_latest_versions_from_ftrack(project_name, subset_docs_by_id)
+        if non_omitted_versions:
+            for non_omitted_version in non_omitted_versions:
+                if not non_omitted_version:
+                    continue
+                subset_id = non_omitted_version["parent"]
+                last_versions_by_subset_id[subset_id] = non_omitted_version
 
         hero_versions = get_hero_versions(project_name, subset_ids=subset_ids)
         missing_versions = []
