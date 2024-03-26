@@ -48,7 +48,6 @@ function getLayers() {
      *
      * Format of single layer info:
      *      id :    number
-     *      name:   string
      *      group:  boolean - true if layer is a group
      *      parents:array - list of ids of parent groups, useful for selection
      *          all children layers from parent layerSet (eg. group)
@@ -85,6 +84,7 @@ function getLayers() {
       layer.type = getLayerTypeWithName(layer.name);
       layer.visible = desc.getBoolean(stringIDToTypeID("visible"));
       layer.blendMode = typeIDToStringID(desc.getEnumerationValue(stringIDToTypeID('mode')));
+
       //log(" name: " + layer.name + " groupId " + layer.groupId +
       //" group " + layer.group);
       if (layerSection == 'layerSectionStart') { // Group start and end
@@ -500,6 +500,24 @@ function renameLayer(layer_id, new_name){
     selectLayers('['+layer_id+']');
 
     doc.activeLayer.name = new_name;
+}
+
+
+function renameLayers(layers){
+    /***
+     * Renames all given layers based on given id
+     *
+     * Via Action (fast)
+     *
+     * Args:
+     *    layers(list)
+     *
+     **/
+    parsed_layers = JSON.parse(layers)
+    for (var i = 0; i < parsed_layers.length; i++){
+        given_layer = parsed_layers[i]
+        renameLayer(given_layer["id"], given_layer["new_name"]);
+    }
 }
 
 function _get_parents_names(layer, itself_name){
