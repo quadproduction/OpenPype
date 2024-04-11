@@ -31,6 +31,10 @@ class WebServerManager:
 
         # add route with multiple methods for single "external app"
 
+        print("RRRR")
+        import traceback
+        for line in traceback.format_stack():
+            print(line.strip())
         self.webserver_thread = WebServerThread(self)
 
     @property
@@ -50,7 +54,7 @@ class WebServerManager:
         self.app.router.add_static(*args, **kwargs)
 
     def start_server(self):
-        if self.webserver_thread and not self.webserver_thread.is_alive():
+        if self.webserver_thread: #and not self.webserver_thread.is_alive():
             self.webserver_thread.start()
 
     def stop_server(self):
@@ -78,7 +82,9 @@ class WebServerManager:
             callback()
 
 
-class WebServerThread(threading.Thread):
+from qtpy import QtCore
+
+class WebServerThread(QtCore.QThread):
     """ Listener for requests in thread."""
 
     def __init__(self, manager):
@@ -111,6 +117,9 @@ class WebServerThread(threading.Thread):
         self.is_running = True
 
         try:
+            import traceback
+            for line in traceback.format_stack():
+                print(line.strip())
             self.log.info("Starting WebServer server")
             self.loop = asyncio.new_event_loop()  # create new loop for thread
             asyncio.set_event_loop(self.loop)

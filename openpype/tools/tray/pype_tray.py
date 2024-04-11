@@ -5,6 +5,10 @@ import atexit
 
 import platform
 
+from slugify import slugify
+
+from aiohttp.web_response import Response
+
 from qtpy import QtCore, QtGui, QtWidgets
 
 import openpype.version
@@ -27,7 +31,9 @@ from openpype.lib.openpype_version import (
     is_running_staging,
     is_staging_enabled,
 )
-from openpype.modules import TrayModulesManager
+from openpype.modules import ITrayAction, TrayModulesManager
+from openpype.modules.webserver import WebServerModule
+from openpype.modules.webserver.base_routes import RestApiEndpoint
 from openpype.settings import (
     get_system_settings,
     SystemSettings,
@@ -40,6 +46,8 @@ from openpype.tools.utils import (
     get_warning_pixmap,
     get_openpype_qt_app,
 )
+
+from openpype.pipeline.context_tools import _get_modules_manager
 
 from .pype_info_widget import PypeInfoWidget
 
@@ -838,6 +846,7 @@ class PypeTrayStarter(QtCore.QObject):
             QtWidgets.QApplication.processEvents()
             self._timer_counter += 1
             self._tray_widget.initialize_modules()
+            add_tray_modules_api_routes(self)
 
         elif not self._tray_widget.initializing_modules:
             splash = self._get_splash()
@@ -860,10 +869,54 @@ class PypeTrayStarter(QtCore.QObject):
         return splash
 
 
+class FaisChier(RestApiEndpoint):
+    def __init__(self, tray_action):
+        print("HERE11")
+        self.tray_action = tray_action
+        super().__init__()
+
+    async def get(self, request) -> Response:
+        print("HERE12")
+        self.tray_action.on_action_trigger()
+        return Response(
+            status=200,
+            body="[{}]",
+            content_type="application/json"
+        )
+
+def add_tray_modules_api_routes(tray_obj):
+    print("HERE2")
+    webserver_module = None
+    modules = tray_obj._tray_widget.tray_man.modules_manager.get_enabled_tray_modules()
+    for module in modules:
+        if isinstance(module, WebServerModule):
+            webserver_module = module
+
+    for module in modules:
+        if module.enabled and isinstance(module, ITrayAction):
+            print("HERE3")
+            # Add to the API
+            route = "/admin/" if module.admin_action else "/"
+            route += slugify(module.label)
+
+            vraiment_trop_complique = FaisChier(module)
+
+            webserver_module.create_server_manager()
+
+            print(webserver_module.server_manager.port)
+            print(webserver_module.server_manager.host)
+
+            webserver_module.server_manager.add_route(
+                "GET",
+                route,
+                vraiment_trop_complique.dispatch
+            )
+
 def main():
     app = get_openpype_qt_app()
 
     starter = PypeTrayStarter(app)
+    #add_tray_modules_api_routes(starter)
 
     # TODO remove when pype.exe will have an icon
     if os.name == "nt":

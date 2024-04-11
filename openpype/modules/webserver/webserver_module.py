@@ -106,6 +106,7 @@ class WebServerModule(OpenPypeModule, ITrayService):
         """
         from .server import WebServerManager
 
+        print("TOTO")
         return WebServerManager(port, host)
 
     def create_server_manager(self):
