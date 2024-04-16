@@ -15,7 +15,7 @@ class Default(dict):
 
 def _get_anatomy_roots_and_template(template_name):
     project_name = get_current_project_name()
-    anatomy_object = Anatomy()
+    anatomy_object = Anatomy(project_name)
     playblast_anatomy = anatomy_object.templates.get(template_name)
     if not playblast_anatomy:
         logging.warning(f"Can't retrieve template named {template_name}. Check settings for {project_name}.")

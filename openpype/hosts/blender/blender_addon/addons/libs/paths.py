@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 from openpype.pipeline.anatomy import Anatomy
+from openpype.pipeline import get_current_project_name
 
 
 def get_next_version_folder(filepath, create_version_folder=False):
@@ -23,7 +24,8 @@ def get_version_folder_fullpath(filepath):
 
 
 def get_workdir():
-    anatomy_object = Anatomy()
+    project_name = get_current_project_name()
+    anatomy_object = Anatomy(project_name)
     roots = getattr(anatomy_object, "roots", None)
     if not roots:
         raise Exception("Can't retrieve roots attribute for given anatomy object.")
