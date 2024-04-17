@@ -1,4 +1,5 @@
 import re
+import tkinter
 
 from openpype.pipeline import get_representation_path
 from openpype.pipeline.anatomy import Anatomy
@@ -61,6 +62,7 @@ class FileLoader(api.AfterEffectsLoader):
 
         if '.psd' in path:
             import_options['ImportAsType'] = 'ImportAsType.COMP'
+            self._add_to_clipboard(path)
             comp = stub.import_file_with_dialog(path, stub.LOADED_ICON + comp_name, fps)
         else:
             frame = repr_cont.get("frame")
@@ -91,6 +93,13 @@ class FileLoader(api.AfterEffectsLoader):
             context,
             self.__class__.__name__
         )
+
+    def _add_to_clipboard(self, path):
+        try:
+            import pyperclip
+            pyperclip.copy(path)
+        except:
+            self.log.warning("Pyperclip is not installed. Path can't be added to clipboard.")
 
     def update(self, container, representation):
         """ Switch asset or change version """
