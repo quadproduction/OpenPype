@@ -100,6 +100,7 @@ install_requires = [
     "speedcopy",
     "googleapiclient",
     "httplib2",
+    "pyperclip",
     # Harmony implementation
     "filecmp",
     "dns",
