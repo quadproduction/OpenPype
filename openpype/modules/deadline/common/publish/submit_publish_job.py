@@ -281,8 +281,8 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             "AuxFiles": [],
         }
 
-        # TODO: Delete this code once the farm will be switch to RockyLinux
-        # TODO: Delete burnin group in Deadline at the same time
+        # TODO: Delete this code once the farm will be fully switched to RockyLinux
+        # TODO: Delete 'burnin' limit in Deadline at the same time
         extract_burnin_data = instance.context.data['project_settings']['global']['publish']['ExtractBurnin']
         if extract_burnin_data['enabled']:
             extract_burnin_mode = False
