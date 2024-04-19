@@ -15,6 +15,7 @@ from openpype.client import (
 )
 from openpype.pipeline import publish, legacy_io
 from openpype.lib import EnumDef
+from openpype.lib.profiles_filtering import filter_profiles
 from openpype.tests.lib import is_in_tests
 from openpype.pipeline.version_start import get_versioning_start
 from openpype.modules.deadline.utils import DeadlineDefaultJobAttrs
@@ -279,6 +280,40 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
             # Mandatory for Deadline, may be empty
             "AuxFiles": [],
         }
+
+        # TODO: Delete this code once the farm will be switch to RockyLinux
+        # TODO: Delete burnin group in Deadline at the same time
+        extract_burnin_data = instance.context.data['project_settings']['global']['publish']['ExtractBurnin']
+        if extract_burnin_data['enabled']:
+            extract_burnin_mode = False
+            extract_burnin_profiles = extract_burnin_data['profiles']
+            expected_files = instance.data['expectedFiles']
+            family_mapping = {
+                "renderLayer": "render",
+                "renderLocal": "render"
+            }
+            family = family_mapping.get(instance.data["family"]) or instance.data["family"]
+            host_name = instance.context.data["hostName"]
+            task_name = instance.data["anatomyData"]['task']['name']
+            task_type = instance.data["anatomyData"]['task']['type']
+            for expected_files_by_layer in expected_files:
+                if extract_burnin_mode:
+                    break
+
+                for layer_name in expected_files_by_layer.keys():
+                    filtering_criteria = {
+                        "hosts": host_name,
+                        "families": family,
+                        "task_names": task_name,
+                        "task_types": task_type,
+                        "subset": f'{instance.data["subset"]}_{layer_name}'
+                    }
+                    if filter_profiles(extract_burnin_profiles, filtering_criteria):
+                        extract_burnin_mode = True
+                        break
+
+            if extract_burnin_mode:
+                payload["JobInfo"]["LimitGroups"] = "burnin"
 
         # add assembly jobs as dependencies
         if instance.data.get("tileRendering"):
