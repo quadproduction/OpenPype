@@ -416,7 +416,7 @@ class SaveAsDialog(QtWidgets.QDialog):
     def refresh(self):
         extensions = list(self._extensions)
         extension = self.data["ext"]
-        if extension is None:
+        if extension in [None, '.']:
             # Define saving file extension
             current_file = self.host.current_file()
             if current_file:
