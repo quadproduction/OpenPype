@@ -121,8 +121,8 @@ class InstallPySideToBlender(PreLaunchHook):
             return
 
         # Check if PySide2 is installed and skip if yes
-        if self.is_pyside_installed(python_executable):
-            self.log.debug("Blender has already installed PySide2.")
+        if self.is_package_installed(python_executable, ['pyside2', 'pyqt5-tools']):
+            self.log.debug("Blender has already installed PySide2 or PyQt5.")
             return
 
         # Install PySide2 in blender's python
@@ -208,11 +208,11 @@ class InstallPySideToBlender(PreLaunchHook):
         except subprocess.SubprocessError:
             pass
 
-    def is_pyside_installed(self, python_executable):
-        """Check if PySide2 module is in blender's pip list.
+    def is_package_installed(self, python_executable, packages_names=['pyside2']):
+        """Check if one of given module is in blender's pip list.
 
-        Check that PySide2 is installed directly in blender's site-packages.
-        It is possible that it is installed in user's site-packages but that
+        Check that one of given module is installed directly in blender's site-packages.
+        It is possible that they are installed in user's site-packages but that
         may be incompatible with blender's python.
         """
         # Get pip list from blender's python executable
@@ -231,6 +231,6 @@ class InstallPySideToBlender(PreLaunchHook):
             if not line:
                 continue
             package_name = line[0:package_len].strip()
-            if package_name.lower() == "pyside2":
+            if package_name.lower() in packages_names:
                 return True
         return False
