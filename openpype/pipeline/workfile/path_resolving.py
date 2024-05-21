@@ -187,9 +187,95 @@ def get_workdir(
         project_settings
     )
 
+def get_dotted_extensions(extensions):
+    """ Returns a set of extensions prefixed with a `.` """
+    dotted_extensions = set()
+    for ext in extensions:
+        if not ext.startswith("."):
+            ext = ".{}".format(ext)
+        dotted_extensions.add(ext)
+    return dotted_extensions
 
-def get_last_workfile_with_version(
-    workdir, file_template, fill_data, extensions
+
+def get_matching_filenames(directory, regex=None, extensions=None):
+    if not os.path.exists(directory):
+        raise FileNotFoundError(f"Folder not found at path {directory}")
+
+    filenames = os.listdir(directory)
+
+    # Fast match on extension
+    if extensions:
+        filenames = [
+            filename
+            for filename in filenames
+            if os.path.splitext(filename)[-1] in extensions
+        ]
+
+    if regex is None:
+        return filenames
+
+    # Match with ignore case on Windows due to the Windows
+    # OS not being case-sensitive. This avoids later running
+    # into the error that the file did exist if it existed
+    # with a different upper/lower-case.
+    kwargs = {}
+    if platform.system().lower() == "windows":
+        kwargs["flags"] = re.IGNORECASE
+
+    return [
+        filename
+        for filename in filenames
+        if re.match(regex, filename, **kwargs)
+    ]
+
+def get_workfiles(
+    workdir, file_template, fill_data, extensions, file_path=False
+):
+
+    # Build template without optionals, version to digits only regex
+    # and comment to any definable value.
+    # Escape extensions dot for regex
+    dotted_extensions = get_dotted_extensions(extensions)
+    regex_exts = [
+        # "\\" + ext
+        "" + ext
+        for ext in dotted_extensions
+    ]
+    ext_expression = "(?:" + "|".join(regex_exts) + ")"
+
+    # Replace `.{ext}` with `{ext}` so we are sure there is not dot at the end
+    file_template = re.sub(r"\.?{ext}", ext_expression, file_template)
+    # Replace optional keys with optional content regex
+    file_template = re.sub(r"<.*?>", r".*?", file_template)
+    file_template = re.sub(r"{version.*?}", r"([0-9]+)", file_template)
+    file_template = re.sub(r"{comment.*?}", r".+?", file_template)
+    file_template = StringTemplate.format_strict_template(
+        file_template, fill_data
+    )
+
+    filenames = get_matching_filenames(workdir, regex=file_template, extensions=dotted_extensions)
+
+    if not file_path:
+        return filenames
+    return [
+        os.path.normpath(os.path.join(workdir, filename)) for filename in filenames
+    ]
+
+
+def get_most_recent_filename(workdir, filenames):
+    """ Return filename for most recent file in workdir among given filenames """
+    last_time = float("-inf")
+    output_filename = None
+    for filename in filenames:
+        filepath = os.path.join(workdir, filename)
+        mod_time = os.path.getmtime(filepath)
+        if last_time < mod_time:
+            output_filename = filepath
+            last_time = mod_time
+    return output_filename
+
+def get_workfile_with_version(
+    workdir, file_template, fill_data, extensions, version, file_path=False
 ):
     """Return last workfile version.
 
@@ -207,6 +293,8 @@ def get_last_workfile_with_version(
         file_template (str): Template of file name.
         fill_data (Dict[str, Any]): Data for filling template.
         extensions (Iterable[str]): All allowed file extensions of workfile.
+        version (Union[int, None]): Version number for desired workfile. If
+        None, will return workfile for last version
 
     Returns:
         Tuple[Union[str, None], Union[int, None]]: Last workfile with version
@@ -216,11 +304,8 @@ def get_last_workfile_with_version(
     if not os.path.exists(workdir):
         return None, None
 
-    dotted_extensions = set()
-    for ext in extensions:
-        if not ext.startswith("."):
-            ext = ".{}".format(ext)
-        dotted_extensions.add(ext)
+    # Escape extensions dot for regex
+    dotted_extensions = get_dotted_extensions(extensions)
 
     # Fast match on extension
     filenames = [
@@ -231,7 +316,6 @@ def get_last_workfile_with_version(
 
     # Build template without optionals, version to digits only regex
     # and comment to any definable value.
-    # Escape extensions dot for regex
     regex_exts = [
         "\\" + ext
         for ext in dotted_extensions
@@ -242,8 +326,8 @@ def get_last_workfile_with_version(
     file_template = re.sub(r"\.?{ext}", ext_expression, file_template)
     # Replace optional keys with optional content regex
     file_template = re.sub(r"<.*?>", r".*?", file_template)
-    # Replace `{version}` with group regex
-    file_template = re.sub(r"{version.*?}", r"([0-9]+)", file_template)
+    version_template = r"(0*" + str(version) + ")" if version is not None else r"([0-9]+)"
+    file_template = re.sub(r"{version.*?}", version_template, file_template)
     file_template = re.sub(r"{comment.*?}", r".+?", file_template)
     file_template = StringTemplate.format_strict_template(
         file_template, fill_data
@@ -257,11 +341,12 @@ def get_last_workfile_with_version(
     if platform.system().lower() == "windows":
         kwargs["flags"] = re.IGNORECASE
 
-    # Get highest version among existing matching files
-    version = None
+    # Get desired version (highest or set one) among existing matching files
     output_filenames = []
+    targeted_version = version if version is not None else -1
     for filename in sorted(filenames):
         match = re.match(file_template, filename, **kwargs)
+
         if not match:
             continue
 
@@ -270,27 +355,26 @@ def get_last_workfile_with_version(
             continue
 
         file_version = int(match.group(1))
-        if version is None or file_version > version:
+        if version is None and file_version > targeted_version:
             output_filenames[:] = []
-            version = file_version
+            targeted_version = file_version
 
-        if file_version == version:
+        if file_version == targeted_version:
             output_filenames.append(filename)
 
-    output_filename = None
-    if output_filenames:
-        if len(output_filenames) == 1:
-            output_filename = output_filenames[0]
-        else:
-            last_time = None
-            for _output_filename in output_filenames:
-                full_path = os.path.join(workdir, _output_filename)
-                mod_time = os.path.getmtime(full_path)
-                if last_time is None or last_time < mod_time:
-                    output_filename = _output_filename
-                    last_time = mod_time
+    most_recent_filename = get_most_recent_filename(workdir, output_filenames)
+    if most_recent_filename is None:
+        return None, targeted_version
 
-    return output_filename, version
+    if file_path:
+        return os.path.normpath(os.path.join(workdir, most_recent_filename)), targeted_version
+    return most_recent_filename, targeted_version
+
+
+def get_last_workfile_with_version(
+    workdir, file_template, fill_data, extensions
+):
+    return get_workfile_with_version(workdir, file_template, fill_data, extensions, version=None, file_path=False)
 
 
 def get_last_workfile(
