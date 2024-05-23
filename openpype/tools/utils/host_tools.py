@@ -10,9 +10,11 @@ import pyblish.api
 from openpype import AYON_SERVER_ENABLED
 from openpype.host import IWorkfileHost, ILoadHost
 from openpype.lib import Logger
+from openpype.settings import get_project_settings
 from openpype.pipeline import (
     registered_host,
     get_current_asset_name,
+    get_current_project_name
 )
 
 from .lib import qt_app_context
@@ -327,6 +329,9 @@ class HostToolsHelper:
 
         This is helper for
         """
+
+        self.set_windows_custom_settings(kwargs)
+
         if tool_name == "workfiles":
             self.show_workfiles(parent, *args, **kwargs)
 
@@ -358,6 +363,18 @@ class HostToolsHelper:
             self.log.warning(
                 "Can't show unknown tool name: \"{}\"".format(tool_name)
             )
+
+
+    def set_windows_custom_settings(self, kwargs):
+        settings = get_project_settings(get_current_project_name())
+        custom_windows_settings = settings.get('fix_custom_settings', []).get('general', []).get('windows_on_top', None)
+        if not custom_windows_settings:
+            self.log.warning("Can't retrieve custom windows settings. Default OpenPype's values will be applied.")
+            return
+
+        default_on_top = custom_windows_settings.get('default', None)
+        kwargs['on_top'] = default_on_top
+        self.log.info(f"Windows property named `on_top` overriden with default values ({default_on_top}).")
 
 
 class _SingletonPoint:
