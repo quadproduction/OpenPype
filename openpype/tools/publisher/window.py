@@ -390,7 +390,7 @@ class PublisherWindow(QtWidgets.QDialog):
         self._show_counter = 0
         self._window_is_visible = False
 
-        self.put_window_on_front(self)
+        put_window_on_front(self)
 
     @property
     def controller(self):
