@@ -1,0 +1,20 @@
+{
+    "type": "dict",
+    "key": "webserver",
+    "label": "WebServer",
+    "collapsible": true,
+    "require_restart": true,
+    "checkbox_key": "enabled",
+    "children": [
+        {
+            "type": "boolean",
+            "key": "enabled",
+            "label": "Enabled"
+        },
+        {
+            "type": "number",
+            "key": "desired_port",
+            "label": "Desired Port"
+        }
+    ]
+}

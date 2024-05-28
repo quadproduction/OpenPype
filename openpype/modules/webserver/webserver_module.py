@@ -33,11 +33,16 @@ class WebServerModule(OpenPypeModule, ITrayService):
 
     webserver_url_env = "OPENPYPE_WEBSERVER_URL"
 
-    def initialize(self, _module_settings):
-        self.enabled = True
+    def initialize(self, settings):
+        webserver_settings = settings[self.name]
+        self.enabled = webserver_settings["enabled"]
         self.server_manager = None
         self._host_listener = None
 
+        # desired_port = int(webserver_settings.get("desired_port", 0))
+        # if desired_port:
+        #     self.port = self.find_free_port(desired_port, desired_port)
+        # if not self.port:
         self.port = self.find_free_port()
         self.webserver_url = None
 

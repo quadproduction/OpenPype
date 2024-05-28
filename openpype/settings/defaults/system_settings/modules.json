@@ -12,6 +12,10 @@
             "linux": ""
         }
     },
+    "webserver": {
+        "enabled": true,
+        "desired_port": 8079
+    },
     "ftrack": {
         "enabled": false,
         "ftrack_server": "",
