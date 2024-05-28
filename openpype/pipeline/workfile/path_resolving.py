@@ -187,14 +187,14 @@ def get_workdir(
         project_settings
     )
 
-def get_dotted_extensions(extensions):
+def get_suffixes(extensions):
     """ Returns a set of extensions prefixed with a `.` """
-    dotted_extensions = set()
+    suffixes = set()
     for ext in extensions:
         if not ext.startswith("."):
             ext = ".{}".format(ext)
-        dotted_extensions.add(ext)
-    return dotted_extensions
+        suffixes.add(ext)
+    return suffixes
 
 
 def get_matching_filenames(directory, regex=None, extensions=None):
@@ -235,11 +235,11 @@ def get_workfiles(
     # Build template without optionals, version to digits only regex
     # and comment to any definable value.
     # Escape extensions dot for regex
-    dotted_extensions = get_dotted_extensions(extensions)
+    suffixes = get_suffixes(extensions)
     regex_exts = [
         # "\\" + ext
         "" + ext
-        for ext in dotted_extensions
+        for ext in suffixes
     ]
     ext_expression = "(?:" + "|".join(regex_exts) + ")"
 
@@ -253,7 +253,7 @@ def get_workfiles(
         file_template, fill_data
     )
 
-    filenames = get_matching_filenames(workdir, regex=file_template, extensions=dotted_extensions)
+    filenames = get_matching_filenames(workdir, regex=file_template, extensions=suffixes)
 
     if not file_path:
         return filenames
@@ -305,20 +305,20 @@ def get_workfile_with_version(
         return None, None
 
     # Escape extensions dot for regex
-    dotted_extensions = get_dotted_extensions(extensions)
+    suffixes = get_suffixes(extensions)
 
     # Fast match on extension
     filenames = [
         filename
         for filename in os.listdir(workdir)
-        if os.path.splitext(filename)[-1] in dotted_extensions
+        if os.path.splitext(filename)[-1] in suffixes
     ]
 
     # Build template without optionals, version to digits only regex
     # and comment to any definable value.
     regex_exts = [
         "\\" + ext
-        for ext in dotted_extensions
+        for ext in suffixes
     ]
     ext_expression = "(?:" + "|".join(regex_exts) + ")"
 

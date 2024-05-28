@@ -33,16 +33,16 @@ class _RestApiEndpoint(RestApiEndpoint):
         super(_RestApiEndpoint, self).__init__()
 
 
-def get_extensions(host_name: str):
+def get_extensions(application_name: str):
     """
-    Get all extensions for host with given name.
+    Get all extensions for application with given name.
 
     Returns:
         List[str]: Extensions used for workfiles with dot.
     """
     module_manager = ModulesManager()
-    host_module = module_manager.get_host_module(host_name)
-    extensions = host_module.get_workfile_extensions()
+    application_module = module_manager.get_host_module(application_name)
+    extensions = application_module.get_workfile_extensions()
     return extensions
 
 def get_workdir_data(project_name: str, asset_name: str, task_name: str):
@@ -64,14 +64,14 @@ def get_workdir_data(project_name: str, asset_name: str, task_name: str):
     return workdir_data
 
 def get_dir_path(
-        project_anatomy: Anatomy, asset_name: str, task_name: str, host_name: str
+        project_anatomy: Anatomy, asset_name: str, task_name: str, application_name: str
     ) -> str:
     """
     Get path to directory on the file system
     """
     workfile_template_key = get_workfile_template_key(
         task_type=task_name,
-        host_name=host_name,
+        host_name=application_name,
         project_name=project_anatomy.project_name
     )
     workdir_data = get_workdir_data(project_anatomy.project_name, asset_name, task_name)
@@ -79,13 +79,13 @@ def get_dir_path(
     dir_path = dir_template.format_strict(workdir_data)
     return dir_path
 
-def get_file_template(project_anatomy: Anatomy, host_name: str, task_name: str) -> str:
+def get_file_template(project_anatomy: Anatomy, application_name: str, task_name: str) -> str:
     """
     Get template for file name (as defined in project settings)
     """
     workfile_template_key = get_workfile_template_key(
         task_type=task_name,
-        host_name=host_name,
+        host_name=application_name,
         project_name=project_anatomy.project_name
     )
     file_template = project_anatomy.templates[workfile_template_key]["file"]
@@ -99,7 +99,7 @@ def get_application_dict(application: Application):
         Dict[str, Any]: Dictionary holding application info
     """
     return {
-        "full_name": application.full_name, 
+        "full_name": application.full_name,
         "full_label": application.full_label,
         "executable_paths": [app_exec.executable_path for app_exec in application.executables],
         "label": application.label,
@@ -181,7 +181,7 @@ class AssetsGetterEndpoint(_RestApiEndpoint):
 class VersionGetterEndpoint(_RestApiEndpoint):
     async def get(self, request: Request) -> Response:
         try:
-            check_query_parameters(request, ("project_name", "asset_name", "task_name", "host_name"))
+            check_query_parameters(request, ("project_name", "asset_name", "task_name", "application_name"))
         except Exception as exc:
             return Response(
                 status=422,
@@ -189,15 +189,15 @@ class VersionGetterEndpoint(_RestApiEndpoint):
             )
         version_number = int(request.match_info["version_number"])
         query_params = dict(request.query)
-        host_name = query_params["host_name"]
+        application_name = query_params["application_name"]
         task_name = query_params["task_name"]
         project_name = query_params["project_name"]
         asset_name = query_params["asset_name"]
         project_anatomy = Anatomy(project_name)
 
-        dir_path = get_dir_path(project_anatomy, asset_name, task_name, host_name)
-        file_template = get_file_template(project_anatomy, host_name, task_name)
-        extensions = get_extensions(host_name)
+        dir_path = get_dir_path(project_anatomy, asset_name, task_name, application_name)
+        file_template = get_file_template(project_anatomy, application_name, task_name)
+        extensions = get_extensions(application_name)
         workdir_data = get_workdir_data(project_name, asset_name, task_name)
 
         workfile_file_path, _ = get_workfile_with_version(dir_path, file_template, workdir_data, extensions, version=version_number, file_path=True)
@@ -220,7 +220,7 @@ class VersionGetterEndpoint(_RestApiEndpoint):
 class VersionsGetterEndpoint(_RestApiEndpoint):
     async def get(self, request: Request) -> Response:
         try:
-            check_query_parameters(request, ("project_name", "task_name", "host_name"))
+            check_query_parameters(request, ("project_name", "task_name", "application_name"))
         except Exception as exc:
             return Response(
                 status=422,
@@ -228,14 +228,14 @@ class VersionsGetterEndpoint(_RestApiEndpoint):
             )
         query_params = dict(request.query)
         project_name = query_params["project_name"]
-        host_name = query_params["host_name"]
+        application_name = query_params["application_name"]
         task_name = query_params["task_name"]
         project_anatomy = Anatomy(project_name)
         asset_name = request.match_info["asset_name"]
 
-        dir_path = get_dir_path(project_anatomy, asset_name, task_name, host_name)
-        file_template = get_file_template(project_anatomy, host_name, task_name)
-        extensions = get_extensions(host_name)
+        dir_path = get_dir_path(project_anatomy, asset_name, task_name, application_name)
+        file_template = get_file_template(project_anatomy, application_name, task_name)
+        extensions = get_extensions(application_name)
         workdir_data = get_workdir_data(project_name, asset_name, task_name)
 
         workfile_file_paths = get_workfiles(dir_path, file_template, workdir_data, extensions, file_path=True)
@@ -261,7 +261,7 @@ class TemplatesGetterEndpoint(_RestApiEndpoint):
 class WorkfileTemplateKeyGetterEndpoint(_RestApiEndpoint):
     async def get(self, request: Request) -> Response:
         try:
-            check_query_parameters(request, ("task_type", "host_name"))
+            check_query_parameters(request, ("task_type", "application_name"))
         except Exception as exc:
             return Response(
                 status=422,
@@ -271,7 +271,7 @@ class WorkfileTemplateKeyGetterEndpoint(_RestApiEndpoint):
 
         workfile_template_key = get_workfile_template_key(
             task_type=query_params["task_type"],
-            host_name=query_params["host_name"],
+            application_name=query_params["application_name"],
             project_name=request.match_info["project_name"]
         )
         return Response(
@@ -285,8 +285,8 @@ class ApplicationsGetterEndpoint(_RestApiEndpoint):
     async def get(self, request: Request) -> Response:
         application_manager = ApplicationManager()
         applications = OrderedDict(sorted({
-            app_code: get_application_dict(app) 
-            for app_code, app in application_manager.applications.items() 
+            app_code: get_application_dict(app)
+            for app_code, app in application_manager.applications.items()
         }.items(), key=lambda x: x[0]))
         return Response(
             status=200,
@@ -300,8 +300,8 @@ class ApplicationGetterEndpoint(_RestApiEndpoint):
         application_manager = ApplicationManager()
         application_prefix = f"{application_name}/"
         applications = OrderedDict(sorted({
-            app_code: get_application_dict(app) 
-            for app_code, app in application_manager.applications.items() 
+            app_code: get_application_dict(app)
+            for app_code, app in application_manager.applications.items()
             if app_code.startswith(application_prefix)
         }.items(), key=lambda x: x[0]))
         return Response(
