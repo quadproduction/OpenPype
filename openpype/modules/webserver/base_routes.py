@@ -10,7 +10,7 @@ from aiohttp.web_exceptions import HTTPMethodNotAllowed
 from aiohttp.web_request import Request
 
 
-DEFAULT_METHODS = ("GET", "POST", "PUT", "DELETE")
+DEFAULT_METHODS = ("GET", "POST", "PUT", "DELETE", "HEAD")
 
 
 class RestApiEndpoint:

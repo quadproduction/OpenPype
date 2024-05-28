@@ -332,6 +332,10 @@ class AssetGetterEndpoint(_RestApiEndpoint):
             content_type="application/json"
         )
 
+class APIStatusEndpoint(_RestApiEndpoint):
+    async def head(self, request: Request):
+        return Response()
+
 
 class ArchiverRestApiResource:
     def __init__(self, server_manager):
@@ -340,6 +344,11 @@ class ArchiverRestApiResource:
         self.prefix = "/archiver"
 
         self.endpoint_defs = (
+            (
+                "HEAD",
+                "/api",
+                APIStatusEndpoint(self)
+            ),
             (
                 "GET",
                 "/projects",
