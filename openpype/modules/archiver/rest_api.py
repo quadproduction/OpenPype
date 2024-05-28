@@ -1,5 +1,6 @@
 import json
 import datetime
+from collections import OrderedDict
 
 from bson.objectid import ObjectId
 
@@ -19,7 +20,9 @@ from openpype.pipeline.workfile import (
     get_workfiles,
 )
 
-from openpype.modules import ModulesManager, IHostAddon
+from openpype.modules import ModulesManager
+from openpype.lib import ApplicationManager
+from openpype.lib.applications import Application
 from openpype.pipeline import Anatomy
 from openpype_modules.webserver.base_routes import RestApiEndpoint
 
@@ -88,15 +91,20 @@ def get_file_template(project_anatomy: Anatomy, host_name: str, task_name: str) 
     file_template = project_anatomy.templates[workfile_template_key]["file"]
     return file_template
 
-def get_host_info(host_module: IHostAddon):
+def get_application_dict(application: Application):
     """
-    Get host dictionary from given host module
+    Get dictionary from given application instance
 
     Returns:
-        Dict[str, Any]: Dictionary holding host info
+        Dict[str, Any]: Dictionary holding application info
     """
-    extensions = host_module.get_workfile_extensions()
-    return {"name": host_module.host_name, "extensions": extensions}
+    return {
+        "full_name": application.full_name, 
+        "full_label": application.full_label,
+        "executable_paths": [app_exec.executable_path for app_exec in application.executables],
+        "label": application.label,
+        "name": application.name,
+        }
 
 def check_query_parameters(request: Request, needed_query_parameters):
     """
@@ -273,36 +281,32 @@ class WorkfileTemplateKeyGetterEndpoint(_RestApiEndpoint):
         )
 
 
-class HostsGetterEndpoint(_RestApiEndpoint):
+class ApplicationsGetterEndpoint(_RestApiEndpoint):
     async def get(self, request: Request) -> Response:
-        module_manager = ModulesManager()
-        host_names = module_manager.get_host_names()
-        hosts = []
-        for host_name in host_names:
-            host_module = module_manager.get_host_module(host_name)
-            hosts.append(get_host_info(host_module))
+        application_manager = ApplicationManager()
+        applications = OrderedDict(sorted({
+            app_code: get_application_dict(app) 
+            for app_code, app in application_manager.applications.items() 
+        }.items(), key=lambda x: x[0]))
         return Response(
             status=200,
-            body=self.resource.encode({
-                "count": len(hosts),
-                "hosts": hosts,
-            }),
+            body=self.resource.encode(applications),
             content_type="application/json"
         )
 
 
-class HostGetterEndpoint(_RestApiEndpoint):
-    async def get(self, host_name: str) -> Response:
-        module_manager = ModulesManager()
-        host_module = module_manager.get_host_module(host_name)
-        if host_module is None:
-            return Response(
-                status=422,
-                reason=f"Unknown host name `{host_name}`",
-            )
+class ApplicationGetterEndpoint(_RestApiEndpoint):
+    async def get(self, application_name: str) -> Response:
+        application_manager = ApplicationManager()
+        application_prefix = f"{application_name}/"
+        applications = OrderedDict(sorted({
+            app_code: get_application_dict(app) 
+            for app_code, app in application_manager.applications.items() 
+            if app_code.startswith(application_prefix)
+        }.items(), key=lambda x: x[0]))
         return Response(
             status=200,
-            body=self.resource.encode(get_host_info(host_module)),
+            body=self.resource.encode(applications),
             content_type="application/json"
         )
 
@@ -391,13 +395,13 @@ class ArchiverRestApiResource:
             ),
             (
                 "GET",
-                "/hosts",
-                HostsGetterEndpoint(self)
+                "/applications",
+                ApplicationsGetterEndpoint(self)
             ),
             (
                 "GET",
-                "/hosts/{host_name}",
-                HostGetterEndpoint(self)
+                "/applications/{application_name}",
+                ApplicationGetterEndpoint(self)
             ),
         )
 
