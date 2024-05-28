@@ -341,11 +341,11 @@ class APIStatusEndpoint(_RestApiEndpoint):
         return Response()
 
 
-class ArchiverRestApiResource:
+class OpenPypeAPIRestApiResource:
     def __init__(self, server_manager):
         self.server_manager = server_manager
 
-        self.prefix = "/archiver"
+        self.prefix = "/openpypeapi"
 
         self.endpoint_defs = (
             (
