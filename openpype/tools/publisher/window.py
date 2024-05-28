@@ -15,6 +15,8 @@ from openpype.tools.utils import (
     MessageOverlayObject,
     PixmapLabel,
 )
+from openpype.tools.utils.lib import put_window_on_front
+
 
 from .constants import ResetKeySequence
 from .publish_report_viewer import PublishReportViewerWidget
@@ -387,6 +389,8 @@ class PublisherWindow(QtWidgets.QDialog):
         self._show_timer = show_timer
         self._show_counter = 0
         self._window_is_visible = False
+
+        self.put_window_on_front(self)
 
     @property
     def controller(self):

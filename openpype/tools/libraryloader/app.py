@@ -193,6 +193,8 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
         self._message_label = message_label
         self._message_timer = message_timer
 
+        tools_lib.put_window_on_front(self)
+
     def showEvent(self, event):
         super(LibraryLoaderWindow, self).showEvent(event)
         if self._first_show:

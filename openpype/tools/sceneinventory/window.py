@@ -12,6 +12,7 @@ from openpype.tools.utils.lib import (
     qt_app_context,
     preserve_expanded_rows,
     preserve_selection,
+    put_window_on_front,
     FamilyConfigCache
 )
 
@@ -126,6 +127,7 @@ class SceneInventoryWindow(QtWidgets.QDialog):
         self._first_show = True
 
         family_config_cache.refresh()
+        put_window_on_front(self)
 
     def showEvent(self, event):
         super(SceneInventoryWindow, self).showEvent(event)

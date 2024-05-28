@@ -24,6 +24,7 @@ from openpype.pipeline import (
 from openpype.pipeline import legacy_io
 from openpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from openpype.tools.utils.tasks_widget import TasksWidget
+from openpype.tools.utils.lib import put_window_on_front
 
 from .files_widget import FilesWidget
 
@@ -295,30 +296,9 @@ class Window(QtWidgets.QWidget):
             }
             self.set_context(context)
 
-        # Pull window to the front.
-        # this will remove minimized status
-        # and restore window with keeping maximized/normal state
-        self.setWindowState(self.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
-
+        put_window_on_front(self)
         self.raise_()
         self.activateWindow()
-
-        # from win32gui import SetWindowPos
-        # import win32con
-
-        # SetWindowPos(self.winId(),
-        #             win32con.HWND_TOPMOST, # = always on top. only reliable way to bring it to the front on windows
-        #             0, 0, 0, 0,
-        #             win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW)
-        # SetWindowPos(self.winId(),
-        #             win32con.HWND_NOTOPMOST, # disable the always on top, but leave window at its top position
-        #             0, 0, 0, 0,
-        #             win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW)
-        # self.raise_()
-        # self.show()
-        # self.activateWindow()
-
-
 
     @property
     def project_name(self):

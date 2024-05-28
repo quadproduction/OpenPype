@@ -9,7 +9,8 @@ from openpype.pipeline import registered_host
 from openpype.tools.utils import PlaceholderLineEdit
 from openpype.tools.utils.lib import (
     iter_model_rows,
-    qt_app_context
+    qt_app_context,
+    put_window_on_front
 )
 from openpype.tools.utils.models import RecursiveSortFilterProxyModel
 from .model import (
@@ -96,6 +97,8 @@ class SubsetManagerWindow(QtWidgets.QDialog):
         self._view = view
         self._details_widget = details_widget
         self._refresh_btn = refresh_btn
+
+        put_window_on_front(self)
 
     def _on_refresh_clicked(self):
         self.refresh()

@@ -7,7 +7,7 @@ from qtpy import QtWidgets, QtCore
 from openpype.client import get_asset_by_name, get_subsets
 from openpype import style
 from openpype.settings import get_current_project_settings
-from openpype.tools.utils.lib import qt_app_context
+from openpype.tools.utils.lib import qt_app_context, put_window_on_front
 from openpype.pipeline import (
     get_current_project_name,
     get_current_asset_name,
@@ -155,6 +155,7 @@ class CreatorWindow(QtWidgets.QDialog):
         self._msg_timer = msg_timer
 
         # Defaults
+        put_window_on_front(self)
         self.resize(300, 500)
         variant_input.setFocus()
 

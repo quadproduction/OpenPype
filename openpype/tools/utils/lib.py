@@ -6,6 +6,8 @@ import traceback
 
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
+from win32gui import SetWindowPos
+import win32con
 
 from openpype.client import (
     get_project,
@@ -67,6 +69,21 @@ def center_window(window):
     if geo.y() < screen_geo.y():
         geo.setY(screen_geo.y())
     window.move(geo.topLeft())
+
+
+def put_window_on_front(window):
+    SetWindowPos(
+        window.winId(),
+        win32con.HWND_TOPMOST, # = always on top. only reliable way to bring it to the front on windows
+        0, 0, 0, 0,
+        win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW
+    )
+    SetWindowPos(
+        window.winId(),
+        win32con.HWND_NOTOPMOST, # disable the always on top, but leave window at its top position
+        0, 0, 0, 0,
+        win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW
+    )
 
 
 def html_escape(text):

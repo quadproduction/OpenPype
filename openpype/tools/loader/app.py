@@ -196,6 +196,7 @@ class LoaderWindow(QtWidgets.QDialog):
 
         self._refresh()
         self._assetschanged()
+        lib.put_window_on_front(self)
 
         self._first_show = True
 
