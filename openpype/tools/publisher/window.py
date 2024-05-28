@@ -47,7 +47,7 @@ class PublisherWindow(QtWidgets.QDialog):
     footer_border = 8
     publish_footer_spacer = 2
 
-    def __init__(self, parent=None, controller=None, reset_on_show=None):
+    def __init__(self, parent=None, controller=None, reset_on_show=None, on_top=None):
         super(PublisherWindow, self).__init__(parent)
 
         self.setObjectName("PublishWindow")
@@ -60,7 +60,11 @@ class PublisherWindow(QtWidgets.QDialog):
         if reset_on_show is None:
             reset_on_show = True
 
-        if parent is None:
+        # We consider by default that the flag WindowStaysOnTopHint
+        # is applied when no parent is given, which corresponds
+        # to a received value of None for on_top arg
+        on_top = on_top in [None, True]
+        if (not parent and on_top):
             on_top_flag = QtCore.Qt.WindowStaysOnTopHint
         else:
             on_top_flag = QtCore.Qt.Dialog

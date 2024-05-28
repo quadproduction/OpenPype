@@ -24,11 +24,16 @@ module.window = None
 
 
 class SubsetManagerWindow(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, on_top=None):
         super(SubsetManagerWindow, self).__init__(parent=parent)
         self.setWindowTitle("Subset Manager 0.1")
         self.setObjectName("SubsetManager")
-        if not parent:
+
+        # We consider by default that the flag WindowStaysOnTopHint
+        # is applied when no parent is given, which corresponds
+        # to a received value of None for on_top arg
+        on_top = on_top in [None, True]
+        if (not parent and on_top):
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )

@@ -24,12 +24,19 @@ class ToolButton(QtWidgets.QPushButton):
 class ExperimentalToolsDialog(QtWidgets.QDialog):
     refresh_interval = 3000
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, on_top=None):
         super(ExperimentalToolsDialog, self).__init__(parent)
         self.setWindowTitle("OpenPype Experimental tools")
         icon = QtGui.QIcon(app_icon_path())
         self.setWindowIcon(icon)
         self.setStyleSheet(load_stylesheet())
+
+        # We consider by default that the flag WindowStaysOnTopHint
+        # is applied when no parent is given, which corresponds
+        # to a received value of None for on_top arg
+        on_top = on_top in [None, True]
+        if (not parent and on_top):
+            self.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
 
         # Widgets for cases there are not available experimental tools
         empty_widget = QtWidgets.QWidget(self)
