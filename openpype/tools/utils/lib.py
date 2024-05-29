@@ -6,8 +6,6 @@ import traceback
 
 from qtpy import QtWidgets, QtCore, QtGui
 import qtawesome
-from win32gui import SetWindowPos
-import win32con
 
 from openpype.client import (
     get_project,
