@@ -13,6 +13,7 @@ from openpype.lib import Logger
 from openpype.settings import get_project_settings
 from openpype.pipeline import (
     registered_host,
+    get_current_host_name,
     get_current_asset_name,
     get_current_project_name
 )
@@ -66,7 +67,7 @@ class HostToolsHelper:
         workfiles_window = Window(parent=parent)
         self._workfiles_tool = workfiles_window
 
-    def get_workfiles_tool(self, parent):
+    def get_workfiles_tool(self, parent, on_top=None):
         """Create, cache and return workfiles tool window."""
         if self._workfiles_tool is None:
             if AYON_SERVER_ENABLED:
@@ -74,6 +75,7 @@ class HostToolsHelper:
             else:
                 self._init_openpype_workfiles_tool(parent)
 
+        self._workfiles_tool.ensure_visible(on_top=on_top)
         return self._workfiles_tool
 
     def show_workfiles(
@@ -98,7 +100,6 @@ class HostToolsHelper:
                 on_top=on_top
             )
             self._loader_tool = loader_window
-
         return self._loader_tool
 
     def show_loader(self, parent=None, use_context=None, on_top=None):
@@ -306,6 +307,9 @@ class HostToolsHelper:
 
         This is helper for
         """
+
+        self.set_windows_custom_settings(kwargs)
+
         if tool_name == "workfiles":
             return self.get_workfiles_tool(parent, *args, **kwargs)
 
@@ -386,7 +390,7 @@ class HostToolsHelper:
             self.log.warning("Can't retrieve custom windows settings. Default OpenPype's values will be applied.")
             return
 
-        current_host_name = registered_host().name
+        current_host_name = get_current_host_name()
         on_top_setting = self._get_host_on_top_settings(current_host_name, custom_windows_settings)
         if on_top_setting is None:
             self.log.info(f"Can not retrieve `on_top` value for host {current_host_name}. Default value will be applied.")

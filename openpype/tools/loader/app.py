@@ -38,6 +38,10 @@ class LoaderWindow(QtWidgets.QDialog):
     message_timeout = 5000
 
     def __init__(self, parent=None, on_top=None):
+        # Needs to disable parenting in order
+        # to deactivate on_top flag
+        if on_top == False: parent = None
+
         super(LoaderWindow, self).__init__(parent)
         title = "Asset Loader 2.1"
         project_name = legacy_io.active_project()
