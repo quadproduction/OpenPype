@@ -25,6 +25,10 @@ class ExperimentalToolsDialog(QtWidgets.QDialog):
     refresh_interval = 3000
 
     def __init__(self, parent=None, on_top=None):
+        # Needs to disable parenting in order
+        # to deactivate on_top flag
+        if on_top == False: parent = None
+
         super(ExperimentalToolsDialog, self).__init__(parent)
         self.setWindowTitle("OpenPype Experimental tools")
         icon = QtGui.QIcon(app_icon_path())

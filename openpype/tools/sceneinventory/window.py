@@ -31,6 +31,10 @@ class SceneInventoryWindow(QtWidgets.QDialog):
     """Scene Inventory window"""
 
     def __init__(self, parent=None, on_top=None):
+        # Needs to disable parenting in order
+        # to deactivate on_top flag
+        if on_top == False: parent = None
+
         super(SceneInventoryWindow, self).__init__(parent)
 
         # We consider by default that the flag WindowStaysOnTopHint

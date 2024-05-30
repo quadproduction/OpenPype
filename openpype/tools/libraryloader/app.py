@@ -30,7 +30,7 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
     message_timeout = 5000
 
     def __init__(
-        self, parent=None, show_projects=False, show_libraries=True, onçtop=None
+        self, parent=None, show_projects=False, show_libraries=True, on_top=None
     ):
         super(LibraryLoaderWindow, self).__init__(parent)
 
