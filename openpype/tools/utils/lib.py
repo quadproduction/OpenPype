@@ -69,6 +69,13 @@ def center_window(window):
     window.move(geo.topLeft())
 
 
+def set_on_top_flag(window, on_top):
+    if on_top is True:
+        window.setWindowFlags(window.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+    elif on_top is False:
+        window.setWindowFlags(window.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
+
+
 def put_window_on_front(window):
     try:
         from win32gui import SetWindowPos

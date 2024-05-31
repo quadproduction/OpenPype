@@ -18,7 +18,7 @@ from openpype.pipeline import (
     get_current_project_name
 )
 
-from .lib import qt_app_context
+from .lib import qt_app_context, set_on_top_flag
 
 
 class HostToolsHelper:
@@ -227,10 +227,10 @@ class HostToolsHelper:
         the user.
         """
 
-        #TODO: propagate on_top setting
-
         pyblish_show = self._discover_pyblish_gui()
-        return pyblish_show(parent)
+        window = pyblish_show(parent)
+        set_on_top_flag(window, on_top)
+        return window
 
     def _discover_pyblish_gui(self):
         """Return the most desirable of the currently registered GUIs"""
