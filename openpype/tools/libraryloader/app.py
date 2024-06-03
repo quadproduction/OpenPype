@@ -32,6 +32,10 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
     def __init__(
         self, parent=None, show_projects=False, show_libraries=True, on_top=None
     ):
+        # Needs to disable parenting in order
+        # to deactivate on_top flag
+        if on_top == False: parent = None
+
         super(LibraryLoaderWindow, self).__init__(parent)
 
         # Window modifications
