@@ -69,6 +69,34 @@ def center_window(window):
     window.move(geo.topLeft())
 
 
+def set_on_top_flag(window, on_top):
+    if on_top is True:
+        window.setWindowFlags(window.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+    elif on_top is False:
+        window.setWindowFlags(window.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
+
+
+def put_window_on_front(window):
+    try:
+        from win32gui import SetWindowPos
+        import win32con
+
+        SetWindowPos(
+            window.winId(),
+            win32con.HWND_TOPMOST, # = always on top. only reliable way to bring it to the front on windows
+            0, 0, 0, 0,
+            win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW
+        )
+        SetWindowPos(
+            window.winId(),
+            win32con.HWND_NOTOPMOST, # disable the always on top, but leave window at its top position
+            0, 0, 0, 0,
+            win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW
+        )
+
+    except ImportError:
+        return
+
 def html_escape(text):
     """Basic escape of html syntax symbols in text."""
 

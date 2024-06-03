@@ -12,6 +12,7 @@ from openpype.tools.utils.lib import (
     qt_app_context,
     preserve_expanded_rows,
     preserve_selection,
+    put_window_on_front,
     FamilyConfigCache
 )
 
@@ -29,10 +30,18 @@ module.window = None
 class SceneInventoryWindow(QtWidgets.QDialog):
     """Scene Inventory window"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, on_top=None):
+        # Needs to disable parenting in order
+        # to deactivate on_top flag
+        if on_top == False: parent = None
+
         super(SceneInventoryWindow, self).__init__(parent)
 
-        if not parent:
+        # We consider by default that the flag WindowStaysOnTopHint
+        # is applied when no parent is given, which corresponds
+        # to a received value of None for on_top arg
+        on_top = on_top in [None, True]
+        if (not parent and on_top):
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
@@ -122,6 +131,7 @@ class SceneInventoryWindow(QtWidgets.QDialog):
         self._first_show = True
 
         family_config_cache.refresh()
+        put_window_on_front(self)
 
     def showEvent(self, event):
         super(SceneInventoryWindow, self).showEvent(event)

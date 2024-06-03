@@ -23,6 +23,7 @@ from .lib import (
     paint_image_with_color,
     get_warning_pixmap,
     set_style_property,
+    put_window_on_front,
     DynamicQThread,
     qt_app_context,
     get_openpype_qt_app,

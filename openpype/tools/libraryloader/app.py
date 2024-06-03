@@ -30,15 +30,25 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
     message_timeout = 5000
 
     def __init__(
-        self, parent=None, show_projects=False, show_libraries=True
+        self, parent=None, show_projects=False, show_libraries=True, on_top=None
     ):
+        # Needs to disable parenting in order
+        # to deactivate on_top flag
+        if on_top == False: parent = None
+
         super(LibraryLoaderWindow, self).__init__(parent)
 
         # Window modifications
         self.setWindowTitle(self.tool_title)
         window_flags = QtCore.Qt.Window
-        if not parent:
+
+        # We consider by default that the flag WindowStaysOnTopHint
+        # is applied when no parent is given, which corresponds
+        # to a received value of None for on_top arg
+        on_top = on_top in [None, True]
+        if (not parent and on_top):
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
+
         self.setWindowFlags(window_flags)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
@@ -186,6 +196,8 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
 
         self._message_label = message_label
         self._message_timer = message_timer
+
+        tools_lib.put_window_on_front(self)
 
     def showEvent(self, event):
         super(LibraryLoaderWindow, self).showEvent(event)

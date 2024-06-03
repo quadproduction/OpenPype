@@ -7,7 +7,7 @@ from qtpy import QtWidgets, QtCore
 from openpype.client import get_asset_by_name, get_subsets
 from openpype import style
 from openpype.settings import get_current_project_settings
-from openpype.tools.utils.lib import qt_app_context
+from openpype.tools.utils.lib import qt_app_context, put_window_on_front
 from openpype.pipeline import (
     get_current_project_name,
     get_current_asset_name,
@@ -36,11 +36,16 @@ module.window = None
 
 
 class CreatorWindow(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, on_top=None):
         super(CreatorWindow, self).__init__(parent)
         self.setWindowTitle("Instance Creator")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
-        if not parent:
+
+        # We consider by default that the flag WindowStaysOnTopHint
+        # is applied when no parent is given, which corresponds
+        # to a received value of None for on_top arg
+        on_top = on_top in [None, True]
+        if (not parent and on_top):
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
@@ -150,6 +155,7 @@ class CreatorWindow(QtWidgets.QDialog):
         self._msg_timer = msg_timer
 
         # Defaults
+        put_window_on_front(self)
         self.resize(300, 500)
         variant_input.setFocus()
 

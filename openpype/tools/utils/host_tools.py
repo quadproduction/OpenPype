@@ -10,12 +10,15 @@ import pyblish.api
 from openpype import AYON_SERVER_ENABLED
 from openpype.host import IWorkfileHost, ILoadHost
 from openpype.lib import Logger
+from openpype.settings import get_project_settings
 from openpype.pipeline import (
     registered_host,
+    get_current_host_name,
     get_current_asset_name,
+    get_current_project_name
 )
 
-from .lib import qt_app_context
+from .lib import qt_app_context, set_on_top_flag
 
 
 class HostToolsHelper:
@@ -54,24 +57,29 @@ class HostToolsHelper:
         workfiles_window = WorkfilesToolWindow(parent=parent)
         self._workfiles_tool = workfiles_window
 
-    def _init_openpype_workfiles_tool(self, parent):
+    def _init_openpype_workfiles_tool(self, parent, on_top=None):
         from openpype.tools.workfiles.app import Window
 
         # Host validation
         host = registered_host()
         IWorkfileHost.validate_workfile_methods(host)
 
+        # Needs to disable parenting in order
+        # to deactivate on_top flag
+        if on_top is False: parent = None
+
         workfiles_window = Window(parent=parent)
         self._workfiles_tool = workfiles_window
 
-    def get_workfiles_tool(self, parent):
+    def get_workfiles_tool(self, parent, on_top=None):
         """Create, cache and return workfiles tool window."""
         if self._workfiles_tool is None:
             if AYON_SERVER_ENABLED:
                 self._init_ayon_workfiles_tool(parent)
             else:
-                self._init_openpype_workfiles_tool(parent)
+                self._init_openpype_workfiles_tool(parent, on_top)
 
+        self._workfiles_tool.ensure_visible(on_top=on_top)
         return self._workfiles_tool
 
     def show_workfiles(
@@ -80,10 +88,10 @@ class HostToolsHelper:
         """Workfiles tool for changing context and saving workfiles."""
 
         with qt_app_context():
-            workfiles_tool = self.get_workfiles_tool(parent)
+            workfiles_tool = self.get_workfiles_tool(parent, on_top)
             workfiles_tool.ensure_visible(use_context, save, on_top)
 
-    def get_loader_tool(self, parent):
+    def get_loader_tool(self, parent, on_top=None):
         """Create, cache and return loader tool window."""
         if self._loader_tool is None:
             from openpype.tools.loader import LoaderWindow
@@ -91,15 +99,17 @@ class HostToolsHelper:
             host = registered_host()
             ILoadHost.validate_load_methods(host)
 
-            loader_window = LoaderWindow(parent=parent or self._parent)
+            loader_window = LoaderWindow(
+                parent=parent or self._parent,
+                on_top=on_top
+            )
             self._loader_tool = loader_window
-
         return self._loader_tool
 
-    def show_loader(self, parent=None, use_context=None):
+    def show_loader(self, parent=None, use_context=None, on_top=None):
         """Loader tool for loading representations."""
         with qt_app_context():
-            loader_tool = self.get_loader_tool(parent)
+            loader_tool = self.get_loader_tool(parent, on_top)
 
             loader_tool.show()
             loader_tool.raise_()
@@ -115,20 +125,23 @@ class HostToolsHelper:
             else:
                 loader_tool.refresh()
 
-    def get_creator_tool(self, parent):
+    def get_creator_tool(self, parent, on_top=None):
         """Create, cache and return creator tool window."""
         if self._creator_tool is None:
             from openpype.tools.creator import CreatorWindow
 
-            creator_window = CreatorWindow(parent=parent or self._parent)
+            creator_window = CreatorWindow(
+                parent=parent or self._parent,
+                on_top=on_top
+            )
             self._creator_tool = creator_window
 
         return self._creator_tool
 
-    def show_creator(self, parent=None):
+    def show_creator(self, parent=None, on_top=None):
         """Show tool to create new instantes for publishing."""
         with qt_app_context():
-            creator_tool = self.get_creator_tool(parent)
+            creator_tool = self.get_creator_tool(parent, on_top)
             creator_tool.refresh()
             creator_tool.show()
 
@@ -136,29 +149,30 @@ class HostToolsHelper:
             creator_tool.raise_()
             creator_tool.activateWindow()
 
-    def get_subset_manager_tool(self, parent):
+    def get_subset_manager_tool(self, parent, on_top=None):
         """Create, cache and return subset manager tool window."""
         if self._subset_manager_tool is None:
             from openpype.tools.subsetmanager import SubsetManagerWindow
 
             subset_manager_window = SubsetManagerWindow(
-                parent=parent or self._parent
+                parent=parent or self._parent,
+                on_top=on_top
             )
             self._subset_manager_tool = subset_manager_window
 
         return self._subset_manager_tool
 
-    def show_subset_manager(self, parent=None):
+    def show_subset_manager(self, parent=None, on_top=None):
         """Show tool display/remove existing created instances."""
         with qt_app_context():
-            subset_manager_tool = self.get_subset_manager_tool(parent)
+            subset_manager_tool = self.get_subset_manager_tool(parent, on_top)
             subset_manager_tool.show()
 
             # Pull window to the front.
             subset_manager_tool.raise_()
             subset_manager_tool.activateWindow()
 
-    def get_scene_inventory_tool(self, parent):
+    def get_scene_inventory_tool(self, parent, on_top=None):
         """Create, cache and return scene inventory tool window."""
         if self._scene_inventory_tool is None:
             from openpype.tools.sceneinventory import SceneInventoryWindow
@@ -167,16 +181,17 @@ class HostToolsHelper:
             ILoadHost.validate_load_methods(host)
 
             scene_inventory_window = SceneInventoryWindow(
-                parent=parent or self._parent
+                parent=parent or self._parent,
+                on_top=on_top
             )
             self._scene_inventory_tool = scene_inventory_window
 
         return self._scene_inventory_tool
 
-    def show_scene_inventory(self, parent=None):
+    def show_scene_inventory(self, parent=None, on_top=None):
         """Show tool maintain loaded containers."""
         with qt_app_context():
-            scene_inventory_tool = self.get_scene_inventory_tool(parent)
+            scene_inventory_tool = self.get_scene_inventory_tool(parent, on_top)
             scene_inventory_tool.show()
             scene_inventory_tool.refresh()
 
@@ -185,29 +200,30 @@ class HostToolsHelper:
             scene_inventory_tool.activateWindow()
             scene_inventory_tool.showNormal()
 
-    def get_library_loader_tool(self, parent):
+    def get_library_loader_tool(self, parent, on_top=None):
         """Create, cache and return library loader tool window."""
         if self._library_loader_tool is None:
             from openpype.tools.libraryloader import LibraryLoaderWindow
 
             library_window = LibraryLoaderWindow(
-                parent=parent or self._parent
+                parent=parent or self._parent,
+                on_top=on_top
             )
             self._library_loader_tool = library_window
 
         return self._library_loader_tool
 
-    def show_library_loader(self, parent=None):
+    def show_library_loader(self, parent=None, on_top=None):
         """Loader tool for loading representations from library project."""
         with qt_app_context():
-            library_loader_tool = self.get_library_loader_tool(parent)
+            library_loader_tool = self.get_library_loader_tool(parent, on_top)
             library_loader_tool.show()
             library_loader_tool.raise_()
             library_loader_tool.activateWindow()
             library_loader_tool.showNormal()
             library_loader_tool.refresh()
 
-    def show_publish(self, parent=None):
+    def show_publish(self, parent=None, on_top=None):
         """Try showing the most desirable publish GUI
 
         This function cycles through the currently registered
@@ -216,7 +232,9 @@ class HostToolsHelper:
         """
 
         pyblish_show = self._discover_pyblish_gui()
-        return pyblish_show(parent)
+        window = pyblish_show(parent)
+        set_on_top_flag(window, on_top)
+        return window
 
     def _discover_pyblish_gui(self):
         """Return the most desirable of the currently registered GUIs"""
@@ -232,7 +250,7 @@ class HostToolsHelper:
 
         raise ImportError("No Pyblish GUI found")
 
-    def get_experimental_tools_dialog(self, parent=None):
+    def get_experimental_tools_dialog(self, parent=None, on_top=None):
         """Dialog of experimental tools.
 
         For some hosts it is not easy to modify menu of tools. For
@@ -248,20 +266,23 @@ class HostToolsHelper:
                 ExperimentalToolsDialog
             )
 
-            self._experimental_tools_dialog = ExperimentalToolsDialog(parent)
+            self._experimental_tools_dialog = ExperimentalToolsDialog(
+                parent=parent,
+                on_top=on_top
+            )
         return self._experimental_tools_dialog
 
-    def show_experimental_tools_dialog(self, parent=None):
+    def show_experimental_tools_dialog(self, parent=None, on_top=None):
         """Show dialog with experimental tools."""
         with qt_app_context():
-            dialog = self.get_experimental_tools_dialog(parent)
+            dialog = self.get_experimental_tools_dialog(parent, on_top)
 
             dialog.show()
             dialog.raise_()
             dialog.activateWindow()
             dialog.showNormal()
 
-    def get_publisher_tool(self, parent=None, controller=None):
+    def get_publisher_tool(self, parent=None, controller=None, on_top=None):
         """Create, cache and return publisher window."""
 
         if self._publisher_tool is None:
@@ -271,15 +292,16 @@ class HostToolsHelper:
             ILoadHost.validate_load_methods(host)
 
             publisher_window = PublisherWindow(
-                controller=controller, parent=parent or self._parent
+                controller=controller, parent=parent or self._parent,
+                on_top=on_top
             )
             self._publisher_tool = publisher_window
 
         return self._publisher_tool
 
-    def show_publisher_tool(self, parent=None, controller=None, tab=None):
+    def show_publisher_tool(self, parent=None, controller=None, tab=None, on_top=None):
         with qt_app_context():
-            window = self.get_publisher_tool(parent, controller)
+            window = self.get_publisher_tool(parent, controller, on_top)
             if tab:
                 window.set_current_tab(tab)
             window.make_sure_is_visible()
@@ -289,6 +311,9 @@ class HostToolsHelper:
 
         This is helper for
         """
+
+        self.set_windows_custom_settings(kwargs)
+
         if tool_name == "workfiles":
             return self.get_workfiles_tool(parent, *args, **kwargs)
 
@@ -327,6 +352,9 @@ class HostToolsHelper:
 
         This is helper for
         """
+
+        self.set_windows_custom_settings(kwargs)
+
         if tool_name == "workfiles":
             self.show_workfiles(parent, *args, **kwargs)
 
@@ -358,6 +386,29 @@ class HostToolsHelper:
             self.log.warning(
                 "Can't show unknown tool name: \"{}\"".format(tool_name)
             )
+
+    def set_windows_custom_settings(self, kwargs):
+        settings = get_project_settings(get_current_project_name())
+        custom_windows_settings = settings.get('fix_custom_settings', []).get('general', []).get('windows_on_top', None)
+        if not custom_windows_settings:
+            self.log.warning("Can't retrieve custom windows settings. Default OpenPype's values will be applied.")
+            return
+
+        current_host_name = get_current_host_name()
+        on_top_setting = self._get_host_on_top_settings(current_host_name, custom_windows_settings)
+        if on_top_setting is None:
+            self.log.info(f"Can not retrieve `on_top` value for host {current_host_name}. Default value will be applied.")
+            on_top_setting = custom_windows_settings.get('default', None)
+
+        kwargs['on_top'] = on_top_setting
+        self.log.info(f"Windows property named `on_top` overriden with value ({on_top_setting}).")
+
+    def _get_host_on_top_settings(self, current_host_name, custom_windows_settings):
+        for on_top_set in custom_windows_settings.get('per_hosts', []):
+            if current_host_name in on_top_set.get('hosts', []):
+                return on_top_set.get('on_top', None)
+
+        return None
 
 
 class _SingletonPoint:

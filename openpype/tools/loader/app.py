@@ -37,7 +37,11 @@ class LoaderWindow(QtWidgets.QDialog):
     tool_name = "loader"
     message_timeout = 5000
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, on_top=None):
+        # Needs to disable parenting in order
+        # to deactivate on_top flag
+        if on_top == False: parent = None
+
         super(LoaderWindow, self).__init__(parent)
         title = "Asset Loader 2.1"
         project_name = legacy_io.active_project()
@@ -51,8 +55,14 @@ class LoaderWindow(QtWidgets.QDialog):
 
         # Enable minimize and maximize for app
         window_flags = QtCore.Qt.Window
-        if not parent:
+
+        # We consider by default that the flag WindowStaysOnTopHint
+        # is applied when no parent is given, which corresponds
+        # to a received value of None for on_top arg
+        on_top = on_top in [None, True]
+        if (not parent and on_top is None):
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
+
         self.setWindowFlags(window_flags)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
@@ -190,6 +200,7 @@ class LoaderWindow(QtWidgets.QDialog):
 
         self._refresh()
         self._assetschanged()
+        lib.put_window_on_front(self)
 
         self._first_show = True
 

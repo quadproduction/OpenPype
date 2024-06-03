@@ -15,6 +15,8 @@ from openpype.tools.utils import (
     MessageOverlayObject,
     PixmapLabel,
 )
+from openpype.tools.utils.lib import put_window_on_front
+
 
 from .constants import ResetKeySequence
 from .publish_report_viewer import PublishReportViewerWidget
@@ -47,7 +49,7 @@ class PublisherWindow(QtWidgets.QDialog):
     footer_border = 8
     publish_footer_spacer = 2
 
-    def __init__(self, parent=None, controller=None, reset_on_show=None):
+    def __init__(self, parent=None, controller=None, reset_on_show=None, on_top=None):
         super(PublisherWindow, self).__init__(parent)
 
         self.setObjectName("PublishWindow")
@@ -60,7 +62,11 @@ class PublisherWindow(QtWidgets.QDialog):
         if reset_on_show is None:
             reset_on_show = True
 
-        if parent is None:
+        # We consider by default that the flag WindowStaysOnTopHint
+        # is applied when no parent is given, which corresponds
+        # to a received value of None for on_top arg
+        on_top = on_top in [None, True]
+        if (not parent and on_top):
             on_top_flag = QtCore.Qt.WindowStaysOnTopHint
         else:
             on_top_flag = QtCore.Qt.Dialog
@@ -383,6 +389,8 @@ class PublisherWindow(QtWidgets.QDialog):
         self._show_timer = show_timer
         self._show_counter = 0
         self._window_is_visible = False
+
+        put_window_on_front(self)
 
     @property
     def controller(self):

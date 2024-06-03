@@ -9,7 +9,8 @@ from openpype.pipeline import registered_host
 from openpype.tools.utils import PlaceholderLineEdit
 from openpype.tools.utils.lib import (
     iter_model_rows,
-    qt_app_context
+    qt_app_context,
+    put_window_on_front
 )
 from openpype.tools.utils.models import RecursiveSortFilterProxyModel
 from .model import (
@@ -24,11 +25,16 @@ module.window = None
 
 
 class SubsetManagerWindow(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, on_top=None):
         super(SubsetManagerWindow, self).__init__(parent=parent)
         self.setWindowTitle("Subset Manager 0.1")
         self.setObjectName("SubsetManager")
-        if not parent:
+
+        # We consider by default that the flag WindowStaysOnTopHint
+        # is applied when no parent is given, which corresponds
+        # to a received value of None for on_top arg
+        on_top = on_top in [None, True]
+        if (not parent and on_top):
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
@@ -91,6 +97,8 @@ class SubsetManagerWindow(QtWidgets.QDialog):
         self._view = view
         self._details_widget = details_widget
         self._refresh_btn = refresh_btn
+
+        put_window_on_front(self)
 
     def _on_refresh_clicked(self):
         self.refresh()

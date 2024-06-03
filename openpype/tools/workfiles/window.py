@@ -24,6 +24,7 @@ from openpype.pipeline import (
 from openpype.pipeline import legacy_io
 from openpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from openpype.tools.utils.tasks_widget import TasksWidget
+from openpype.tools.utils.lib import put_window_on_front
 
 from .files_widget import FilesWidget
 
@@ -295,7 +296,7 @@ class Window(QtWidgets.QWidget):
             }
             self.set_context(context)
 
-        # Pull window to the front.
+        put_window_on_front(self)
         self.raise_()
         self.activateWindow()
 
