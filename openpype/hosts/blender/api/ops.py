@@ -252,12 +252,11 @@ class LaunchQtApp(bpy.types.Operator):
             # Following lines has been commented because it was forcing
             # the use of a WindowsStaysOnTopHint flag for an unknown
             # reason, and prevent customizing this behavior before that
-            pass
 
             # origin_flags = self._window.windowFlags()
             # on_top_flags = origin_flags | QtCore.Qt.WindowStaysOnTopHint
             # self._window.setWindowFlags(on_top_flags)
-            # self._window.show()
+            self._window.show()
 
         return {'FINISHED'}
 
