@@ -57,12 +57,16 @@ class HostToolsHelper:
         workfiles_window = WorkfilesToolWindow(parent=parent)
         self._workfiles_tool = workfiles_window
 
-    def _init_openpype_workfiles_tool(self, parent):
+    def _init_openpype_workfiles_tool(self, parent, on_top=None):
         from openpype.tools.workfiles.app import Window
 
         # Host validation
         host = registered_host()
         IWorkfileHost.validate_workfile_methods(host)
+
+        # Needs to disable parenting in order
+        # to deactivate on_top flag
+        if on_top is False: parent = None
 
         workfiles_window = Window(parent=parent)
         self._workfiles_tool = workfiles_window
@@ -73,7 +77,7 @@ class HostToolsHelper:
             if AYON_SERVER_ENABLED:
                 self._init_ayon_workfiles_tool(parent)
             else:
-                self._init_openpype_workfiles_tool(parent)
+                self._init_openpype_workfiles_tool(parent, on_top)
 
         self._workfiles_tool.ensure_visible(on_top=on_top)
         return self._workfiles_tool
@@ -84,7 +88,7 @@ class HostToolsHelper:
         """Workfiles tool for changing context and saving workfiles."""
 
         with qt_app_context():
-            workfiles_tool = self.get_workfiles_tool(parent)
+            workfiles_tool = self.get_workfiles_tool(parent, on_top)
             workfiles_tool.ensure_visible(use_context, save, on_top)
 
     def get_loader_tool(self, parent, on_top=None):
