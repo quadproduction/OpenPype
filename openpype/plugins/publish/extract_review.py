@@ -205,7 +205,8 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 or (single_frame_image and frame_filter == "multi_frame")
             ):
                 continue
-
+            #add the frame_filter as a tag for the integrate_kitsu_sequence to handle single_frame
+            output_def['tags'].append(frame_filter)
             filtered_defs.append(output_def)
 
         return filtered_defs
