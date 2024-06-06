@@ -247,7 +247,6 @@ class ExtractReview(pyblish.api.InstancePlugin):
             filtered_output_defs = self._single_frame_filter(
                 input_filepaths, output_defs
             )
-
             if not filtered_output_defs:
                 self.log.debug((
                     "Repre: {} - All output definitions were filtered"
