@@ -1,10 +1,14 @@
 import sys
+import os
+from datetime import datetime
+from copy import deepcopy
 
 from qtpy import QtWidgets, QtCore, QtGui
 
 from openpype import style
-from openpype.client import get_projects, get_project
+from openpype.client import get_projects, get_project, get_representations
 from openpype.pipeline import AvalonMongoDB
+from openpype.client.operations import OperationsSession, prepare_representation_update_data
 from openpype.tools.utils import lib as tools_lib
 from openpype.tools.loader.widgets import (
     ThumbnailWidget,
@@ -74,6 +78,11 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
         combobox_delegate = QtWidgets.QStyledItemDelegate(self)
         projects_combobox.setItemDelegate(combobox_delegate)
 
+        # Availability update button
+        update_availability_button = QtWidgets.QPushButton("Update availability", self)
+        update_availability_button.setFixedHeight(30)
+        update_availability_button.clicked.connect(self.update_subsets_availability)
+
         # Assets widget
         assets_widget = MultiSelectAssetsWidget(
             dbcon, parent=left_side_splitter
@@ -83,7 +92,9 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
         families_filter_view = FamilyListView(
             dbcon, self.family_config_cache, left_side_splitter
         )
+
         left_side_splitter.addWidget(projects_combobox)
+        left_side_splitter.addWidget(update_availability_button)
         left_side_splitter.addWidget(assets_widget)
         left_side_splitter.addWidget(families_filter_view)
         left_side_splitter.setStretchFactor(1, 65)
@@ -186,6 +197,46 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
 
         self._message_label = message_label
         self._message_timer = message_timer
+
+    def update_subsets_availability(self):
+        project_name = self.dbcon.active_project()
+        if not project_name: return
+
+        representations = list(get_representations(project_name))
+        op_session = OperationsSession()
+        treated_representations = list()
+
+        for representation in representations:
+            for file in representation['files']:
+                local_path = self.sync_server.get_local_file_path(
+                    project_name=project_name,
+                    site_name="studio",
+                    file_path=file["path"]
+                )
+
+                if os.path.isfile(local_path):
+                    valid_site = next((
+                        site for site in file['sites']
+                        if site.get('name') == "studio" and
+                        not site.get("created_dt")
+                    ), None)
+
+                    if not valid_site:
+                        continue
+
+                    old_representation = deepcopy(representation)
+                    valid_site['created_dt'] = datetime.fromtimestamp((os.path.getctime(local_path)))
+
+                    op_session.update_entity(
+                        project_name,
+                        representation["type"],
+                        representation["_id"],
+                        prepare_representation_update_data(old_representation, representation)
+                    )
+                    treated_representations.append(representation)
+
+        op_session.commit()
+        self.refresh()
 
     def showEvent(self, event):
         super(LibraryLoaderWindow, self).showEvent(event)
