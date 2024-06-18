@@ -728,50 +728,56 @@ def apply_local_settings_on_system_settings(system_settings, local_settings):
     ATM local settings can modify only application executables. Executable
     values are not overridden but prepended.
     """
-    if not local_settings or "applications" not in local_settings:
+    if not local_settings:
         return
 
-    current_platform = platform.system().lower()
-    apps_settings = system_settings["applications"]
-    additional_apps = apps_settings["additional_apps"]
-    for app_group_name, value in local_settings["applications"].items():
-        if not value:
-            continue
+    if "applications" in local_settings:
+        current_platform = platform.system().lower()
+        apps_settings = system_settings["applications"]
+        additional_apps = apps_settings["additional_apps"]
+        for app_group_name, value in local_settings["applications"].items():
+            if not value:
+                continue
 
-        if (
-            app_group_name not in apps_settings
-            and app_group_name not in additional_apps
-        ):
-            continue
-
-        if app_group_name in apps_settings:
-            variants = apps_settings[app_group_name]["variants"]
-
-        else:
-            variants = (
-                apps_settings["additional_apps"][app_group_name]["variants"]
-            )
-
-        for app_name, app_value in value.items():
             if (
-                not app_value
-                or app_name not in variants
-                or "executables" not in variants[app_name]
+                app_group_name not in apps_settings
+                and app_group_name not in additional_apps
             ):
                 continue
 
-            executable = app_value.get("executable")
-            if not executable:
-                continue
-            platform_executables = variants[app_name]["executables"].get(
-                current_platform
-            )
-            # TODO This is temporary fix until launch arguments will be stored
-            #   per platform and not per executable.
-            # - local settings store only executable
-            new_executables = [executable]
-            new_executables.extend(platform_executables)
-            variants[app_name]["executables"] = new_executables
+            if app_group_name in apps_settings:
+                variants = apps_settings[app_group_name]["variants"]
+
+            else:
+                variants = (
+                    apps_settings["additional_apps"][app_group_name]["variants"]
+                )
+
+            for app_name, app_value in value.items():
+                if (
+                    not app_value
+                    or app_name not in variants
+                    or "executables" not in variants[app_name]
+                ):
+                    continue
+
+                executable = app_value.get("executable")
+                if not executable:
+                    continue
+                platform_executables = variants[app_name]["executables"].get(
+                    current_platform
+                )
+                # TODO This is temporary fix until launch arguments will be stored
+                #   per platform and not per executable.
+                # - local settings store only executable
+                new_executables = [executable]
+                new_executables.extend(platform_executables)
+                variants[app_name]["executables"] = new_executables
+
+    if "modules" in local_settings:
+        modules_settings = system_settings["modules"]
+        for module_name, property in local_settings["modules"].items():
+            modules_settings[module_name].update(property)
 
 
 def apply_local_settings_on_anatomy_settings(
