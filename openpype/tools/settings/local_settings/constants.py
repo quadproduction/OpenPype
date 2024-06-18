@@ -11,6 +11,7 @@ LOCAL_GENERAL_KEY = "general"
 LOCAL_PROJECTS_KEY = "projects"
 LOCAL_ENV_KEY = "environments"
 LOCAL_APPS_KEY = "applications"
+LOCAL_MODULES_KEY = "modules"
 
 # Roots key constant
 LOCAL_ROOTS_KEY = "roots"
@@ -26,6 +27,6 @@ __all__ = (
     "LOCAL_GENERAL_KEY",
     "LOCAL_PROJECTS_KEY",
     "LOCAL_APPS_KEY",
-
+    "LOCAL_MODULES_KEY"
     "LOCAL_ROOTS_KEY"
 )

@@ -25,6 +25,7 @@ from .experimental_widget import (
     LOCAL_EXPERIMENTAL_KEY
 )
 from .apps_widget import LocalApplicationsWidgets
+from .modules_widget import LocalModulesWidgets
 from .environments_widget import LocalEnvironmentsWidgets
 from .projects_widget import ProjectSettingsWidget
 
@@ -32,7 +33,8 @@ from .constants import (
     LOCAL_GENERAL_KEY,
     LOCAL_PROJECTS_KEY,
     LOCAL_ENV_KEY,
-    LOCAL_APPS_KEY
+    LOCAL_APPS_KEY,
+    LOCAL_MODULES_KEY
 )
 
 log = Logger.get_logger(__name__)
@@ -52,6 +54,7 @@ class LocalSettingsWidget(QtWidgets.QWidget):
         self.general_widget = None
         self.experimental_widget = None
         self.envs_widget = None
+        self.module_widget = None
         self.apps_widget = None
         self.projects_widget = None
 
@@ -60,6 +63,7 @@ class LocalSettingsWidget(QtWidgets.QWidget):
         self._create_experimental_ui()
         self._create_environments_ui()
         self._create_app_ui()
+        self._create_modules_ui()
         self._create_project_ui()
 
         self.main_layout.addStretch(1)
@@ -148,6 +152,23 @@ class LocalSettingsWidget(QtWidgets.QWidget):
 
         self.app_widget = app_widget
 
+    def _create_modules_ui(self):
+        modules_expand_widget = ExpandingWidget("Modules", self)
+
+        modules_content = QtWidgets.QWidget(self)
+        modules_layout = QtWidgets.QVBoxLayout(modules_content)
+        modules_layout.setContentsMargins(CHILD_OFFSET, 5, 0, 0)
+        modules_expand_widget.set_content_widget(modules_content)
+
+        modules_widget = LocalModulesWidgets(
+            self.system_settings, modules_content
+        )
+        modules_layout.addWidget(modules_widget)
+
+        self.main_layout.addWidget(modules_expand_widget)
+
+        self.modules_widget = modules_widget
+
     def _create_project_ui(self):
         project_expand_widget = ExpandingWidget("Project settings", self)
         project_content = QtWidgets.QWidget(self)
@@ -180,6 +201,9 @@ class LocalSettingsWidget(QtWidgets.QWidget):
         self.app_widget.update_local_settings(
             value.get(LOCAL_APPS_KEY)
         )
+        self.modules_widget.update_local_settings(
+            value.get(LOCAL_MODULES_KEY)
+        )
         self.projects_widget.update_local_settings(
             value.get(LOCAL_PROJECTS_KEY)
         )
@@ -196,6 +220,10 @@ class LocalSettingsWidget(QtWidgets.QWidget):
         envs_value = self.envs_widget.settings_value()
         if envs_value:
             output[LOCAL_ENV_KEY] = envs_value
+
+        modules_value = self.modules_widget.settings_value()
+        if modules_value:
+            output[LOCAL_MODULES_KEY] = modules_value
 
         app_value = self.app_widget.settings_value()
         if app_value:
