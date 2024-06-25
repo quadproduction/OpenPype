@@ -194,6 +194,8 @@ class PrepareTemporaryFile(bpy.types.Operator):
         update_render_layers_state()
         convert_cache_files_windows_path_to_linux()
         convert_modifiers_windows_path_to_linux()
+        convert_images_files_windows_path_to_linux()
+        convert_vdb_files_windows_path_to_linux()
         set_engine('CYCLES')
         set_global_output_path(create_directory=True)
         set_render_nodes_output_path(convert_to_linux_paths=True)
@@ -263,6 +265,19 @@ def convert_cache_files_windows_path_to_linux():
         log.info(f"Cache file path has updated from {old_path} to {cache_file.filepath}")
 
 
+def convert_images_files_windows_path_to_linux():
+    for image_file in bpy.data.images:
+        old_path = image_file.filepath
+        image_file.filepath = _replace_path_parts_to_linux(image_file.filepath)
+        log.info(f"Image file path has updated from {old_path} to {image_file.filepath}")
+
+def convert_vdb_files_windows_path_to_linux():
+    for vdb_file in bpy.data.volumes:
+        old_path = vdb_file.filepath
+        vdb_file.filepath = _replace_path_parts_to_linux(vdb_file.filepath)
+        log.info(f"Vdb file path has updated from {old_path} to {vdb_file.filepath}")
+
+
 def convert_modifiers_windows_path_to_linux():
     for modifier in _get_all_modifiers():
         for modifier_attribute in MODIFIERS_ATTRIBUTES_TO_REPLACE:
@@ -285,7 +300,10 @@ def _get_all_modifiers():
 
 def _replace_path_parts_to_linux(path):
     return bpy.path.abspath(path).replace(
-        paths.get_workdir(),
+        str(paths.get_workdir()),
+        PathsParts.LINUX.value
+    ).replace(
+        str(paths.get_workdir().resolve()),
         PathsParts.LINUX.value
     ).replace('\\', '/')
 

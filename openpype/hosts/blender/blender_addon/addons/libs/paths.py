@@ -32,7 +32,7 @@ def get_workdir():
     if not workdir:
         raise Exception("Anatomy object has not work property. Can't retrive workdir for given entity.")
 
-    return str(Path(str(workdir)).resolve())
+    return (Path(str(workdir)))
 
 
 def _get_latest_version_folder(filepath, absolute_path=False, create_version_folder=False):
