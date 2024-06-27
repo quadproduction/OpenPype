@@ -498,7 +498,7 @@ class ApplicationManager:
                 break
         return output
 
-    def create_launch_context(self, app_name, **data):
+    def create_launch_context(self, app_name, stdout=None, stderr=None, text=False, **data):
         """Prepare launch context for application.
 
         Args:
@@ -519,7 +519,7 @@ class ApplicationManager:
         executable = app.find_executable()
 
         return ApplicationLaunchContext(
-            app, executable, **data
+            app, executable, stdout=stdout, stderr=stderr, text=text, **data
         )
 
     def launch_with_context(self, launch_context):
@@ -557,7 +557,34 @@ class ApplicationManager:
 
         context = self.create_launch_context(app_name, **data)
         return self.launch_with_context(context)
+    
 
+    def launch_script(self, app_name, script, file_path, stdout=None, stderr=None, text=False, **data):
+        """Launch procedure.
+
+        For host application it's expected to contain "project_name",
+        "asset_name" and "task_name".
+
+        Args:
+            app_name (str): Name of application that should be launched.
+            **data (dict): Any additional data. Data may be used during
+                preparation to store objects usable in multiple places.
+
+        Raises:
+            ApplicationNotFound: Application was not found by entered
+                argument `app_name`.
+            ApplictionExecutableNotFound: Executables in application definition
+                were not found on this machine.
+            ApplicationLaunchFailed: Something important for application launch
+                failed. Exception should contain explanation message,
+                traceback should not be needed.
+        """
+        data["script_launch_data"] = {
+            "script_path": script,
+            "file_path": file_path,
+        }
+        context = self.create_launch_context(app_name, stdout=stdout, stderr=stderr, text=text, **data)
+        return self.launch_with_context(context)
 
 
 class EnvironmentToolGroup:
@@ -957,6 +984,9 @@ class ApplicationLaunchContext:
         executable,
         env_group=None,
         launch_type=None,
+        stdout=None,
+        stderr=None,
+        text=False,
         **data
     ):
         from openpype.modules import ModulesManager
@@ -1022,9 +1052,19 @@ class ApplicationLaunchContext:
             )
             self.kwargs["creationflags"] = flags
 
+        if stdout:
+            self.kwargs["stdout"] = stdout
+        if stderr:
+            self.kwargs["stderr"] = stderr
+
         if not sys.stdout:
-            self.kwargs["stdout"] = subprocess.DEVNULL
-            self.kwargs["stderr"] = subprocess.DEVNULL
+            if stdout is None:
+                self.kwargs["stdout"] = subprocess.DEVNULL
+            if stderr is None:
+                self.kwargs["stderr"] = subprocess.DEVNULL
+
+        if text:
+            self.kwargs["text"] = True
 
         self.prelaunch_hooks = None
         self.postlaunch_hooks = None
