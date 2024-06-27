@@ -18,7 +18,7 @@ def get_dir_path(
     )
     workdir_data = get_workdir_data(project_anatomy.project_name, asset_name, task_name)
 
-    if workfile_template_key not in project_anatomy.templates_obj:
+    if workfile_template_key not in project_anatomy.templates:
         raise ValueError(f"Workfile template key not registered in project templates")
     workfile_template = project_anatomy.templates_obj[workfile_template_key]
 
