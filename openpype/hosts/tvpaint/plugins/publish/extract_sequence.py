@@ -497,7 +497,7 @@ class ExtractSequence(pyblish.api.Extractor):
             bg_layer["opacity"] = 100
             bg_layer["name"] = "BG_OP_Layer"
 
-            layers.append(bg_layer)
+            filtered_layers.append(bg_layer)
 
             # Add to extraction_data_by_layer_id
             filepaths_by_layer_id[bg_id] = self._create_bg_images(bg_layer, output_dir, resolution, custom_mark_range)
