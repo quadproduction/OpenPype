@@ -51,7 +51,7 @@ def parse_layers_data(data):
             "visible": visible == "ON",
             "position": int(position),
             # Opacity from 'tv_layerinfo' is always set to '0' so it's unusable
-            # "opacity": int(opacity),
+            "opacity": int(get_layer_opacity(layer_id)),
             "name": name,
             "type": layer_type,
             "frame_start": int(frame_start),
@@ -540,3 +540,42 @@ def get_scene_bg_color(communicator=None):
     if not data:
         return None
     return data.split(" ")
+
+
+def get_layer_opacity(layer_id, communicator=None):
+    """Return the opacity set on layer.
+    layer_id(int): id of the layer to get the opacity
+
+    Returns:
+        int: Layer Opacity (0-100).
+    """
+    output_file = tempfile.NamedTemporaryFile(
+        mode="w", prefix="a_tvp_", suffix=".txt", delete=False
+    )
+    output_file.close()
+    output_filepath = output_file.name.replace("\\", "/")
+
+    george_script_lines = [
+                # Variable containing full path to output file
+                "output_path = \"{}\"".format(output_filepath),
+                "tv_layerset {}".format(layer_id),
+                "tv_layerdensity 100",
+                "orig_opacity = result",
+                "tv_layerdensity orig_opacity",
+                # Write data to output file
+                "tv_writetextfile \"strict\" \"append\" '\"'output_path'\"' orig_opacity"
+            ]
+
+    george_script = "\n".join(george_script_lines)
+    execute_george_through_file(george_script, communicator)
+
+    with open(output_filepath, "r") as stream:
+        data = stream.read()
+
+    os.remove(output_filepath)
+    data = data.strip()
+
+    if not data:
+        return None
+
+    return(data)

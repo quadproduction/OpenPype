@@ -588,6 +588,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
         # required representation keys
         files = repre["files"]
+        frame_range = instance.data.get("customFrames", [])
         template_data["representation"] = repre["name"]
         template_data["ext"] = repre["ext"]
         format = repre.get('format', None)
@@ -795,9 +796,15 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
             # Multiple file transfers
             transfers = []
-            for src_file_name, dst in zip(src_collection, dst_collection):
+            filtered_files =[file for file in files]
+
+            for src_file_name, dst, index, file in zip(src_collection, dst_collection, destination_indexes, files):
+                if frame_range and index not in frame_range:
+                    filtered_files.remove(file)
+                    continue
                 src = os.path.join(stagingdir, src_file_name)
                 transfers.append((src, dst))
+            repre["files"] = filtered_files
 
         else:
             # Single file

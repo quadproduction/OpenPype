@@ -1,7 +1,7 @@
 import os
 import shutil
 import collections
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageChops
 
 
 def backwards_id_conversion(data_by_layer_id):
@@ -65,7 +65,7 @@ def _calculate_pre_behavior_copy(
         return
 
     # Calculate frame count of layer
-    frame_count = layer_frame_end - layer_frame_start + 1
+    frame_count = (layer_frame_end - layer_frame_start) + 1
 
     if pre_beh == "none":
         # Just fill all frames from last exposure frame to range end with None
@@ -78,14 +78,12 @@ def _calculate_pre_behavior_copy(
             output_idx_by_frame_idx[frame_idx] = first_exposure_frame
 
     elif pre_beh == "repeat":
+        loop_range = list(range(layer_frame_start, layer_frame_end+1))
         # Loop backwards from last frame of layer
         for frame_idx in reversed(range(range_start, layer_frame_start)):
-            eq_frame_idx_offset = (
-                (layer_frame_end - frame_idx) % frame_count
-            )
-            eq_frame_idx = layer_frame_start + (
-                layer_frame_end - eq_frame_idx_offset
-            )
+            eq_frame_idx = frame_idx + frame_count
+            while eq_frame_idx not in loop_range:
+                eq_frame_idx = eq_frame_idx - frame_count
             output_idx_by_frame_idx[frame_idx] = eq_frame_idx
 
     elif pre_beh == "pingpong":
@@ -129,7 +127,7 @@ def _calculate_post_behavior_copy(
         return
 
     # Calculate frame count of layer
-    frame_count = layer_frame_end - layer_frame_start + 1
+    frame_count = (layer_frame_end - layer_frame_start) + 1
 
     if post_beh == "none":
         # Just fill all frames from last exposure frame to range end with None
@@ -142,9 +140,12 @@ def _calculate_post_behavior_copy(
             output_idx_by_frame_idx[frame_idx] = last_exposure_frame
 
     elif post_beh == "repeat":
+        loop_range = list(range(layer_frame_start, layer_frame_end+1))
         # Loop backwards from last frame of layer
         for frame_idx in range(layer_frame_end + 1, range_end + 1):
-            eq_frame_idx = layer_frame_start + (frame_idx % frame_count)
+            eq_frame_idx = frame_idx - frame_count
+            while eq_frame_idx not in loop_range:
+                eq_frame_idx = eq_frame_idx - frame_count
             output_idx_by_frame_idx[frame_idx] = eq_frame_idx
 
     elif post_beh == "pingpong":
@@ -551,7 +552,8 @@ def cleanup_rendered_layers(filepaths_by_layer_id):
 def composite_rendered_layers(
     layers_data, filepaths_by_layer_id,
     range_start, range_end,
-    dst_filepaths_by_frame, cleanup=True
+    dst_filepaths_by_frame, opacity_by_layer_id,
+    cleanup=True
 ):
     """Composite multiple rendered layers by their position.
 
@@ -571,6 +573,7 @@ def composite_rendered_layers(
         dst_filepaths_by_frame(dict): Output filepaths by frame where final
             image after compositing will be stored. Path must not clash with
             source filepaths.
+        opacity_by_layer_id(dict): Opacity stored by layer id. Used as source for compositing.
         cleanup(bool): Remove all source filepaths when done with compositing.
     """
     # Prepare layers by their position
@@ -591,11 +594,13 @@ def composite_rendered_layers(
         dst_filepath = dst_filepaths_by_frame[frame_idx]
         src_filepaths = []
         for layer_position in sorted_positions:
+            src_file = {}
             layer_id = layer_ids_by_position[layer_position]
             filepaths_by_frame = filepaths_by_layer_id[layer_id]
-            src_filepath = filepaths_by_frame.get(frame_idx)
-            if src_filepath is not None:
-                src_filepaths.append(src_filepath)
+            src_file["filepath"] = filepaths_by_frame.get(frame_idx)
+            src_file["opacity"] = opacity_by_layer_id.get(layer_id)
+            if src_file["filepath"] is not None:
+                src_filepaths.append(src_file)
 
         if not src_filepaths:
             transparent_filepaths.add(dst_filepath)
@@ -606,9 +611,17 @@ def composite_rendered_layers(
             first_dst_filepath = dst_filepath
 
         if len(src_filepaths) == 1:
-            src_filepath = src_filepaths[0]
+            src_filepath = src_filepaths[0]["filepath"]
+            src_opacity = src_filepaths[0]["opacity"]
             if cleanup:
-                os.rename(src_filepath, dst_filepath)
+                #Apply the alpha on composite image
+                if src_opacity < 255:
+                    _img_obj = Image.open(src_filepath)
+                    _img_obj.putalpha(create_layer_alpha(src_filepath, src_opacity))
+                    _img_obj.save(dst_filepath)
+                else:
+                    os.rename(src_filepath, dst_filepath)
+
             else:
                 copy_render_file(src_filepath, dst_filepath)
 
@@ -631,18 +644,40 @@ def composite_rendered_layers(
         cleanup_rendered_layers(filepaths_by_layer_id)
 
 
-def composite_images(input_image_paths, output_filepath):
+def create_layer_alpha(input_image_file, alpha_value):
+    """
+    Create a Luminance image based on the image alpha and the tvpp layer opacity
+    Args:
+        input_image_file(str): path to the image
+        alpha_value(int): value of the opacity of the tvpp layer (0-255)
+
+    Returns:
+        Image: A luminance image resulting as the true alpha of the tvpp layer
+    """
+    #Open the input image
+    _img_obj = Image.open(input_image_file)
+    # Get the alpha channel
+    alpha = _img_obj.convert("RGBA").getchannel('A')
+    # Create a Luminance image based on the alpha value of the tvpp layer
+    layer_alpha_image = Image.new("L", _img_obj.size, alpha_value)
+    # mutliply the 2 luminances images
+    return(ImageChops.multiply(alpha, layer_alpha_image))
+
+def composite_images(input_image_files, output_filepath):
     """Composite images in order from passed list.
 
     Raises:
         ValueError: When entered list is empty.
     """
-    if not input_image_paths:
+    if not input_image_files:
         raise ValueError("Nothing to composite.")
 
     img_obj = None
-    for image_filepath in input_image_paths:
-        _img_obj = Image.open(image_filepath)
+    for image_file in input_image_files:
+        _img_obj = Image.open(image_file["filepath"])
+        # Create ans apply a luminance mask if opacity is not 255 (or 100 in tvpp)
+        if image_file["opacity"] < 255:
+            _img_obj.putalpha(create_layer_alpha(image_file["filepath"], image_file["opacity"]))
         if img_obj is None:
             img_obj = _img_obj
         else:
@@ -677,14 +712,15 @@ def rename_filepaths_by_frame_start(
     # Skip if source first frame is same as destination first frame
     new_dst_filepaths = {}
     for src_frame, dst_frame in zip(source_range, output_range):
-        src_filepath = os.path.normpath(filepaths_by_frame[src_frame])
-        dirpath, src_filename = os.path.split(src_filepath)
-        dst_filename = filename_template.format(frame=dst_frame)
-        dst_filepath = os.path.join(dirpath, dst_filename)
+        if filepaths_by_frame.get(src_frame, False):
+            src_filepath = os.path.normpath(filepaths_by_frame[src_frame])
+            dirpath, src_filename = os.path.split(src_filepath)
+            dst_filename = filename_template.format(frame=dst_frame)
+            dst_filepath = os.path.join(dirpath, dst_filename)
 
-        if src_filename != dst_filename:
-            os.rename(src_filepath, dst_filepath)
+            if src_filename != dst_filename:
+                os.rename(src_filepath, dst_filepath)
 
-        new_dst_filepaths[dst_frame] = dst_filepath
+            new_dst_filepaths[dst_frame] = dst_filepath
 
     return new_dst_filepaths

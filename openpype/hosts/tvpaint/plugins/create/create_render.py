@@ -1027,6 +1027,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
 
     # Settings
     default_pass_name = "beauty"
+    enabled = True
     mark_for_review = True
     active_on_create = False
 
@@ -1034,6 +1035,8 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         plugin_settings = (
             project_settings["tvpaint"]["create"]["create_render_scene"]
         )
+
+        self.enabled = plugin_settings.get("enabled", True)
         self.default_variant = plugin_settings["default_variant"]
         self.default_variants = plugin_settings["default_variants"]
         self.mark_for_review = plugin_settings["mark_for_review"]
