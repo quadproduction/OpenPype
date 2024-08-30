@@ -1,4 +1,4 @@
-from aiohttp.web_response import Response
+from fastapi import Response, status
 
 
 class MusterModuleRestApi:
@@ -19,4 +19,4 @@ class MusterModuleRestApi:
 
     async def show_login_widget(self, request):
         self.module.action_show_login.trigger()
-        return Response(status=200)
+        return Response(status_code=status.HTTP_200_OK)
