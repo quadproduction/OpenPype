@@ -39,7 +39,11 @@ class RestApiEndpoint:
 
         wanted_args = list(inspect.signature(method).parameters.keys())
 
-        # is it path_params or query_params?
+        # RestApiEndpoint support only query_params not path_params
+        # This is another limitation pushing to use FastAPI
+
+        # To add a param we need to create a copy (but query_params is a special type)
+        # This is why we need to iterate on items
         available_args = {}
         for param_key, param_value in request.query_params.items():
             available_args[param_key] = param_value
