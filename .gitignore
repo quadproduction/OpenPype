@@ -109,6 +109,8 @@ mypy.ini
 
 tools/run_eventserver.*
 
+install-pyenv-win.ps1
+
 #  Developer tools
 tools/dev_*
 

@@ -79,7 +79,7 @@ class WebServerModule(OpenPypeModule, ITrayService):
         )
 
     def _add_listeners(self):
-        from openpype_modules.webserver import host_console_listener
+        from openpype_modules.fastapi import host_console_listener
 
         self._host_listener = host_console_listener.HostListener(
             self.server_manager, self
