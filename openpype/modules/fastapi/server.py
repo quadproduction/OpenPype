@@ -116,9 +116,7 @@ class WebServerThread(threading.Thread):
         self.is_running = False
         self.manager = manager
         self.loop = None
-        self.runner = None
-        self.site = None
-        self.tasks = []
+        self.server = None
 
     @property
     def log(self):
@@ -165,31 +163,18 @@ class WebServerThread(threading.Thread):
     async def start_server(self):
         """ Starts runner and TCPsite """
         config = uvicorn.Config(app, host=self.host, port=int(self.port), log_level="info", loop="asyncio")
-        server = uvicorn.Server(config)
-        await server.serve()
+        self.server = uvicorn.Server(config)
+        await self.server.serve()
 
     def stop(self):
         """Sets is_running flag to false, 'check_shutdown' shuts server down"""
         self.is_running = False
+        self.server.should_exit = True
 
     async def check_shutdown(self):
         """ Future that is running and checks if server should be running
             periodically.
         """
-        while self.is_running:
-            while self.tasks:
-                task = self.tasks.pop(0)
-                self.log.debug("waiting for task {}".format(task))
-                await task
-                self.log.debug("returned value {}".format(task.result))
-
-            await asyncio.sleep(0.5)
-
-        self.log.debug("Starting shutdown")
-        await self.site.stop()
-        self.log.debug("Site stopped")
-        await self.runner.cleanup()
-        self.log.debug("Runner stopped")
         tasks = [
             task
             for task in asyncio.all_tasks()
