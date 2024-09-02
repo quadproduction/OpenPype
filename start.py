@@ -1178,8 +1178,6 @@ def boot():
 
     # Do the program display popups to the users regarding updates or incompatibilities
     os.environ["OPENPYPE_VERSION_CHECK_POPUP"] = "False" if "disable_version_popup" in commands else "True"
-    _print(">>> update ZXP extensions ...")
-    update_zxp_extensions(openpype_version)
     _print(">>> loading environments ...")
     # Avalon environments must be set before avalon module is imported
     _print("  - for Avalon ...")
@@ -1188,6 +1186,8 @@ def boot():
     set_openpype_global_environments()
     _print("  - for modules ...")
     set_modules_environments()
+    _print(">>> check ZXP extensions ...")
+    update_zxp_extensions(openpype_version)
 
     assert openpype_version, "Version path not defined."
 
