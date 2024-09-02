@@ -73,6 +73,7 @@ aiohttp-middlewares = "^2.0.0"
 Unidecode = "1.2.0"
 cryptography = "39.0.0"
 opentimelineio = "^0.15.0"
+ayon-python-api = "0.4.1"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^6.0"
