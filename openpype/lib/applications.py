@@ -1550,6 +1550,7 @@ def prepare_app_environments(
             result will be stored.
     """
     import acre
+    from openpype.client import get_representation_parents, get_representation_by_id
 
     app = data["app"]
     log = data["log"]
@@ -1587,14 +1588,16 @@ def prepare_app_environments(
         app.group.environment,
         app.environment
     ]
+    # We use project_doc/tools_env instead of asset_doc/tools_env to ensure tools_env propagation
+    # TODO: Handle this case for asset and project separately
+    project_doc = data.get("project_doc")
 
-    asset_doc = data.get("asset_doc")
     # Add tools environments
     groups_by_name = {}
     tool_by_group_name = collections.defaultdict(dict)
-    if asset_doc:
+    if project_doc:
         # Make sure each tool group can be added only once
-        for key in asset_doc["data"].get("tools_env") or []:
+        for key in project_doc["data"].get("tools_env") or []:
             tool = app.manager.tools.get(key)
             if not tool or not tool.is_valid_for_app(app):
                 continue
