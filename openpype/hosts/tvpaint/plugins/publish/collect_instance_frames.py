@@ -100,37 +100,42 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
         if not custom_frames:
             return list(range(int(mark_in), int(mark_out) + 1))
 
-        # Search intervals with regex
-        pattern = r'\[(\d+|:)-(\d+|:)\]'
-        range_pattern = re.findall(pattern, custom_frames)
+        # Check if custom_frames is correctly written and no illegal character is present
+        character_pattern = r'[^][\-:, \d]'
+        match = re.search(character_pattern, custom_frames)
+        if match:
+            self.log.warning("!!!!\nUnauthorized characters found: {}\n!!!!".format(match.group()))
+            raise NameError
 
-        # Replace all intervals by int range
-        for start, end in range_pattern:
-            # Process Start of interval
-            expanded_start = start
-            if start in (':'):
-                # Security if no start defined or
-                # Case if must start on mark_in
-                expanded_start = mark_in + sceneStartFrame
+        # Prepare a list to separate each element in custom_frames
+        custom_frames = re.sub(r'\s+', '', custom_frames)
+        custom_frames_elements = custom_frames.split(",")
 
-            # Process End of interval
-            expanded_end = end
-            if end in (":"):
-                # Security if no end defined or
-                # Case if must end on mark_out
-                expanded_end = mark_out + sceneStartFrame
+        custom_frames_list = set()
+        for element in custom_frames_elements:
+            match = re.match(r'\[(\d+|:)-(\d+|:)\]', element)
+            # If element is [#-#], then process the custom_frames_list construction
+            if match:
+                start, end = match.group(1), match.group(2)
 
-            # check if the end if AFTER the start
-            # Can happen if the user set the markIn AFTER the end frame he entered in the custom frame string
-            if int(expanded_end) < int(expanded_start):
-                self.log.warning("The End frame in [:-{}] is lower than the tvpp markIn {}".format(expanded_end, start))
-                raise IndexError
+                if start == ':':
+                    # Security if must start on mark_in
+                    start = mark_in + sceneStartFrame
+                if end == ":":
+                    # Security if must end on mark_out
+                    end = mark_out + sceneStartFrame
 
-            # Create the replacement string
-            expanded = ', '.join(str(i) for i in range(int(expanded_start), int(expanded_end) + 1))
+                # Check if the end if AFTER the start
+                # Can happen if the user set the markIn AFTER the end frame he entered in the custom frame string
+                if int(end) < int(start):
+                    self.log.warning("The End frame in [:-{}] is lower than the tvpp markIn {}".format(end, mark_in + sceneStartFrame))
+                    raise IndexError
 
-            # Replace the interval by the ranged string
-            custom_frames = re.sub(r'\[' + start + '-' + end + r'\]', expanded, custom_frames)
+                # Add frame_index in custom_frames_list for frame_index in [#-#]
+                for frame_index in range(int(start), int(end)+1):
+                    custom_frames_list.add(frame_index)
 
-        # Clean to return a list of int
-        return [int(x.strip()) for x in custom_frames.split(',')]
+            else:
+                custom_frames_list.add(int(element))
+
+        return list(custom_frames_list)

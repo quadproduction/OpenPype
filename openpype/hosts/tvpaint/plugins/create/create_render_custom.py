@@ -34,7 +34,8 @@ class TVPaintCreateRenderCustomlayer(TVPaintAutoCreator):
         self.extract_psd = plugin_settings["extract_psd"]
         self.apply_background = False
         self.keep_frame_index = False
-        self.exports_types = ['NO', 'scene', 'camera']
+        self.exports_types = ['scene', 'camera']
+        self.review_types = ['Video', 'Seq Img']
         self.enabled = plugin_settings.get("enabled", True)
         self.ignore_layers_transparency = plugin_settings.get("ignore_layers_transparency", True)
 
@@ -126,30 +127,36 @@ class TVPaintCreateRenderCustomlayer(TVPaintAutoCreator):
         return [
             BoolDef(
                 "mark_for_review",
-                label="Review Publish",
+                label="Review Publish on Tracker",
                 default=self.mark_for_review
             ),
-            BoolDef(
-                "review_image_seq",
-                label="Review Media Type: OFF -> video | ON -> Img Seq",
-                default=self.review_image_seq
+            EnumDef(
+                "review_media_type",
+                self.review_types,
+                label="Review Media Type:",
+                default=self.review_types[0]
             ),
             BoolDef(
                 "keep_frame_index",
                 label="Keep actual frame index in Files/Review",
                 default=self.keep_frame_index
             ),
+            BoolDef(
+                "make_playblast",
+                label="Make Playblast",
+                default=True
+            ),
             EnumDef(
                 "export_type",
                 self.exports_types,
-                label="Export Quick Review Through",
+                label="Export Playblast Through",
                 default=self.exports_types[0]
             ),
             UISeparatorDef("layer_options_separator"),
             UILabelDef(label="Export Options"),
             BoolDef(
                 "ignore_layers_transparency",
-                label="All Layers Opacity = 100",
+                label="All Layers are Full Opaque",
                 default=self.ignore_layers_transparency
             ),
             BoolDef(

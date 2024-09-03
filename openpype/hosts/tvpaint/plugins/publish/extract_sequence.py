@@ -143,16 +143,15 @@ class ExtractSequence(pyblish.api.Extractor):
             "Files will be rendered to folder: {}".format(output_dir)
         )
 
-        export_type = instance.data["creator_attributes"].get("export_type", "NO")
+        make_playblast = instance.data["creator_attributes"].get("make_playblast", False)
+        export_type = instance.data["creator_attributes"].get("export_type", None)
         apply_background = instance.data["creator_attributes"].get("apply_background", True)
         is_review = instance.data["family"] == "review"
 
         if instance.data["creator_identifier"] == "render.custom":
             ignore_layers_transparency = instance.data["creator_attributes"].get("ignore_layers_transparency", False)
 
-        review_img_seq = instance.data["creator_attributes"].get("review_image_seq", False)
-
-        if is_review or export_type != "NO":
+        if is_review or make_playblast:
             result = self.render_review(
                 output_dir,
                 export_type,
@@ -200,6 +199,9 @@ class ExtractSequence(pyblish.api.Extractor):
         custom_tags = []
         if "review" in instance.data["families"]:
             tags.append("review")
+
+        review_media_type = instance.data["creator_attributes"].get("review_media_type", None)
+        review_img_seq = True if review_media_type == "Seq Img" else False
 
         # if a custom_mark_range is given, always make the review a seq and not a video
         # It makes no sense to make a video of discontinuous frame range

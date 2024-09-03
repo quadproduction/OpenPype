@@ -83,7 +83,7 @@ def _calculate_pre_behavior_copy(
         for frame_idx in reversed(range(range_start, layer_frame_start)):
             eq_frame_idx = frame_idx + frame_count
             while eq_frame_idx not in loop_range:
-                eq_frame_idx = eq_frame_idx - frame_count
+                eq_frame_idx = eq_frame_idx + frame_count
             output_idx_by_frame_idx[frame_idx] = eq_frame_idx
 
     elif pre_beh == "pingpong":
