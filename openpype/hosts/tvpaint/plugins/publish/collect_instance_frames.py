@@ -101,35 +101,34 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             return list(range(int(mark_in), int(mark_out) + 1))
 
         # Search intervals with regex
-        pattern = r'(\d+|:)(?:-(\d+|:))?'
+        pattern = r'\[(\d+|:)(?:-(\d+|:))?\]'
         range_pattern = re.findall(pattern, custom_frames)
 
         # Replace all intervals by int range
         for start, end in range_pattern:
             # Process Start of interval
-            start_int = start
-
-            if start in ('', ':'):
+            expanded_start = start
+            if start in (':'):
                 # Security if no start defined or
                 # Case if must start on mark_in
-                start_int = int(mark_in + sceneStartFrame)
-            else:
-                # Case if a int is given
-                start_int = int(start)
+                expanded_start = mark_in + sceneStartFrame
 
             # Process End of interval
-            end_int = end
-            if end in ('', ":"):
+            expanded_end = end
+            if end in (":"):
                 # Security if no end defined or
                 # Case if must end on mark_out
-                end_int = int(mark_out + sceneStartFrame)
-            else:
-                # Case if a int is given
-                end_int = int(end)
+                expanded_end = mark_out + sceneStartFrame
+
+            # check if the end if AFTER the start
+            # Can happen if the user set the markIn AFTER the end frame he entered in the custom frame string
+            if int(expanded_end) < int(expanded_start):
+                self.log.warning("The End frame in [:-{}] is lower than the tvpp markIn {}".format(expanded_end, start))
+                raise IndexError
 
             # Create the replacement string
-            expanded = ', '.join(str(i) for i in range(int(start_int), int(end_int) + 1))
-
+            expanded = ', '.join(str(i) for i in range(int(expanded_start), int(expanded_end) + 1))
+            print(expanded)
             # Replace the interval by the ranged string
             custom_frames = re.sub(r'\[' + start + '-' + end + r'\]', expanded, custom_frames)
 

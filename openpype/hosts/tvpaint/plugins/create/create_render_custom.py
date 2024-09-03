@@ -35,7 +35,6 @@ class TVPaintCreateRenderCustomlayer(TVPaintAutoCreator):
         self.apply_background = False
         self.keep_frame_index = False
         self.exports_types = ['NO', 'scene', 'camera']
-        self.export_type = self.exports_types[0]
         self.enabled = plugin_settings.get("enabled", True)
         self.ignore_layers_transparency = plugin_settings.get("ignore_layers_transparency", True)
 
@@ -144,10 +143,9 @@ class TVPaintCreateRenderCustomlayer(TVPaintAutoCreator):
                 "export_type",
                 self.exports_types,
                 label="Export Quick Review Through",
-                default=self.export_type
+                default=self.exports_types[0]
             ),
-            UISeparatorDef("layer_options"),
-            UISeparatorDef("layer_options_01"),
+            UISeparatorDef("layer_options_separator"),
             UILabelDef(label="Export Options"),
             BoolDef(
                 "ignore_layers_transparency",

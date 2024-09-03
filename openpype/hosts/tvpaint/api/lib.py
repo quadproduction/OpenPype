@@ -546,35 +546,9 @@ def get_layer_opacity(layer_id, communicator=None):
     layer_id(int): id of the layer to get the opacity
 
     Returns:
-        int: Layer Opacity (0-100).
+        str: Layer Opacity (0-100).
     """
-    output_file = tempfile.NamedTemporaryFile(
-        mode="w", prefix="a_tvp_", suffix=".txt", delete=False
-    )
-    output_file.close()
-    output_filepath = output_file.name.replace("\\", "/")
-
-    george_script_lines = [
-                # Variable containing full path to output file
-                "output_path = \"{}\"".format(output_filepath),
-                "tv_layerset {}".format(layer_id),
-                "tv_layerdensity 100",
-                "orig_opacity = result",
-                "tv_layerdensity orig_opacity",
-                # Write data to output file
-                "tv_writetextfile \"strict\" \"append\" '\"'output_path'\"' orig_opacity"
-            ]
-
-    george_script = "\n".join(george_script_lines)
-    execute_george_through_file(george_script, communicator)
-
-    with open(output_filepath, "r") as stream:
-        data = stream.read()
-
-    os.remove(output_filepath)
-    data = data.strip()
-
-    if not data:
-        return None
-
-    return(data)
+    execute_george("tv_layerset {}".format(layer_id))
+    opacity = execute_george("tv_layerdensity")
+    execute_george("tv_layerdensity {}".format(opacity))
+    return opacity

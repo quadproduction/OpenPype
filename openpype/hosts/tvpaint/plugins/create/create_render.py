@@ -1027,7 +1027,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
 
     # Settings
     default_pass_name = "beauty"
-    enabled = True
+
     mark_for_review = True
     active_on_create = False
 

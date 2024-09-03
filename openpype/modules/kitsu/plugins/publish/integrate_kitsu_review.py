@@ -39,7 +39,7 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
             frame_end = instance.data["frameEnd"]
 
             # If only one frame force a list
-            if type(filenames) != list:
+            if not isinstance(filenames, list):
                 filenames = [filenames]
 
             extension = representation.get("ext")

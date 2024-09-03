@@ -31,7 +31,8 @@ class ExtractSequence(pyblish.api.Extractor):
     hosts = ["tvpaint"]
     families = ["review", "render"]
 
-    # Modifiable with settings
+    # Modifiable with settings under:
+    # project_settings/tvpaint/publish/ExtractSequence
     review_bg = [255, 255, 255, 255]
     render_bg = [255, 255, 255, 255]
 

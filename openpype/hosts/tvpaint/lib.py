@@ -599,7 +599,7 @@ def composite_rendered_layers(
             filepaths_by_frame = filepaths_by_layer_id[layer_id]
             src_file["filepath"] = filepaths_by_frame.get(frame_idx)
             src_file["opacity"] = opacity_by_layer_id.get(layer_id, 255)
-            if src_file["filepath"] is not None:
+            if src_file["filepath"]:
                 src_filepaths.append(src_file)
 
         if not src_filepaths:
