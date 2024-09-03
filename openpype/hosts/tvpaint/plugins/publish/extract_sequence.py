@@ -502,7 +502,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
             # Add to extraction_data_by_layer_id
             filepaths_by_layer_id[bg_id] = self._create_bg_images(bg_layer, output_dir, resolution, custom_mark_range)
-            opacity_by_layer_id[bg_id] = self._convert_opacity_range(100)
+            opacity_by_layer_id[bg_id] = 255
 
         # Prepare final filepaths where compositing should store result
         output_filepaths_by_frame = {}

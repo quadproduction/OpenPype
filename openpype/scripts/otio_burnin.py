@@ -475,7 +475,6 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
 
         is_sequence = "%" in output
 
-        duration = kwargs.get("duration", 0)
         frame_id = kwargs.get("frame_id", 0)
 
         command = self.command(

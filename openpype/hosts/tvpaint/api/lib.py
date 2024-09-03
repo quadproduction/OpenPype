@@ -50,7 +50,7 @@ def parse_layers_data(data):
             "group_id": int(group_id),
             "visible": visible == "ON",
             "position": int(position),
-            "opacity": int(get_layer_opacity(layer_id)),
+            "opacity": get_layer_opacity(layer_id),
             "name": name,
             "type": layer_type,
             "frame_start": int(frame_start),
@@ -546,9 +546,9 @@ def get_layer_opacity(layer_id):
     layer_id(int): id of the layer to get the opacity
 
     Returns:
-        str: Layer Opacity (0-100).
+        int: Layer Opacity (0-100).
     """
     execute_george("tv_layerset {}".format(layer_id))
     opacity = execute_george("tv_layerdensity")
     execute_george("tv_layerdensity {}".format(opacity))
-    return opacity
+    return int(opacity)
