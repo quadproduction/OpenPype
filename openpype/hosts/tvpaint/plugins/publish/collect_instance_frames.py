@@ -101,7 +101,7 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             return list(range(int(mark_in), int(mark_out) + 1))
 
         # Search intervals with regex
-        pattern = r'\[(\d+|:)(?:-(\d+|:))?\]'
+        pattern = r'\[(\d+|:)-(\d+|:)\]'
         range_pattern = re.findall(pattern, custom_frames)
 
         # Replace all intervals by int range
@@ -128,7 +128,7 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
 
             # Create the replacement string
             expanded = ', '.join(str(i) for i in range(int(expanded_start), int(expanded_end) + 1))
-            print(expanded)
+
             # Replace the interval by the ranged string
             custom_frames = re.sub(r'\[' + start + '-' + end + r'\]', expanded, custom_frames)
 
