@@ -474,10 +474,9 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
                                "use overwrite" % output)
 
         is_sequence = "%" in output
-        keep_frame_index = kwargs.get("keep_frame_index")
 
         duration = kwargs.get("duration", 0)
-        end_frame = kwargs.get("frame_end", 0)
+        frame_id = kwargs.get("frame_id", 0)
 
         command = self.command(
             output=output,
@@ -506,11 +505,8 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
                 "Failed to render '{}': {}'".format(output, command)
             )
 
-        if is_sequence and not keep_frame_index:
-            output = output % duration
-
-        elif is_sequence and keep_frame_index:
-            output = output % end_frame
+        if is_sequence:
+            output = output % frame_id
 
         if not os.path.exists(output):
             raise RuntimeError(

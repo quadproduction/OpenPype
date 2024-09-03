@@ -132,14 +132,15 @@ class TVPaintCreateRenderCustomlayer(TVPaintAutoCreator):
             ),
             BoolDef(
                 "review_image_seq",
-                label="Video(off) / Img Seq(on) for Review",
+                label="Review Media Type: OFF -> video | ON -> Img Seq",
                 default=self.review_image_seq
             ),
             BoolDef(
                 "keep_frame_index",
                 label="Keep actual frame index in Files/Review",
                 default=self.keep_frame_index
-            ),EnumDef(
+            ),
+            EnumDef(
                 "export_type",
                 self.exports_types,
                 label="Export Quick Review Through",

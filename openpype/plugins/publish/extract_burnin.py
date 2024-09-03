@@ -712,11 +712,13 @@ class ExtractBurnin(publish.Extractor):
 
         burnin_duration = burnin_frame_end - burnin_frame_start + 1
 
+        frame_id = burnin_duration if not keep_frame_index else burnin_frame_end
+
         burnin_data.update({
             "frame_start": burnin_frame_start,
             "frame_end": burnin_frame_end,
             "duration": burnin_duration,
-            "keep_frame_index": keep_frame_index
+            "frame_id": frame_id
         })
         temp_data["duration"] = burnin_duration
 

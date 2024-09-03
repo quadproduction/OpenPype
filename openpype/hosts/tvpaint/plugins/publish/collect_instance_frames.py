@@ -49,29 +49,22 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
         # If custom frames are given
         if custom_instance_frames:
             # Create a list of custom frame to render
-            custom_frames = self.range_custom_frames(
+            custom_frames = self.list_custom_frames_export(
                         custom_instance_frames,
                         context.data["sceneMarkIn"],
                         context.data["sceneMarkOut"],
                         context.data["sceneStartFrame"]
                         )
-            # Avoid exporting frame before the tracker frameStart
-            if not all(frame >= asset_doc["data"]["frameStart"] for frame in custom_frames):
-                self.log.warning("The custom frames to export start BEFORE the scene Tracking Start Frame")
-                self.log.info("An auto clean will be applied to start at {}".format(asset_doc["data"]["frameStart"]))
-                # Remove frames lower that the tracker frameStart
-                custom_frames = [frame for frame in custom_frames if (asset_doc["data"]["frameStart"] <= frame)]
-                # Replace by the true tracker frameStart
-                custom_frames.insert(0, asset_doc["data"]["frameStart"])
 
-            # Avoid exporting frame before the scene sceneStartFrame
-            if not all(frame >= instance.context.data["sceneStartFrame"] for frame in custom_frames):
-                self.log.warning("The custom frames to export start BEFORE the tvpp scene Start Frame")
-                self.log.info("An auto clean will be applied to start at {}".format(instance.context.data["sceneStartFrame"]))
-                # Remove frames lower that the scene sceneStartFrame
-                custom_frames = [frame for frame in custom_frames if instance.context.data["sceneStartFrame"] <= frame]
-                # Replace by the true scene sceneStartFrame
-                custom_frames.insert(0, instance.context.data["sceneStartFrame"])
+            start_value = max(asset_doc["data"]["frameStart"], instance.context.data["sceneStartFrame"])
+            # Avoid exporting frame before the tracker frameStart or scene sceneStartFrame
+            if min(custom_frames) < start_value:
+                self.log.warning("The custom frames to export start BEFORE the scene Tracking Start Frame or the tvpp scene Start Frame")
+                self.log.info("An auto clean will be applied to start at {}".format(start_value))
+                # Remove frames lower that the tracker frameStart
+                custom_frames = [frame for frame in custom_frames if (start_value < frame)]
+                # Replace by the true tracker frameStart
+                custom_frames.insert(0, start_value)
 
             instance.data["customFrames"] = custom_frames
 
@@ -83,9 +76,9 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
                 self.log.info("Export Custom frames {}".format(custom_frames))
 
         if custom_instance_frames or keep_frame_index:
-            self.log.info("Changed frames Start/End {}-{} on instance {} ".format(frame_start, frame_end, instance.data["subset"]))
+            self.log.info("Changed frames Start/End {}-{} on instance {} ".format(instance.data["frameStart"] , instance.data["frameEnd"], instance.data["subset"]))
 
-    def range_custom_frames(self, custom_frames , mark_in, mark_out, sceneStartFrame):
+    def list_custom_frames_export(self, custom_frames , mark_in, mark_out, sceneStartFrame):
         """
         Create a list of frame to export based on a string
 

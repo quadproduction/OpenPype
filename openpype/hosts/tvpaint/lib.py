@@ -598,7 +598,7 @@ def composite_rendered_layers(
             layer_id = layer_ids_by_position[layer_position]
             filepaths_by_frame = filepaths_by_layer_id[layer_id]
             src_file["filepath"] = filepaths_by_frame.get(frame_idx)
-            src_file["opacity"] = opacity_by_layer_id.get(layer_id)
+            src_file["opacity"] = opacity_by_layer_id.get(layer_id, 255)
             if src_file["filepath"] is not None:
                 src_filepaths.append(src_file)
 
@@ -613,14 +613,15 @@ def composite_rendered_layers(
         if len(src_filepaths) == 1:
             src_filepath = src_filepaths[0]["filepath"]
             src_opacity = src_filepaths[0]["opacity"]
+
+            #Apply the alpha on composite image
+            if src_opacity < 255:
+                _img_obj = Image.open(src_filepath)
+                _img_obj.putalpha(create_layer_alpha(src_filepath, src_opacity))
+                _img_obj.save(src_filepath)
+
             if cleanup:
-                #Apply the alpha on composite image
-                if src_opacity < 255:
-                    _img_obj = Image.open(src_filepath)
-                    _img_obj.putalpha(create_layer_alpha(src_filepath, src_opacity))
-                    _img_obj.save(dst_filepath)
-                else:
-                    os.rename(src_filepath, dst_filepath)
+                os.rename(src_filepath, dst_filepath)
 
             else:
                 copy_render_file(src_filepath, dst_filepath)
@@ -675,7 +676,7 @@ def composite_images(input_image_files, output_filepath):
     img_obj = None
     for image_file in input_image_files:
         _img_obj = Image.open(image_file["filepath"])
-        # Create ans apply a luminance mask if opacity is not 255 (or 100 in tvpp)
+        # Create and apply a luminance mask if opacity is not 255 (or 100 in tvpp)
         if image_file["opacity"] < 255:
             _img_obj.putalpha(create_layer_alpha(image_file["filepath"], image_file["opacity"]))
         if img_obj is None:
@@ -712,15 +713,16 @@ def rename_filepaths_by_frame_start(
     # Skip if source first frame is same as destination first frame
     new_dst_filepaths = {}
     for src_frame, dst_frame in zip(source_range, output_range):
-        if filepaths_by_frame.get(src_frame, False):
-            src_filepath = os.path.normpath(filepaths_by_frame[src_frame])
-            dirpath, src_filename = os.path.split(src_filepath)
-            dst_filename = filename_template.format(frame=dst_frame)
-            dst_filepath = os.path.join(dirpath, dst_filename)
+        if not filepaths_by_frame.get(src_frame, False):
+            continue
+        src_filepath = os.path.normpath(filepaths_by_frame[src_frame])
+        dirpath, src_filename = os.path.split(src_filepath)
+        dst_filename = filename_template.format(frame=dst_frame)
+        dst_filepath = os.path.join(dirpath, dst_filename)
 
-            if src_filename != dst_filename:
-                os.rename(src_filepath, dst_filepath)
+        if src_filename != dst_filename:
+            os.rename(src_filepath, dst_filepath)
 
-            new_dst_filepaths[dst_frame] = dst_filepath
+        new_dst_filepaths[dst_frame] = dst_filepath
 
     return new_dst_filepaths

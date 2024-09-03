@@ -3,6 +3,7 @@ import logging
 import sys
 import copy
 import datetime
+import re
 
 import clique
 import six
@@ -588,7 +589,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
         # required representation keys
         files = repre["files"]
-        frame_range = instance.data.get("customFrames", [])
+        custom_frames = instance.data.get("customFrames", [])
         template_data["representation"] = repre["name"]
         template_data["ext"] = repre["ext"]
         format = repre.get('format', None)
@@ -796,10 +797,10 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
 
             # Multiple file transfers
             transfers = []
-            filtered_files =[file for file in files]
+            filtered_files = files.copy()
 
             for src_file_name, dst, index, file in zip(src_collection, dst_collection, destination_indexes, files):
-                if frame_range and index not in frame_range:
+                if custom_frames and index not in custom_frames:
                     filtered_files.remove(file)
                     continue
                 src = os.path.join(stagingdir, src_file_name)

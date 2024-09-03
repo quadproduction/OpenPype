@@ -33,7 +33,7 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
 
             filenames = representation.get("files")
 
-            frame_range = instance.data.get("customFrames", [])
+            custom_frames = instance.data.get("customFrames", [])
             keep_frame_index = instance.data.get("keepFrameIndex", False)
             frame_start = instance.data["frameStart"]
             frame_end = instance.data["frameEnd"]
@@ -55,9 +55,9 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
 
             if "burnin" in representation.get("tags", []):
                 enumerate_files = zip(list(range(frame_start, frame_end+1)), filenames)
-                # Update the enumerate_files index if frame_range is given
-                if frame_range:
-                    enumerate_files = zip(frame_range, filenames)
+                # Update the enumerate_files index if custom_frames is given
+                if custom_frames:
+                    enumerate_files = zip(custom_frames, filenames)
                 filenames = ["{:04d}.{}".format(index, extension) for index, file in enumerate_files]
 
             for filename in filenames:
