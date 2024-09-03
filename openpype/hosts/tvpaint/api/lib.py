@@ -541,7 +541,7 @@ def get_scene_bg_color(communicator=None):
     return data.split(" ")
 
 
-def get_layer_opacity(layer_id, communicator=None):
+def get_layer_opacity(layer_id):
     """Return the opacity set on layer.
     layer_id(int): id of the layer to get the opacity
 
