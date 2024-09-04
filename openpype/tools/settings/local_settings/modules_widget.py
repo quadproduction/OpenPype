@@ -67,5 +67,4 @@ class LocalModulesWidgets(QtWidgets.QWidget):
             # Is the current value different from the official settings values?
             if value != data["settings_value"]:
                 output[module_name] = value
-        print(output)
         return output if output else None
