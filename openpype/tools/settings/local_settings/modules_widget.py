@@ -2,7 +2,7 @@ from qtpy import QtWidgets
 
 from openpype.settings import MODULES_SETTINGS_KEY
 from openpype.tools.settings.settings.categories import (
-    FakeCategoryWidget
+    StandaloneCategoryWidget
 )
 
 
@@ -25,7 +25,7 @@ class LocalModulesWidgets(QtWidgets.QWidget):
 
         self.content_layout = layout
 
-        self.fake_category_widget = FakeCategoryWidget(self, layout)
+        self.fake_category_widget = StandaloneCategoryWidget(self, layout)
 
     def _reset_modules_widgets(self):
         while self.content_layout.count() > 0:

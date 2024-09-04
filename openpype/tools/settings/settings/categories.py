@@ -112,10 +112,10 @@ class IgnoreInputChangesObj:
             self.top_widget.hierarchical_style_update()
 
 
-class FakeCategoryWidget(QtWidgets.QWidget):
+class StandaloneCategoryWidget(QtWidgets.QWidget):
 
     def __init__(self, content_widget, content_layout, parent=None):
-        super(FakeCategoryWidget, self).__init__(parent)
+        super(StandaloneCategoryWidget, self).__init__(parent)
 
         self.content_widget = content_widget
         self.content_layout = content_layout
