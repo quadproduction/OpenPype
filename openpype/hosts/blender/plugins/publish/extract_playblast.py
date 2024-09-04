@@ -4,6 +4,7 @@ import clique
 import bpy
 
 import pyblish.api
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import publish
 from openpype.hosts.blender.api import capture
 from openpype.hosts.blender.api.lib import maintained_time
@@ -57,7 +58,7 @@ class ExtractPlayblast(publish.Extractor):
 
         self.log.info(f"Outputting images to {path}")
 
-        project_settings = instance.context.data["project_settings"]["blender"]
+        project_settings = instance.context.data[PROJECT_SETTINGS_KEY]["blender"]
         presets = project_settings["publish"]["ExtractPlayblast"]["presets"]
         preset = presets.get("default")
         preset.update({

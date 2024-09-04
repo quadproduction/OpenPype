@@ -18,6 +18,7 @@ from openpype.client import (
     get_archived_assets,
     get_asset_ids_with_subsets
 )
+from openpype.settings import APPS_SETTINGS_KEY
 from openpype.client.operations import CURRENT_ASSET_DOC_SCHEMA
 from openpype.pipeline import AvalonMongoDB, schema
 
@@ -1976,7 +1977,7 @@ class SyncToAvalonEvent(BaseEvent):
                         value, ent_cust_attrs[key]
                     )
 
-                if entType == "show" and key == "applications":
+                if entType == "show" and key == APPS_SETTINGS_KEY:
                     # Store apps to project't config
                     proj_apps, warnings = (
                         avalon_sync.get_project_apps(new_value)

@@ -37,7 +37,12 @@ from openpype.settings.entities.op_version_entity import (
     OpenPypeVersionInput
 )
 
-from openpype.settings import SaveWarningExc
+from openpype.settings import (
+    SaveWarningExc,
+    PROJECT_ANATOMY_KEY,
+    PROJECT_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
+)
 from openpype.settings.lib import (
     get_system_last_saved_info,
     get_project_last_saved_info,
@@ -105,6 +110,190 @@ class IgnoreInputChangesObj:
         self._ignore_changes = ignore_changes
         if not ignore_changes:
             self.top_widget.hierarchical_style_update()
+
+
+class FakeCategoryWidget(QtWidgets.QWidget):
+
+    def __init__(self, content_widget, content_layout, parent=None):
+        super(FakeCategoryWidget, self).__init__(parent)
+
+        self.content_widget = content_widget
+        self.content_layout = content_layout
+        self._state = CategoryState.Idle
+        self.ignore_input_changes = IgnoreInputChangesObj(self)
+
+    @staticmethod
+    def create_ui_for_entity(category_widget, entity, entity_widget):
+        return SettingsCategoryWidget.create_ui_for_entity(category_widget, entity, entity_widget)
+
+    def _edit_mode_changed(self, event):
+        pass
+
+    def set_read_only(self, status):
+        pass
+
+    def set_edit_mode(self, mode):
+        pass
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self.set_state(value)
+
+    def set_state(self, state):
+        if self._state == state:
+            return
+
+        self._state = state
+
+    def initialize_attributes(self):
+        return
+
+    @property
+    def is_modifying_defaults(self):
+        return False
+
+    def ui_tweaks(self):
+        return
+
+    def _on_path_edit(self, path):
+        pass
+
+    def scroll_to(self, widget):
+        pass
+
+    def go_to_fullpath(self, full_path):
+        """Full path of settings entity which can lead to different category.
+
+        Args:
+            full_path (str): Full path to settings entity. It is expected that
+                path starts with category name ("system_setting" etc.).
+        """
+        pass
+
+    def contain_category_key(self, category):
+        """Parent widget ask if category of full path lead to this widget.
+
+        Args:
+            category (str): The category name.
+
+        Returns:
+            bool: Passed category lead to this widget.
+        """
+        return False
+
+    def set_category_path(self, category, path):
+        """Change path of widget based on category full path."""
+        pass
+
+    def change_path(self, path):
+        """Change path and go to widget."""
+        pass
+
+    def set_path(self, path):
+        """Called from clicked widget."""
+        pass
+
+    def _add_developer_ui(self, footer_layout, footer_widget):
+        pass
+
+    def get_invalid(self):
+        invalid = []
+        return invalid
+
+    def hierarchical_style_update(self):
+        pass
+
+    def _on_entity_change(self):
+        pass
+
+    def add_widget_to_layout(self, widget, label_widget=None):
+        if label_widget:
+            raise NotImplementedError(
+                "`add_widget_to_layout` on Category item can't accept labels"
+            )
+        self.content_layout.addWidget(widget, 0)
+
+    @contextlib.contextmanager
+    def working_state_context(self):
+        self.set_state(CategoryState.Working)
+        yield
+        self.set_state(CategoryState.Idle)
+
+    def save(self):
+        pass
+
+    def _create_root_entity(self):
+        raise NotImplementedError(
+            "`create_root_entity` method not implemented"
+        )
+
+    def _on_reset_start(self):
+        return
+
+    def _on_require_restart_change(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def _on_source_version_change(self, version):
+        pass
+
+    def add_context_actions(self, menu):
+        pass
+
+    def _on_context_version_trigger(self, version):
+        pass
+
+    def _on_extract_to_file(self):
+        pass
+
+    def _on_apply_settings_from_project(self, project_name):
+        pass
+
+    def _on_reset_crash(self):
+        pass
+
+    def _on_reset_success(self):
+        pass
+
+    def add_children_gui(self):
+        for child_obj in self.entity.children:
+            item = self.create_ui_for_entity(self, child_obj, self)
+            self.input_fields.append(item)
+
+        # Add spacer to stretch children guis
+        self.content_layout.addWidget(
+            QtWidgets.QWidget(self.content_widget), 1
+        )
+
+    def items_are_valid(self):
+        return True
+
+    def on_saved(self, saved_tab_widget):
+        """Callback on any tab widget save."""
+        return
+
+    def _check_last_saved_info(self):
+        raise NotImplementedError((
+                                      "{} does not have implemented '_check_last_saved_info'"
+                                  ).format(self.__class__.__name__))
+
+    def _save(self):
+        pass
+
+    def _update_labels_visibility(self):
+        pass
+
+    def _on_refresh(self):
+        self.reset()
+
+    def _on_hide_studio_overrides(self, state):
+        pass
 
 
 class SettingsCategoryWidget(QtWidgets.QWidget):
@@ -889,7 +1078,7 @@ class SystemWidget(SettingsCategoryWidget):
         return self._last_saved_info == last_saved_info
 
     def contain_category_key(self, category):
-        if category == "system_settings":
+        if category == SYSTEM_SETTINGS_KEY:
             return True
         return False
 
@@ -960,14 +1149,14 @@ class ProjectWidget(SettingsCategoryWidget):
         return self._last_saved_info == last_saved_info
 
     def contain_category_key(self, category):
-        if category in ("project_settings", "project_anatomy"):
+        if category in (PROJECT_SETTINGS_KEY, PROJECT_ANATOMY_KEY):
             return True
         return False
 
     def set_category_path(self, category, path):
         if path:
             path_items = path.split("/")
-            if path_items[0] not in ("project_settings", "project_anatomy"):
+            if path_items[0] not in (PROJECT_SETTINGS_KEY, PROJECT_ANATOMY_KEY):
                 path = "/".join([category, path])
         else:
             path = category

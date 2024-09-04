@@ -47,6 +47,11 @@ from maya import cmds
 
 import pyblish.api
 
+from openpype.settings import (
+    MODULES_SETTINGS_KEY,
+    PROJECT_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
+)
 from openpype.pipeline import KnownPublishError
 from openpype.lib import get_formatted_current_time
 from openpype.hosts.maya.api.lib_renderproducts import (
@@ -158,7 +163,7 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
 
         # append full path
         aov_dict = {}
-        default_render_folder = context.data.get("project_settings")\
+        default_render_folder = context.data.get(PROJECT_SETTINGS_KEY)\
             .get("maya")\
             .get("RenderSettings")\
             .get("default_render_image_folder") or ""
@@ -296,7 +301,7 @@ class CollectMayaRender(pyblish.api.InstancePlugin):
         }
 
         rr_settings = (
-            context.data["system_settings"]["modules"]["royalrender"]
+            context.data[SYSTEM_SETTINGS_KEY][MODULES_SETTINGS_KEY]["royalrender"]
         )
         if rr_settings["enabled"]:
             data["rrPathName"] = instance.data.get("rrPathName")
