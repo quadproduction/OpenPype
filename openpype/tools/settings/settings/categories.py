@@ -126,15 +126,6 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
     def create_ui_for_entity(category_widget, entity, entity_widget):
         return SettingsCategoryWidget.create_ui_for_entity(category_widget, entity, entity_widget)
 
-    def _edit_mode_changed(self, event):
-        pass
-
-    def set_read_only(self, status):
-        pass
-
-    def set_edit_mode(self, mode):
-        pass
-
     @property
     def state(self):
         return self._state
@@ -149,18 +140,9 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
 
         self._state = state
 
-    def initialize_attributes(self):
-        return
-
     @property
     def is_modifying_defaults(self):
         return False
-
-    def ui_tweaks(self):
-        return
-
-    def _on_path_edit(self, path):
-        pass
 
     def scroll_to(self, widget):
         pass
@@ -174,40 +156,11 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
         """
         pass
 
-    def contain_category_key(self, category):
-        """Parent widget ask if category of full path lead to this widget.
-
-        Args:
-            category (str): The category name.
-
-        Returns:
-            bool: Passed category lead to this widget.
-        """
-        return False
-
-    def set_category_path(self, category, path):
-        """Change path of widget based on category full path."""
-        pass
-
-    def change_path(self, path):
-        """Change path and go to widget."""
-        pass
-
     def set_path(self, path):
         """Called from clicked widget."""
         pass
 
-    def _add_developer_ui(self, footer_layout, footer_widget):
-        pass
-
-    def get_invalid(self):
-        invalid = []
-        return invalid
-
     def hierarchical_style_update(self):
-        pass
-
-    def _on_entity_change(self):
         pass
 
     def add_widget_to_layout(self, widget, label_widget=None):
@@ -223,44 +176,6 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
         yield
         self.set_state(CategoryState.Idle)
 
-    def save(self):
-        pass
-
-    def _create_root_entity(self):
-        raise NotImplementedError(
-            "`create_root_entity` method not implemented"
-        )
-
-    def _on_reset_start(self):
-        return
-
-    def _on_require_restart_change(self):
-        pass
-
-    def reset(self):
-        pass
-
-    def _on_source_version_change(self, version):
-        pass
-
-    def add_context_actions(self, menu):
-        pass
-
-    def _on_context_version_trigger(self, version):
-        pass
-
-    def _on_extract_to_file(self):
-        pass
-
-    def _on_apply_settings_from_project(self, project_name):
-        pass
-
-    def _on_reset_crash(self):
-        pass
-
-    def _on_reset_success(self):
-        pass
-
     def add_children_gui(self):
         for child_obj in self.entity.children:
             item = self.create_ui_for_entity(self, child_obj, self)
@@ -270,30 +185,6 @@ class StandaloneCategoryWidget(QtWidgets.QWidget):
         self.content_layout.addWidget(
             QtWidgets.QWidget(self.content_widget), 1
         )
-
-    def items_are_valid(self):
-        return True
-
-    def on_saved(self, saved_tab_widget):
-        """Callback on any tab widget save."""
-        return
-
-    def _check_last_saved_info(self):
-        raise NotImplementedError((
-                                      "{} does not have implemented '_check_last_saved_info'"
-                                  ).format(self.__class__.__name__))
-
-    def _save(self):
-        pass
-
-    def _update_labels_visibility(self):
-        pass
-
-    def _on_refresh(self):
-        self.reset()
-
-    def _on_hide_studio_overrides(self, state):
-        pass
 
 
 class SettingsCategoryWidget(QtWidgets.QWidget):
