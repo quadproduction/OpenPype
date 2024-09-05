@@ -41,18 +41,21 @@ function Compare-Checksums($folder_to_compare, $checksum_file) {
                 Write-Host "Changes have been detected for file: $folder_to_compare$relative_path"
                 $checksum_valid = $false
             }
+            # Indicate that this file has been found and checked
+            # To do that we clear the hash value of that file
+            $checksums_dict[$relative_path] = ""
         } else {
             Write-Host "New file detected: $folder_to_compare$relative_path"
             $checksum_valid = $false
         }
     }
 
-    # Check for missing files
-    foreach ($checksum_relative_path in $checksums_dict.Keys) {
-        $checksum_path = Join-Path -Path $folder_to_compare -ChildPath $checksum_relative_path.Replace("/", "\")
-        if (-not (Test-Path -Path $checksum_path)) {
-            Write-Host "File missing: $checksum_path"
-            $checksum_valid = $true
+    # Check for missing file(s)
+    foreach ($file in $checksums_dict.GetEnumerator()) {
+        if ($file.Value -ne "") {
+            # Missing file
+            Write-Host "Missing file: $folder_to_compare$($file.Key)"
+            $checksum_valid = $false
         }
     }
 
@@ -65,6 +68,16 @@ $PATH_ZXP_SIGN_SOFTWARE=$ExecutionContext.SessionState.Path.GetUnresolvedProvide
 $PATH_ZXP_CERTIFICATE=$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath("$PSScriptRoot\sign_certificate.p12")
 
 $HOSTS="aftereffects","photoshop"
+# Set Poetry Python Environment
+$current_dir = Get-Location
+$script_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+$openpype_root = (Get-Item $script_dir).parent.parent.FullName
+if (-not (Test-Path 'env:POETRY_HOME')) {
+    $env:POETRY_HOME = "$openpype_root\.poetry"
+}
+$env:PYTHONPATH="$($openpype_root);$($env:PYTHONPATH)"
+$env:OPENPYPE_ROOT="$($openpype_root)"
+Set-Location -Path $current_dir
 
 foreach ($CURR_HOST in $HOSTS) {
     $HOST_PATH="$PATH_OPENPYPE_DIR\openpype\hosts\$CURR_HOST"
@@ -91,19 +104,10 @@ foreach ($CURR_HOST in $HOSTS) {
         Remove-Item $HOST_ZXP_DEST -Force
     }
 
+    # Bump xml version
+    & "$($env:POETRY_HOME)\bin\poetry" run python "$($openpype_root)\tools\zxp\generate_zxp.py" --upgrade-xml-version $HOST_ZXP_XML
     # Generate and sign the ZXP file with the OpenPype certificate
     & $PATH_ZXP_SIGN_SOFTWARE -sign $HOST_ZXP_SOURCE $HOST_ZXP_DEST $PATH_ZXP_CERTIFICATE OpenPype
-    # Set Poetry Python Environment
-    $current_dir = Get-Location
-    $script_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-    $openpype_root = (Get-Item $script_dir).parent.FullName
-    if (-not (Test-Path 'env:POETRY_HOME')) {
-        $env:POETRY_HOME = "$openpype_root\.poetry"
-    }
-    $env:PYTHONPATH="$($openpype_root);$($env:PYTHONPATH)"
-    $env:OPENPYPE_ROOT="$($openpype_root)"
-    # Bump xml version
-    & "$($env:POETRY_HOME)\bin\poetry" run python "$($openpype_root)\zxp\generate_zxp.py" --upgrade-xml-version $HOST_ZXP_XML
     # Generate new checksum
     Generate-Checksums $HOST_ZXP_SOURCE $HOST_ZXP_CHECKSUMS
 }
