@@ -25,7 +25,7 @@ def upgrade_xml_version(xml_path):
 
 
 parser = argparse.ArgumentParser(description='Generating ZXP Process')
-parser.add_argument('-u', '--upgrade-xml-version', help='Upgrade Version', required=False)
+parser.add_argument('-u', '--upgrade-xml-version', help='Upgrade Version', type=str, required=True)
 args = vars(parser.parse_args())
 
 if args["upgrade_xml_version"]:

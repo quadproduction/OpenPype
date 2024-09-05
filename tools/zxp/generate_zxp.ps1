@@ -80,7 +80,7 @@ foreach ($CURR_HOST in $HOSTS) {
 
     $is_checksum_valid = Compare-Checksums $HOST_ZXP_SOURCE $HOST_ZXP_CHECKSUMS
     if ($is_checksum_valid){
-         Write-Host "Skip generating ZXP, no changes detected : $HOST_ZXP_SOURCE"
+         Write-Host "Skip generating ZXP : $HOST_ZXP_SOURCE"
          continue
     }
 
@@ -93,15 +93,13 @@ foreach ($CURR_HOST in $HOSTS) {
 
     # Generate and sign the ZXP file with the OpenPype certificate
     & $PATH_ZXP_SIGN_SOFTWARE -sign $HOST_ZXP_SOURCE $HOST_ZXP_DEST $PATH_ZXP_CERTIFICATE OpenPype
-    # Increase XML Version
+    # Set Poetry Python Environment
     $current_dir = Get-Location
     $script_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
     $openpype_root = (Get-Item $script_dir).parent.FullName
-
     if (-not (Test-Path 'env:POETRY_HOME')) {
         $env:POETRY_HOME = "$openpype_root\.poetry"
     }
-
     $env:PYTHONPATH="$($openpype_root);$($env:PYTHONPATH)"
     $env:OPENPYPE_ROOT="$($openpype_root)"
     # Bump xml version
