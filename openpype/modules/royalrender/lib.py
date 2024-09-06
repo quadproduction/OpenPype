@@ -6,6 +6,11 @@ import platform
 from datetime import datetime
 
 import pyblish.api
+from openpype.settings import (
+    MODULES_SETTINGS_KEY,
+    PROJECT_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
+)
 from openpype.tests.lib import is_in_tests
 from openpype.pipeline.publish.lib import get_published_workfile_instance
 from openpype.pipeline.publish import KnownPublishError
@@ -206,15 +211,15 @@ class BaseCreateRoyalRenderJob(pyblish.api.InstancePlugin,
         # type: (pyblish.api.Context, str) -> str
         rr_settings = (
             context.data
-            ["system_settings"]
-            ["modules"]
+            [SYSTEM_SETTINGS_KEY]
+            [MODULES_SETTINGS_KEY]
             ["royalrender"]
         )
         try:
             default_servers = rr_settings["rr_paths"]
             project_servers = (
                 context.data
-                ["project_settings"]
+                [PROJECT_SETTINGS_KEY]
                 ["royalrender"]
                 ["rr_paths"]
             )

@@ -3,6 +3,7 @@ import attr
 from datetime import datetime
 
 from openpype import AYON_SERVER_ENABLED
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import legacy_io, PublishXmlValidationError
 from openpype.pipeline.context_tools import get_current_project_name
 from openpype.tests.lib import is_in_tests
@@ -82,7 +83,7 @@ class MayaSubmitRemotePublishDeadline(
         scenename = os.path.basename(scene)
 
         project_name = get_current_project_name()
-        project_settings = context.data["project_settings"]
+        project_settings = context.data[PROJECT_SETTINGS_KEY]
         profile = get_deadline_job_profile(project_settings, self.hosts[0])
         self.set_job_attrs(profile)
 

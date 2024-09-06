@@ -24,7 +24,8 @@ from openpype.settings import (
     SYSTEM_SETTINGS_KEY,
     PROJECT_SETTINGS_KEY,
     SCHEMA_KEY_SYSTEM_SETTINGS,
-    SCHEMA_KEY_PROJECT_SETTINGS
+    SCHEMA_KEY_PROJECT_SETTINGS,
+    MODULES_SETTINGS_KEY
 )
 
 from openpype.settings.lib import (
@@ -206,7 +207,7 @@ def get_dynamic_modules_dirs():
         return output
 
     value = get_studio_system_settings_overrides()
-    for key in ("modules", "addon_paths", platform.system().lower()):
+    for key in (MODULES_SETTINGS_KEY, "addon_paths", platform.system().lower()):
         if key not in value:
             return output
         value = value[key]
@@ -764,7 +765,7 @@ class ModulesManager:
         system_settings = getattr(self, "_system_settings", None)
         if system_settings is None:
             system_settings = get_system_settings()
-        modules_settings = system_settings["modules"]
+        modules_settings = system_settings[MODULES_SETTINGS_KEY]
 
         report = {}
         time_start = time.time()

@@ -27,6 +27,7 @@ import itertools
 from collections import OrderedDict
 import attr
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import (
     legacy_io,
     OpenPypePyblishPluginMixin
@@ -728,7 +729,7 @@ class MayaSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
             }
 
         """
-        project_settings = self._instance.context.data["project_settings"]
+        project_settings = self._instance.context.data[PROJECT_SETTINGS_KEY]
         patches = (
             project_settings.get(
                 "deadline", {}).get(
