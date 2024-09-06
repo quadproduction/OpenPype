@@ -21,25 +21,10 @@ bl_info = {
     "location": "View 3D > UI",
 }
 
-
-def get_view_3D_region():
-    return next(iter([area.spaces[0].region_3d for area in bpy.context.screen.areas if area.type == 'VIEW_3D']), None)
-
-
-def get_render_filepath():
-    return templates.get_playblast_path()
-
-
-def get_renders_types_and_options():
-    return {
-        "PNG": {
-            'extension': '####.png',
-        },
-        "FFMPEG": {
-            'extension': 'mp4',
-            'container': 'MPEG4'
-        }
-    }.items()
+RENDER_TYPES = {
+    "PNG": {'extension': '####.png',},
+    "FFMPEG": {'extension': 'mp4', 'container': 'MPEG4'}
+}
 
 
 class VIEW3D_PT_render_playblast(bpy.types.Panel):
@@ -66,7 +51,7 @@ class OBJECT_OT_render_playblast(bpy.types.Operator):
 
     def execute(self, context):
         scene = bpy.context.scene
-        region = get_view_3D_region()
+        region = self.get_view_3D_region()
 
         use_camera_view = context.scene.use_camera_view
         use_transparent_bg = context.scene.use_transparent_bg
@@ -79,7 +64,7 @@ class OBJECT_OT_render_playblast(bpy.types.Operator):
             region.view_perspective = 'CAMERA'
         scene.render.use_file_extension = False
 
-        render_filepath = get_render_filepath()
+        render_filepath = templates.get_playblast_path()
         Path(render_filepath).resolve().parent.mkdir(parents=True, exist_ok=True)
 
         if use_transparent_bg:
@@ -93,7 +78,7 @@ class OBJECT_OT_render_playblast(bpy.types.Operator):
             bpy.context.scene.render.film_transparent = True
             bpy.context.scene.render.image_settings.color_mode = 'RGBA'
 
-        for file_format, options in get_renders_types_and_options():
+        for file_format, options in RENDER_TYPES.items():
             scene.render.image_settings.file_format = file_format
             scene.render.filepath = render_filepath.format(ext=options['extension'])
 
@@ -121,15 +106,19 @@ class OBJECT_OT_render_playblast(bpy.types.Operator):
 
         return {'FINISHED'}
 
+    def get_view_3D_region(self):
+        for area in bpy.context.screen.areas:
+            if area.type == 'VIEW_3D':
+                return area.spaces[0].region_3d
+        return None
+
 
 class OBJECT_OT_open_playblast_folder(bpy.types.Operator):
     bl_idname = "playblast.open"
     bl_label = "Open Last Playblast Folder"
 
     def execute(self, context):
-        latest_playblast_filepath = paths.get_version_folder_fullpath(
-            get_render_filepath()
-        )
+        latest_playblast_filepath = paths.get_version_folder_fullpath(templates.get_playblast_path())
         if not latest_playblast_filepath or not latest_playblast_filepath.exists():
             self.report({'ERROR'}, "File '{}' not found".format(latest_playblast_filepath))
             return {'CANCELLED'}
