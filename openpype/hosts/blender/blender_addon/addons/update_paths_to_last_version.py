@@ -20,8 +20,8 @@ bl_info = {
 }
 
 
-class UpdatePathsToAnimation(bpy.types.Operator):
-    bl_idname = "paths.update_paths_to_animation"
+class OBJECT_OT_UPDATE_PATHS_TO_ANIMATION(bpy.types.Operator):
+    bl_idname = "object.update_paths_to_animation"
     bl_label = "Update tasks in scene objects paths"
 
     def execute(self, context):
@@ -111,8 +111,8 @@ class UpdatePathsToAnimation(bpy.types.Operator):
         return re.search(r'[^a-zA-Z\d](v\d{3})[^a-zA-Z\d]', filepath).groups()[-1]
 
 
-class UpdateObjectsPathsVersion(bpy.types.Operator):
-    bl_idname = "paths.update_objects_paths_version"
+class OBJECT_OT_UPDATE_OBJECTS_PATHS_VERSION(bpy.types.Operator):
+    bl_idname = "object.update_objects_paths_version"
     bl_label = "Update versions in scene objects paths"
 
     def execute(self, context):
@@ -172,8 +172,7 @@ class UpdateObjectsPathsVersion(bpy.types.Operator):
         return splitted_filepath[splitted_filepath.index('publish') + 1] == 'animation'
 
 
-class SelectObjectTypesToUpdate(bpy.types.Panel):
-    bl_idname = "paths.objects_types_selector"
+class VIEW3D_PT_OBJECT_TYPES_TO_UPDATE(bpy.types.Panel):
     bl_label = "Select object types to update"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -231,12 +230,12 @@ def make_local(all_objects):
 
 
 def register():
-        bpy.utils.register_class(SelectObjectTypesToUpdate)
-        bpy.utils.register_class(UpdatePathsToAnimation)
-        bpy.utils.register_class(UpdateObjectsPathsVersion)
+        bpy.utils.register_class(VIEW3D_PT_OBJECT_TYPES_TO_UPDATE)
+        bpy.utils.register_class(OBJECT_OT_UPDATE_PATHS_TO_ANIMATION)
+        bpy.utils.register_class(OBJECT_OT_UPDATE_OBJECTS_PATHS_VERSION)
 
 
 def unregister():
-        bpy.utils.unregister_class(SelectObjectTypesToUpdate)
-        bpy.utils.unregister_class(UpdatePathsToAnimation)
-        bpy.utils.unregister_class(UpdateObjectsPathsVersion)
+        bpy.utils.unregister_class(VIEW3D_PT_OBJECT_TYPES_TO_UPDATE)
+        bpy.utils.unregister_class(OBJECT_OT_UPDATE_PATHS_TO_ANIMATION)
+        bpy.utils.unregister_class(OBJECT_OT_UPDATE_OBJECTS_PATHS_VERSION)

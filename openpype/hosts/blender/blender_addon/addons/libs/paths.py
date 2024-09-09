@@ -1,6 +1,5 @@
 import re
 import os
-import logging
 from pathlib import Path
 
 from openpype.pipeline.anatomy import Anatomy
