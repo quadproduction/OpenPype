@@ -14,12 +14,13 @@ log = logging.getLogger(__name__)
 
 bl_info = {
     "name": "Render Playblast",
-    "description": "Render sequences of images + video, with OpenGL, from viewport or camera view",
+    "description": "Render sequences of images + video, with OpenGL, from viewport or camera view"
+                    "based on 'deadline_render' template, this need to be setted in OP",
     "author": "Quad",
-    "version": (1, 1),
+    "version": (2, 0),
     "blender": (2, 80, 0),
     "category": "Render",
-    "location": "View 3D > UI",
+    "location": "View 3D > UI> Quad",
 }
 
 RENDER_TYPES = {
@@ -137,7 +138,7 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
         anatomy = Anatomy()
         playblast_template = anatomy.templates.get('playblast')
         if not playblast_template:
-            raise NotImplemented("Playblast template need to be setted in your project settings")
+            raise NotImplemented("'playblast' template need to be setted in your project settings")
 
         # Build data dict to fill the template later
         template_data = {'ext': extension}
@@ -182,7 +183,7 @@ class OBJECT_OT_OPEN_PLAYBLAST_FOLDER(bpy.types.Operator):
             self.report({'ERROR'}, f"File '{latest_playblast_filepath}' not found")
             return {'CANCELLED'}
 
-        subprocess.Popen(rf'explorer "{latest_playblast_filepath}"', shell=True)
+        subprocess.Popen(f'explorer "{latest_playblast_filepath}"', shell=True)
         return {'FINISHED'}
 
     def get_latest_playblast_path(self):
@@ -196,7 +197,7 @@ class OBJECT_OT_OPEN_PLAYBLAST_FOLDER(bpy.types.Operator):
         template_data = get_template_data_from_session()
         template_data.update({'root': anatomy.roots})
 
-        # Build playblast Folder Template
+        # Build playblast folder template
         playblast_folder = StringTemplate.format_template(playblast_template['folder'], template_data)
 
         # Get versions
@@ -204,12 +205,12 @@ class OBJECT_OT_OPEN_PLAYBLAST_FOLDER(bpy.types.Operator):
             return ""
         else:
             latest_version = 1
+            # Build regex based on padding's project
             regex = fr'v(\d{{{playblast_template["version_padding"]}}})$'
             for version in os.listdir(os.path.dirname(playblast_folder)):
                 match = re.search(regex, version)
                 if match:
-                    version_num = int(match.group(1))
-                    latest_version = max(latest_version, version_num)
+                    latest_version = max(latest_version, int(match.group(1)))
             # Update the template data with the latest version
             template_data.update({'version': latest_version})
 
