@@ -69,6 +69,9 @@ class ExtractSequence(pyblish.api.Extractor):
             "ignoreLayersTransparency", False
         )
 
+        if instance.data["creator_identifier"] == "render.scene":
+            ignore_layers_transparency = instance.data["creator_attributes"].get("ignore_layers_transparency", False)
+
         mark_in = instance.context.data["sceneMarkIn"]
         mark_out = instance.context.data["sceneMarkOut"]
         # Stock the origin mark in in case the markIn is modifed
@@ -123,12 +126,12 @@ class ExtractSequence(pyblish.api.Extractor):
             custom_mark_range = [(frame - instance.context.data["sceneStartFrame"]) for frame in custom_frames]
             # store the custom mark range for psd export
             instance.data["customMarkRange"] = custom_mark_range
-            if min(custom_mark_range) < mark_in:
-                instance.data["originFrameStart"] = min(custom_mark_range) + scene_start_frame
-            if max(custom_mark_range) > mark_out:
-                instance.data["originFrameEnd"] = max(custom_mark_range) + scene_start_frame
-            mark_in = min(custom_mark_range)
-            mark_out = max(custom_mark_range)
+            if custom_mark_range[0] < mark_in:
+                instance.data["originFrameStart"] = custom_mark_range[0] + scene_start_frame
+            if custom_mark_range[-1] > mark_out:
+                instance.data["originFrameEnd"] = custom_mark_range[-1] + scene_start_frame
+            mark_in = custom_mark_range[0]
+            mark_out = custom_mark_range[-1]
 
         # Save to staging dir
         output_dir = instance.data.get("stagingDir")
@@ -147,9 +150,6 @@ class ExtractSequence(pyblish.api.Extractor):
         export_type = instance.data["creator_attributes"].get("export_type", None)
         apply_background = instance.data["creator_attributes"].get("apply_background", True)
         is_review = instance.data["family"] == "review"
-
-        if instance.data["creator_identifier"] == "render.custom":
-            ignore_layers_transparency = instance.data["creator_attributes"].get("ignore_layers_transparency", False)
 
         if is_review or make_playblast:
             result = self.render_review(
@@ -328,7 +328,7 @@ class ExtractSequence(pyblish.api.Extractor):
         ])
 
         if scene_bg_color:
-            bg_color = self._get_review_bg_color(review=True)
+            bg_color = self._get_settings_bg_color(review=True)
 
             # Change bg color to color from settings
             george_script_lines.insert(0, "tv_background \"color\" {} {} {}".format(*bg_color)),
@@ -546,7 +546,7 @@ class ExtractSequence(pyblish.api.Extractor):
             # Composite background only on rgba images
             # - just making sure
             if source_img.mode.lower() == "rgba":
-                bg_color = self._get_review_bg_color(review=True)
+                bg_color = self._get_settings_bg_color(review=True)
                 self.log.debug("Adding thumbnail background color {}.".format(
                     " ".join([str(val) for val in bg_color])
                 ))
@@ -563,7 +563,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
         return output_filepaths_by_frame, thumbnail_filepath
 
-    def _get_review_bg_color(self, review=True):
+    def _get_settings_bg_color(self, review=True):
         """Return the review_bg_color set in OP settings if review=True
         else, will return the render_bg_color
         Args:
@@ -606,10 +606,9 @@ class ExtractSequence(pyblish.api.Extractor):
             # Set the ref_idx depending on the custom_mark_range given
             # To avoid error if the given frame in custom_mark_range is not a ref_idx
             frame_to_render = frame_idx
-            if frame_idx != ref_idx and not custom_mark_range:
-                continue
-
-            if frame_idx != ref_idx and custom_mark_range:
+            if frame_idx != ref_idx:
+                if not custom_mark_range:
+                    continue
                 frame_to_render = ref_idx
 
             frames_to_render.append(str(frame_idx))
@@ -722,7 +721,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
     def _create_bg_images(self, bg_layer, output_dir, resolution, custom_mark_range):
 
-        bg_color = self._get_review_bg_color(review=False)
+        bg_color = self._get_settings_bg_color(review=False)
 
         filepaths_by_frame = {}
 
@@ -747,8 +746,4 @@ class ExtractSequence(pyblish.api.Extractor):
         Returns:
             Int: New value between 0-255
         """
-        old_min = 0
-        new_min = 0
-        old_range = (old_min - 100)
-        new_range = (new_min - 255)
-        return int(((value - old_min) * new_range) / old_range) + new_min
+        return max(0, min(int(round(value * 2.55)), 255))

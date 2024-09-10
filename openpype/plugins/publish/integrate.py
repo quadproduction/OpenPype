@@ -3,7 +3,6 @@ import logging
 import sys
 import copy
 import datetime
-import re
 
 import clique
 import six

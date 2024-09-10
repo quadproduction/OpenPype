@@ -31,14 +31,6 @@
             "default_variant": "Main",
             "default_variants": []
         },
-        "create_custom_render_scene": {
-            "enabled": false,
-            "active_on_create": false,
-            "mark_for_review": true,
-            "extract_psd": false,
-            "ignore_layers_transparency": false,
-            "default_variant": "Main"
-        },
         "create_render_layer": {
             "mark_for_review": false,
             "default_pass_name": "beauty",

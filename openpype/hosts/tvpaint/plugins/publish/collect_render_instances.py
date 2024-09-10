@@ -20,7 +20,7 @@ class CollectRenderInstances(pyblish.api.InstancePlugin):
         elif creator_identifier == "render.pass":
             self._collect_data_for_render_pass(instance)
 
-        elif creator_identifier in ["render.scene", "render.custom"]:
+        elif creator_identifier in ["render.scene"]:
             self._collect_data_for_render_scene(instance)
 
         else:

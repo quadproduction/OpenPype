@@ -58,7 +58,7 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
 
             start_value = max(asset_doc["data"]["frameStart"], instance.context.data["sceneStartFrame"])
             # Avoid exporting frame before the tracker frameStart or scene sceneStartFrame
-            if min(custom_frames) < start_value:
+            if custom_frames[0] < start_value:
                 self.log.warning("The custom frames to export start BEFORE the scene Tracking Start Frame or the tvpp scene Start Frame")
                 self.log.info("An auto clean will be applied to start at {}".format(start_value))
                 # Remove frames lower that the tracker frameStart
@@ -69,11 +69,9 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             instance.data["customFrames"] = custom_frames
 
             # Update the instance data
-            instance.data["frameStart"] = min(custom_frames)
-            instance.data["frameEnd"] = max(custom_frames)
-
-            if custom_instance_frames:
-                self.log.info("Export Custom frames {}".format(custom_frames))
+            instance.data["frameStart"] = custom_frames[0]
+            instance.data["frameEnd"] = custom_frames[-1]
+            self.log.info("Export Custom frames {}".format(custom_frames))
 
         if custom_instance_frames or keep_frame_index:
             self.log.info("Changed frames Start/End {}-{} on instance {} ".format(instance.data["frameStart"] , instance.data["frameEnd"], instance.data["subset"]))
@@ -94,7 +92,7 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             sceneStartFrame(int): frame de start du projet tvpp
 
         Returns:
-            list: A interpreted list of int based on the str input
+            list: A interpreted list of int based on the str input, sorted
         """
         # if no str is given, return a range based on mark_in and mark_out
         if not custom_frames:
@@ -138,4 +136,4 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             else:
                 custom_frames_list.add(int(element))
 
-        return list(custom_frames_list)
+        return list(sorted(custom_frames_list))

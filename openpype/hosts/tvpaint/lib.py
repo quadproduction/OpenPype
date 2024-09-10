@@ -1,6 +1,7 @@
 import os
 import shutil
 import collections
+from math import ceil
 from PIL import Image, ImageDraw, ImageChops
 
 
@@ -81,9 +82,7 @@ def _calculate_pre_behavior_copy(
         loop_range = list(range(layer_frame_start, layer_frame_end+1))
         # Loop backwards from last frame of layer
         for frame_idx in reversed(range(range_start, layer_frame_start)):
-            eq_frame_idx = frame_idx + frame_count
-            while eq_frame_idx not in loop_range:
-                eq_frame_idx = eq_frame_idx + frame_count
+            eq_frame_idx = frame_idx + (ceil((layer_frame_start - frame_idx) / frame_count) * frame_count)
             output_idx_by_frame_idx[frame_idx] = eq_frame_idx
 
     elif pre_beh == "pingpong":
@@ -143,9 +142,7 @@ def _calculate_post_behavior_copy(
         loop_range = list(range(layer_frame_start, layer_frame_end+1))
         # Loop backwards from last frame of layer
         for frame_idx in range(layer_frame_end + 1, range_end + 1):
-            eq_frame_idx = frame_idx - frame_count
-            while eq_frame_idx not in loop_range:
-                eq_frame_idx = eq_frame_idx - frame_count
+            eq_frame_idx = frame_idx - (ceil((frame_idx - layer_frame_end) / frame_count) * frame_count)
             output_idx_by_frame_idx[frame_idx] = eq_frame_idx
 
     elif post_beh == "pingpong":

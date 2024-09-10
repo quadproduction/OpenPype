@@ -1044,6 +1044,12 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         self.default_pass_name = plugin_settings["default_pass_name"]
         self.extract_psd = plugin_settings.get("extract_psd", True)
 
+        self.apply_background = False
+        self.keep_frame_index = False
+        self.exports_types = ['scene', 'camera']
+        self.review_types = ['Video', 'Seq Img']
+        self.ignore_layers_transparency = False
+
     def get_dynamic_data(self, variant, *args, **kwargs):
         dynamic_data = super().get_dynamic_data(variant, *args, **kwargs)
         dynamic_data["renderpass"] = "{renderpass}"
@@ -1071,13 +1077,15 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
             "variant": self.default_variant,
             "creator_attributes": {
                 "render_pass_name": self.default_pass_name,
+                "apply_background": self.apply_background,
                 "mark_for_review": True,
                 "extract_psd": self.extract_psd,
             },
             "label": self._get_label(
                 subset_name,
                 self.default_pass_name
-            )
+            ),
+            "active": self.active_on_create
         }
         if not self.active_on_create:
             data["active"] = False
@@ -1150,14 +1158,54 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
                     " label after refresh."
                 )
             ),
+            UISeparatorDef("render_pass_separator"),
+            BoolDef(
+                "mark_for_review",
+                label="Review Publish on Tracker",
+                default=self.mark_for_review
+            ),
+            EnumDef(
+                "review_media_type",
+                self.review_types,
+                label="Review Media Type:",
+                default=self.review_types[0]
+            ),
+            BoolDef(
+                "keep_frame_index",
+                label="Keep actual frame index in Files/Review",
+                default=self.keep_frame_index
+            ),
+            BoolDef(
+                "make_playblast",
+                label="Make Playblast",
+                default=True
+            ),
+            EnumDef(
+                "export_type",
+                self.exports_types,
+                label="Export Playblast Through",
+                default=self.exports_types[0]
+            ),
+            UISeparatorDef("layer_options_separator"),
+            UILabelDef(label="Export Options"),
+            BoolDef(
+                "ignore_layers_transparency",
+                label="All Layers are Full Opaque",
+                default=self.ignore_layers_transparency
+            ),
+            BoolDef(
+                "apply_background",
+                label="Apply BG Color (as defined in settings)",
+                default=self.apply_background
+            ),
+            TextDef(
+                "custom_frames",
+                label="Custom Frames Export",
+                placeholder="[1-15], 18, 20"
+            ),
             BoolDef(
                 "extract_psd",
                 label="Extract PSD",
                 default=self.extract_psd
-            ),
-            BoolDef(
-                "mark_for_review",
-                label="Review",
-                default=self.mark_for_review
             )
         ]
