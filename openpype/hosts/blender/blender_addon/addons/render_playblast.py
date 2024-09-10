@@ -75,7 +75,6 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
         file_extension_use = scene.render.use_file_extension
         engine = scene.render.engine
         film_transparent = scene.render.film_transparent
-        color_mode = scene.render.image_settings.color_mode
 
         # Apply camera view if needed
         if region and scene.playblast_settings.use_camera_view:
@@ -120,7 +119,7 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
             # reset to memorized parameters for render
             scene.render.engine = engine
             scene.render.film_transparent = film_transparent
-            scene.render.image_settings.color_mode = color_mode
+            scene.render.image_settings.color_mode = 'RGB'
         return {"FINISHED"}
 
     def get_view_3D_region(self):
@@ -171,21 +170,51 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
         return playblast_path
 
 
-
 class OBJECT_OT_OPEN_PLAYBLAST_FOLDER(bpy.types.Operator):
     bl_idname = "playblast.open"
     bl_label = "Open Last Playblast Folder"
 
     def execute(self, context):
-        #TODO: Fix this
-        # latest_playblast_filepath = paths.get_version_folder_fullpath(templates.get_playblast_path())
-        # if not latest_playblast_filepath or not latest_playblast_filepath.exists():
-        #     self.report({'ERROR'}, "File '{}' not found".format(latest_playblast_filepath))
-        #     return {'CANCELLED'}
-        #
-        # subprocess.Popen('explorer "' + str(latest_playblast_filepath.resolve()) + '"', shell=True)
+        # Get the path to the most recent playblast folder
+        latest_playblast_filepath = self.get_latest_playblast_path()
 
+        if not os.path.exists(latest_playblast_filepath):
+            self.report({'ERROR'}, f"File '{latest_playblast_filepath}' not found")
+            return {'CANCELLED'}
+
+        subprocess.Popen(rf'explorer "{latest_playblast_filepath}"', shell=True)
         return {'FINISHED'}
+
+    def get_latest_playblast_path(self):
+        # Get Project Anatomy in order to access templates
+        anatomy = Anatomy()
+        playblast_template = anatomy.templates.get('playblast')
+        if not playblast_template:
+            raise NotImplemented("Playblast template need to be setted in your project settings")
+
+        # Build data dict to fill the template later
+        template_data = get_template_data_from_session()
+        template_data.update({'root': anatomy.roots})
+
+        # Build playblast Folder Template
+        playblast_folder = StringTemplate.format_template(playblast_template['folder'], template_data)
+
+        # Get versions
+        if not os.path.exists(os.path.dirname(playblast_folder)):
+            return ""
+        else:
+            latest_version = 1
+            regex = fr'v(\d{{{playblast_template["version_padding"]}}})$'
+            for version in os.listdir(os.path.dirname(playblast_folder)):
+                match = re.search(regex, version)
+                if match:
+                    version_num = int(match.group(1))
+                    latest_version = max(latest_version, version_num)
+            # Update the template data with the latest version
+            template_data.update({'version': latest_version})
+
+        # Build playblast path and create file architecture if not exists
+        return os.path.normpath(StringTemplate.format_template(playblast_template['folder'], template_data))
 
 
 def register():
