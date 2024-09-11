@@ -31,7 +31,7 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
             if "kitsureview" not in representation.get("tags", []):
                 continue
 
-            files_idx = representation.get("files")
+            filenames = representation.get("files")
 
             custom_frames = instance.data.get("customFrames", [])
             keep_frame_index = instance.data.get("keepFrameIndex", False)
@@ -39,8 +39,8 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
             frame_end = instance.data["frameEnd"]
 
             # If only one frame force a list
-            if not isinstance(files_idx, list):
-                files_idx = [files_idx]
+            if not isinstance(filenames, list):
+                filenames = [filenames]
 
             extension = representation.get("ext")
             if not extension:
@@ -53,15 +53,15 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
                 raise IndexError
             self.log.debug("Found review at: {}".format(review_path))
 
-            if "burnin" in representation.get("tags", []):
-                enumerate_files = zip(list(range(frame_start, frame_end+1)), files_idx)
-                # Update the enumerate_files index if custom_frames is given
-                if custom_frames:
-                    enumerate_files = zip(custom_frames, files_idx)
-                files_idx = ["{:04d}.{}".format(index, extension) for index, file in enumerate_files]
+            frame_indexes = list(range(frame_start, frame_end+1))
+            if custom_frames:
+                frame_indexes = custom_frames
 
-            for file_idx in files_idx:
-                image_filepath = self._rename_output_filepath(review_path, extension, file_idx)
+            if "burnin" in representation.get("tags", []):
+                filenames = ["{:04d}.{}".format(index, extension) for index in frame_indexes]
+
+            for file_index in filenames:
+                image_filepath = self._rename_output_filepath(review_path, extension, file_index)
                 self.log.info(image_filepath)
 
                 gazu.task.add_preview(
@@ -70,6 +70,6 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
 
             self.log.info("Review upload on comment")
 
-    def _rename_output_filepath(self, published_path, extension, file_idx):
-        # Replace frame number + extension in given filepath with new file_idx
-        return re.sub(r"\d{4}\." + re.escape(extension), file_idx, published_path)
+    def _rename_output_filepath(self, published_path, extension, file_index):
+        # Replace frame number + extension in given filepath with new file_index
+        return re.sub(r"\d{4}\." + re.escape(extension), file_index, published_path)
