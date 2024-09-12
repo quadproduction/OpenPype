@@ -94,10 +94,6 @@ class ExtractSequence(pyblish.api.Extractor):
         frame_start = int(instance.data["frameStart"])
         frame_end = int(instance.data["frameEnd"])
 
-        # Store the original tvpp frame start/end
-        instance.data["originFrameStart"] = mark_in + scene_start_frame
-        instance.data["originFrameEnd"] = mark_out + scene_start_frame
-
         # Handles are not stored per instance but on Context
         handle_start = instance.context.data["handleStart"]
 

@@ -473,23 +473,6 @@ class ExtractBurnin(publish.Extractor):
             frame_end = 1
         frame_end = int(frame_end)
 
-        origin_frame_start = instance.data.get("originFrameStart")
-        if origin_frame_start is None:
-            self.log.warning(
-                "Key \"originFrameStart\" is not set. Setting to \"0\"."
-            )
-            origin_frame_start = 0
-        origin_frame_start = int(origin_frame_start)
-
-        origin_frame_end = instance.data.get("originFrameEnd")
-
-        if origin_frame_end is None:
-            self.log.warning(
-                "Key \"originFrameEnd\" is not set. Setting to \"1\"."
-            )
-            origin_frame_end = 1
-        origin_frame_end = int(origin_frame_end)
-
         frame_range = instance.data.get("customFrames", [])
 
         handle_start = instance.data.get("handleStart")
@@ -526,8 +509,6 @@ class ExtractBurnin(publish.Extractor):
         temp_data = {
             "frame_start": frame_start,
             "frame_end": frame_end,
-            "origin_frame_start": origin_frame_start,
-            "origin_frame_end": origin_frame_end,
             "frame_range": frame_range,
             "frame_start_handle": frame_start_handle,
             "frame_end_handle": frame_end_handle
