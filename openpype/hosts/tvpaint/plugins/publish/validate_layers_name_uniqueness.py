@@ -52,12 +52,13 @@ class ValidateLayersNameUniquenessTvPaint(
             duplicates = set()
 
             for layer in layers:
-                if layer["name"] in duplicates or layer_list.count(layer["name"]) == 1:
+                if layer_list.count(layer["name"]) == 1:
                     continue
 
                 return_list.append(layer)
+                if layer["name"] not in duplicates:
+                    msg = "{}\nThe name {} is not unique.".format(msg, layer["name"])
                 duplicates.add(layer["name"])
-                msg = "{}\nThe name {} is not unique.".format(msg, layer["name"])
 
         if return_list:
             if not context.data.get('transientData'):
