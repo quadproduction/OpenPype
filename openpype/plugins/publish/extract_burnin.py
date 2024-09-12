@@ -473,8 +473,6 @@ class ExtractBurnin(publish.Extractor):
             frame_end = 1
         frame_end = int(frame_end)
 
-        frame_range = instance.data.get("customFrames", [])
-
         handle_start = instance.data.get("handleStart")
         if handle_start is None:
             handle_start = context.data.get("handleStart") or 0
@@ -509,7 +507,6 @@ class ExtractBurnin(publish.Extractor):
         temp_data = {
             "frame_start": frame_start,
             "frame_end": frame_end,
-            "frame_range": frame_range,
             "frame_start_handle": frame_start_handle,
             "frame_end_handle": frame_end_handle
         }
@@ -678,9 +675,6 @@ class ExtractBurnin(publish.Extractor):
         """
         # Add representation name to burnin data
         burnin_data["representation"] = repre["name"]
-
-        burnin_frame_range = temp_data.get("frame_range", [])
-        keep_frame_index = instance.data.get("keepFrameIndex", False)
 
         # no handles switch from profile tags
         if "no-handles" in repre["tags"]:
