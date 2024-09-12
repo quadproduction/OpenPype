@@ -698,8 +698,8 @@ class ExtractBurnin(publish.Extractor):
         # Add representation name to burnin data
         burnin_data["representation"] = repre["name"]
 
-        burnin_frame_range = temp_data["frame_range"]
-        keep_frame_index = instance.data.get("keepFrameIndex", burnin_frame_range)
+        burnin_frame_range = temp_data.get("frame_range", [])
+        keep_frame_index = instance.data.get("keepFrameIndex", False)
 
         # no handles switch from profile tags
         if "no-handles" in repre["tags"]:
@@ -712,13 +712,11 @@ class ExtractBurnin(publish.Extractor):
 
         burnin_duration = burnin_frame_end - burnin_frame_start + 1
 
-        frame_id = burnin_duration if not keep_frame_index else burnin_frame_end
-
         burnin_data.update({
             "frame_start": burnin_frame_start,
             "frame_end": burnin_frame_end,
             "duration": burnin_duration,
-            "frame_id": frame_id
+            "frame_id": burnin_frame_end
         })
         temp_data["duration"] = burnin_duration
 
@@ -737,8 +735,8 @@ class ExtractBurnin(publish.Extractor):
         ))
 
         burnin_data.update({
-            "slate_frame_start": burnin_slate_frame_start if not keep_frame_index else temp_data["origin_frame_start"],
-            "slate_frame_end": burnin_frame_end if not keep_frame_index else temp_data["origin_frame_end"],
+            "slate_frame_start": burnin_slate_frame_start,
+            "slate_frame_end": burnin_frame_end,
             "slate_duration": (
                 burnin_frame_end - burnin_slate_frame_start + 1
             )
