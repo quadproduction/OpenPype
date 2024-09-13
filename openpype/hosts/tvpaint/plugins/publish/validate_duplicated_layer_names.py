@@ -12,7 +12,7 @@ class ValidateLayersGroupSelect(pyblish.api.Action):
 
     def process(self, context, plugin):
         """Select the layers that haven't a unique name"""
-        print(context.data['transientData'][ValidateLayersGroup.__name__])
+
         for layer_index in context.data['transientData'][ValidateLayersGroup.__name__]:
             self.log.debug(execute_george(f'tv_layerselection {layer_index} "true"'))
         return True
@@ -56,10 +56,7 @@ class ValidateLayersGroup(pyblish.api.InstancePlugin):
         if not duplicated_layer_names:
             return
 
-        layers_msg = ", ".join([
-            "\n\"{}\"".format(layer_name)
-            for layer_name in duplicated_layer_names
-        ])
+        layers_msg = ",\n ".join(duplicated_layer_names)
         detail_lines = [
             "- {}".format(layer_name)
             for layer_name in set(duplicated_layer_names)
