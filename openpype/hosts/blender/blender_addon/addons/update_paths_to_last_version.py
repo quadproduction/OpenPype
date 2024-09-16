@@ -2,6 +2,10 @@ import os
 import logging
 import re
 
+from openpype.pipeline.anatomy import Anatomy
+from openpype.lib import StringTemplate
+from openpype.pipeline.context_tools import get_template_data_from_session
+
 import bpy
 
 
@@ -20,159 +24,7 @@ bl_info = {
 }
 
 
-class OBJECT_OT_UPDATE_PATHS_TO_ANIMATION(bpy.types.Operator):
-    bl_idname = "object.update_paths_to_animation"
-    bl_label = "Update tasks in scene objects paths"
-
-    def execute(self, context):
-        mesh_objects = [obj for obj in bpy.data.objects if obj.type == 'MESH']
-        mesh_sequence_caches = get_modifiers_by_type(
-            modifier_type='MESH_SEQUENCE_CACHE',
-            given_objects=mesh_objects
-        )
-        modifiers_cache_files = [modifier.cache_file for modifier in mesh_sequence_caches]
-
-        create_library_override_for(
-            collections=bpy.context.scene.collection,
-            objects=mesh_objects,
-            modifiers_cache_files=modifiers_cache_files
-        )
-
-        self.update_mesh_sequence_caches(mesh_objects)
-        self.apply_scale(mesh_objects, 0.01)
-        self.disable_uv_data_reading(mesh_sequence_caches)
-
-        return {'FINISHED'}
-
-    def update_mesh_sequence_caches(self, objects):
-        updated_cache_files = list()
-        for blender_object in objects:
-            for modifier in get_modifiers_by_type('MESH_SEQUENCE_CACHE', [blender_object]):
-                cache_file = modifier.cache_file
-                if cache_file not in updated_cache_files:
-                    self.update_cache_files_data(cache_file, modifier.object_path)
-                    updated_cache_files.append(cache_file)
-
-                self.replace_object_path_target(modifier, blender_object.name)
-
-    def update_cache_files_data(self, cache_file, modifier_object_path):
-        alembic_path = self.generate_path_to_new_alembic(modifier_object_path)
-        if alembic_path == cache_file.filepath:
-            return
-
-        cache_file.filepath = alembic_path
-        cache_file_previous_name = cache_file.name
-        cache_file.name = alembic_path.split('\\')[-1]
-        log.info(f"Alembic named {cache_file_previous_name} has been updated with filepath {cache_file.filepath}")
-
-    def generate_path_to_new_alembic(self, modifier_object_path):
-        asset_name = os.path.normpath(modifier_object_path).split(os.path.sep)[1].split('_')[0]
-        animation_directory = os.path.join('/'.join(os.path.normpath(bpy.data.filepath).split(os.path.sep)[:-3]),
-                                           'publish', 'animation', f'{asset_name}_animation')
-        last_version = self.retrieve_higher_version_from_directory(animation_directory)
-        alembic_file = self.retrieve_alembic_file_from_subset_directory(animation_directory, last_version)
-        return os.path.join(
-            animation_directory,
-            last_version,
-            alembic_file
-        )
-
-    def retrieve_higher_version_from_directory(self, directory):
-        return [
-            folder for folder in os.listdir(directory) if
-            re.match(r'(v\d{3})', folder) and
-            os.path.isdir(os.path.join(directory, folder))
-        ][-1]
-
-    def retrieve_alembic_file_from_subset_directory(self, directory, version):
-        version_directory = os.path.join(directory, version)
-        return next(
-            iter(
-                alembic_file for alembic_file in os.listdir(version_directory) if
-                alembic_file.endswith('.abc') and
-                self.extract_version_from_filepath(os.path.join(version_directory, alembic_file)) == version
-            )
-        )
-
-    def apply_scale(self, objects, scale):
-        for blender_object in objects:
-            blender_object.scale = (scale, scale, scale)
-
-    def disable_uv_data_reading(self, mesh_sequence_caches):
-        for mesh_sequence_cache in mesh_sequence_caches:
-            mesh_sequence_cache.read_data = {'COLOR', 'POLY', 'VERT'}
-
-    def replace_object_path_target(self, modifier, object_name):
-        splitted_path = modifier.object_path.split('/')
-        splitted_path[-1] = f"{object_name}ShapeDeformed"
-        modifier.object_path = '/'.join(splitted_path)
-
-    def extract_version_from_filepath(self, filepath):
-        return re.search(r'[^a-zA-Z\d](v\d{3})[^a-zA-Z\d]', filepath).groups()[-1]
-
-
-class OBJECT_OT_UPDATE_OBJECTS_PATHS_VERSION(bpy.types.Operator):
-    bl_idname = "object.update_objects_paths_version"
-    bl_label = "Update versions in scene objects paths"
-
-    def execute(self, context):
-        mesh_objects = [obj for obj in bpy.data.objects if obj.type == 'MESH']
-        mesh_sequence_caches = get_modifiers_by_type(
-            modifier_type='MESH_SEQUENCE_CACHE',
-            given_objects=mesh_objects
-        )
-        modifiers_cache_files = [modifier.cache_file for modifier in mesh_sequence_caches]
-        create_library_override_for(
-            collections=bpy.context.scene.collection,
-            objects=mesh_objects,
-            modifiers_cache_files=modifiers_cache_files
-        )
-
-        self.update_versions(bpy.data.cache_files)
-        self.disable_uv_data_reading(mesh_sequence_caches)
-
-        return {'FINISHED'}
-
-    def update_versions(self, cache_files):
-        for cache_file in cache_files:
-            absolute_file_path = bpy.path.abspath(cache_file.filepath)
-
-            if not self._is_animation_file(absolute_file_path):
-                logging.warning(f'Cache file {cache_file.name} does not point to an animation file. Skipping...')
-                continue
-
-            current_version = self.extract_version_from_filepath(absolute_file_path)
-            versions_directory = absolute_file_path.split(current_version)[0]
-            last_version_available = self.retrieve_higher_version_from_directory(versions_directory)
-            if current_version == last_version_available:
-                log.info(f"No newer version found for alembic {cache_file.name} (current is {current_version})")
-                return
-
-            cache_file.filepath = absolute_file_path.replace(current_version, last_version_available)
-            cache_file.name = cache_file.filepath.split('\\')[-1]
-            log.info(
-                f"Alembic named {cache_file.name} has been updated from version {current_version} to {last_version_available}")
-
-    def extract_version_from_filepath(self, filepath):
-        return re.search(r'[^a-zA-Z\d](v\d{3})[^a-zA-Z\d]', filepath).groups()[-1]
-
-    def retrieve_higher_version_from_directory(self, directory):
-        return [
-            folder for folder in os.listdir(directory) if
-            re.match(r'(v\d{3})', folder) and
-            os.path.isdir(os.path.join(directory, folder))
-        ][-1]
-    def disable_uv_data_reading(self, mesh_sequence_caches):
-        for mesh_sequence_cache in mesh_sequence_caches:
-            mesh_sequence_cache.read_data = {'COLOR', 'POLY', 'VERT'}
-
-    def _is_animation_file(self, filepath):
-        splitted_filepath = filepath.replace('\\', '/').split('/')
-        splitted_filepath.index('publish') + 1
-        return splitted_filepath[splitted_filepath.index('publish') + 1] == 'animation'
-
-
-class VIEW3D_PT_OBJECT_TYPES_TO_UPDATE(bpy.types.Panel):
+class VIEW3D_PT_UPDATE_PATHS(bpy.types.Panel):
     bl_label = "Select object types to update"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -184,58 +36,178 @@ class VIEW3D_PT_OBJECT_TYPES_TO_UPDATE(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         col = layout.column(align=True)
-        col.operator("paths.update_paths_to_animation", text="Update alembics to animation", icon="MESH_CUBE")
-        col.operator("paths.update_objects_paths_version", text="Update alembics versions", icon="MESH_CUBE")
+        col.operator("paths.update_animation_paths", text="Update alembics to animation", icon="MESH_CUBE").mode = "animation"
+        col.operator("paths.update_animation_paths", text="Update alembics versions", icon="MESH_CUBE").mode = "update_cache_versions"
 
 
-def get_modifiers_by_type(modifier_type, given_objects=None):
-    retrieved_modifiers = list()
-    given_objects = given_objects if given_objects else bpy.data.objects
-    for obj in given_objects:
-        for modifier in obj.modifiers:
-            if modifier.type == modifier_type:
-                retrieved_modifiers.append(modifier)
-    return retrieved_modifiers
+class OBJECT_OT_UPDATE_PATHS(bpy.types.Operator):
+    bl_idname = "paths.update_animation_paths"
+    bl_label = "Update tasks in scene objects paths"
 
+    mode: bpy.props.StringProperty()
 
-def create_library_override_for(collections=[], objects=[], modifiers_cache_files=[]):
-    collections = collections if collections else bpy.context.scene.collection
-    objects = objects if objects else bpy.data.objects
+    def execute(self, context):
+        mesh_objects = [obj for obj in bpy.data.objects if obj.type == 'MESH']
 
-    override_collection_and_children(collections)
-    override_objects(objects)
-    make_local(modifiers_cache_files)
+        if not mesh_objects:
+            log.error("Scene does not contain Mesh objects.")
+            return {'CANCELLED'}
 
+        # Filter modifiers and get cache files directly
+        mesh_sequence_caches = self.get_mesh_sequence_cache_modifiers(mesh_objects)
+        modifiers_cache_files = [modifier.cache_file for modifier in mesh_sequence_caches]
 
-def override_collection_and_children(collection):
-    if collection.library:
-        collection.override_create(remap_local_usages=True)
+        # Create library overrides in one go
+        self.create_library_override_for(collections=bpy.context.scene.collection,
+                                         objects=mesh_objects,
+                                         modifiers_cache_files=modifiers_cache_files)
 
-    for child in collection.children:
-        override_collection_and_children(child)
+        if self.mode == 'update_cache_versions':
+            self.update_versions(bpy.data.cache_files)
+        else:
+            # Update the sequence caches before creating overrides
+            self.update_mesh_sequence_caches(mesh_objects)
 
+            # Set Scale
+            for mesh_object in mesh_objects:
+                mesh_object.scale = (0.01, 0.01, 0.01)
 
-def override_objects(all_objects):
-    local_objects = [obj.name for obj in all_objects if not obj.library]
-    for obj in [obj for obj in all_objects if obj.library]:
-        if obj.name not in local_objects:
-            obj.override_create(remap_local_usages=True)
+        # Disable UV Data Reading
+        for mesh_sequence_cache in mesh_sequence_caches:
+            mesh_sequence_cache.read_data = {'COLOR', 'POLY', 'VERT'}
+        return {'FINISHED'}
 
+    def update_versions(self, cache_files):
+        for cache_file in cache_files:
+            absolute_file_path = bpy.path.abspath(cache_file.filepath)
 
-def make_local(all_objects):
-    local_objects = [obj.name for obj in all_objects if not obj.library]
-    for obj in [obj for obj in all_objects if obj.library]:
-        if obj.name not in local_objects:
-            obj.make_local()
+            if not "animation" in absolute_file_path:
+                logging.warning(f'Cache file {cache_file.name} does not point to an animation file. Skipping...')
+                continue
 
+            # Detect version and directory from file_path
+            version_pattern = re.search(r"(.*[/\\])v(\d{3})[/\\]", absolute_file_path)
+            if not version_pattern:
+                logging.warning(f"Unable to detect version pattern {cache_file.name}")
+                continue
+
+            versions_directory = version_pattern.group(1)
+            current_version = version_pattern.group(2)
+
+            last_version_available = self.detect_higher_version(versions_directory)
+            if int(current_version) == int(last_version_available):
+                log.info(f"No newer version found for alembic {cache_file.name} (current is {current_version})")
+                return
+
+            cache_file.filepath = absolute_file_path.replace(f"v{current_version}", f"v{last_version_available}")
+            cache_file.name = os.path.basename(cache_file.filepath)
+            log.info(f"Cache {cache_file.name} has been updated : {current_version} to {last_version_available}")
+
+    def detect_higher_version(self, directory):
+        version = None
+        for folder in os.listdir(directory):
+            version_folder_pattern = re.search(r"v(\d{3})", folder)
+            if version_folder_pattern:
+                version = version_folder_pattern.group(1)
+        return version
+
+    def update_mesh_sequence_caches(self, mesh_objects):
+        updated_cache_files = []
+        for modifier in self.get_mesh_sequence_cache_modifiers(mesh_objects):
+            cache_file = modifier.cache_file
+
+            # Only update if the cache file hasn't been updated
+            if cache_file not in updated_cache_files:
+                alembic_path = self.get_alembic_publish_path(modifier.object_path)
+
+                # Only update if the filepath has changed
+                if alembic_path != cache_file.filepath:
+                    previous_name = cache_file.name
+                    cache_file.filepath = alembic_path
+                    cache_file.name = alembic_path.split(f'{os.path.sep}')[-1]  # Assuming Windows path separator
+                    log.info(f"Alembic file '{previous_name}' updated to '{cache_file.filepath}'.")
+
+                updated_cache_files.append(cache_file)
+
+            # Update modifier's object path
+            parts = modifier.object_path.split("/")
+            parts[-1] = f"{modifier.id_data.name}ShapeDeformed"
+            modifier.object_path = f'{os.path.sep}'.join(parts)
+
+    def get_mesh_sequence_cache_modifiers(self, objects):
+        """Return all MESH_SEQUENCE_CACHE modifiers from a list of objects."""
+        return [mod for obj in objects for mod in obj.modifiers if mod.type == 'MESH_SEQUENCE_CACHE']
+
+    def create_library_override_for(self, collections=None, objects=None, modifiers_cache_files=None):
+        set()  # Use a set to avoid duplicate
+        collections = collections if collections else bpy.context.scene.collection
+        objects = objects if objects else bpy.data.objects
+
+        self.override_collection_and_children(collections)
+
+        # Create library overrides for objects and cache files in a single pass
+        local_object_names = {obj.name for obj in objects if not obj.library}
+        local_cache_names = {cache.name for cache in modifiers_cache_files if not cache.library}
+
+        for obj in objects:
+            if obj.library and obj.name not in local_object_names:
+                obj.override_create(remap_local_usages=True)
+
+        for cache_file in modifiers_cache_files:
+            if cache_file.library and cache_file.name not in local_cache_names:
+                cache_file.make_local()
+
+    def get_alembic_publish_path(self, modifier_object_path):
+        # Get the asset name from the modifier_object_path
+        asset_name = modifier_object_path.split("/")[1].split('_')[0]  # "/" is the blender delimiter
+
+        # Construct the animation directory path
+        anatomy = Anatomy()
+        publish_template = anatomy.templates.get('publish')
+        template_session_data = get_template_data_from_session()
+        template_session_data.update({
+            'root': anatomy.roots,
+            'family': 'animation',
+            'subset': f'{asset_name}_animation',
+        })
+        animation_directory = os.path.normpath(
+            os.path.dirname(StringTemplate.format_template(publish_template['folder'], template_session_data))
+        )
+        if not os.path.exists(animation_directory):
+            return
+
+        # Retrieve the highest version folder from the animation directory
+        last_version = self.detect_higher_version(animation_directory)
+
+        # If no version folder is found, return None
+        if not last_version:
+            return
+
+        # Retrieve the alembic file matching the version
+        version_directory = os.path.join(animation_directory, f'v{last_version}')
+
+        alembic_file = None
+        for abc_file in os.listdir(version_directory):
+            if abc_file.endswith('.abc'):
+                alembic_file = abc_file
+
+        if not alembic_file:
+            return
+
+        # Return the full path to the alembic file if found, otherwise None
+        return os.path.join(animation_directory, last_version, alembic_file)
+
+    def override_collection_and_children(self, collection):
+        if collection.library:
+            collection.override_create(remap_local_usages=True)
+
+        for child in collection.children:
+            self.override_collection_and_children(child)
 
 def register():
-        bpy.utils.register_class(VIEW3D_PT_OBJECT_TYPES_TO_UPDATE)
-        bpy.utils.register_class(OBJECT_OT_UPDATE_PATHS_TO_ANIMATION)
-        bpy.utils.register_class(OBJECT_OT_UPDATE_OBJECTS_PATHS_VERSION)
-
+        bpy.utils.register_class(VIEW3D_PT_UPDATE_PATHS)
+        bpy.utils.register_class(OBJECT_OT_UPDATE_PATHS)
 
 def unregister():
-        bpy.utils.unregister_class(VIEW3D_PT_OBJECT_TYPES_TO_UPDATE)
-        bpy.utils.unregister_class(OBJECT_OT_UPDATE_PATHS_TO_ANIMATION)
-        bpy.utils.unregister_class(OBJECT_OT_UPDATE_OBJECTS_PATHS_VERSION)
+        bpy.utils.unregister_class(VIEW3D_PT_UPDATE_PATHS)
+        bpy.utils.unregister_class(OBJECT_OT_UPDATE_PATHS)
