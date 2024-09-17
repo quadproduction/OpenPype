@@ -36,6 +36,7 @@ from openpype.lib import (
 from openpype.settings import (
     get_project_settings,
     get_current_project_settings,
+    GENERAL_SETTINGS_KEY
 )
 from openpype.modules import ModulesManager
 from openpype.pipeline.template_data import get_template_data_with_names
@@ -2599,12 +2600,17 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
     def set_context_settings(self):
         os.environ["OP_NUKE_SKIP_SAVE_EVENT"] = "True"
         # replace reset resolution from avalon core to pype's
-        self.reset_resolution()
+        if self._get_set_resolution_startup():
+            self.reset_resolution()
         # replace reset resolution from avalon core to pype's
         self.reset_frame_range_handles()
         # add colorspace menu item
         self.set_colorspace()
         del os.environ["OP_NUKE_SKIP_SAVE_EVENT"]
+
+    def _get_set_resolution_startup(self):
+        custom_settings = self.get_custom_settings()
+        return custom_settings.get("hosts", {}).get("nuke", {}).get("set_resolution_startup", True)
 
     def set_custom_resolution(self):
         custom_settings = self.get_custom_settings()
@@ -2624,7 +2630,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
 
     def set_workfile_overrides(self, custom_settings):
         project_name = get_current_project_name()
-        resolution_overrides = custom_settings.get("general", {}).get("working_resolution_overrides", None)
+        resolution_overrides = custom_settings.get(GENERAL_SETTINGS_KEY, {}).get("working_resolution_overrides", None)
         if not resolution_overrides:
             log.warning("Can't retrieve resolution overrides for workfiles. Will not be applied.")
             return

@@ -186,7 +186,7 @@ class DictImmutableKeysEntity(ItemEntity):
         self._ignore_child_changes = False
 
         # `current_metadata` are still when schema is loaded
-        # - only metadata stored with dict item are gorup overrides in
+        # - only metadata stored with dict item are group overrides in
         #   M_OVERRIDDEN_KEY
         self._current_metadata = {}
         self._metadata_are_modified = False

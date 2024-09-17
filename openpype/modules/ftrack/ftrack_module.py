@@ -12,7 +12,13 @@ from openpype.modules import (
     IPluginPaths,
     ISettingsChangeListener
 )
-from openpype.settings import SaveWarningExc, get_project_settings
+from openpype.settings import (
+    SaveWarningExc,
+    get_project_settings,
+    APPS_SETTINGS_KEY,
+    GENERAL_SETTINGS_KEY,
+    MODULES_SETTINGS_KEY
+)
 from openpype.settings.lib import get_system_settings
 from openpype.lib import Logger
 
@@ -315,7 +321,7 @@ class FtrackModule(
                 " Can't propagate changes to Ftrack server."
             ))
 
-        ftrack_changes = changes.get("modules", {}).get("ftrack", {})
+        ftrack_changes = changes.get(MODULES_SETTINGS_KEY, {}).get("ftrack", {})
         url_change_msg = None
         if "ftrack_server" in ftrack_changes:
             url_change_msg = (
@@ -338,7 +344,6 @@ class FtrackModule(
 
         from .lib import (
             get_openpype_attr,
-            CUST_ATTR_APPLICATIONS,
             CUST_ATTR_TOOLS,
             app_definitions_from_app_manager,
             tool_definitions_from_app_manager
@@ -358,7 +363,7 @@ class FtrackModule(
         tool_attribute = None
         for custom_attribute in custom_attributes:
             key = custom_attribute["key"]
-            if key == CUST_ATTR_APPLICATIONS:
+            if key == APPS_SETTINGS_KEY:
                 app_attribute = custom_attribute
             elif key == CUST_ATTR_TOOLS:
                 tool_attribute = custom_attribute
@@ -366,7 +371,7 @@ class FtrackModule(
         app_manager = ApplicationManager(new_value_metadata)
         missing_attributes = []
         if not app_attribute:
-            missing_attributes.append(CUST_ATTR_APPLICATIONS)
+            missing_attributes.append(APPS_SETTINGS_KEY)
         else:
             config = json.loads(app_attribute["config"])
             new_data = app_definitions_from_app_manager(app_manager)
@@ -430,7 +435,7 @@ class FtrackModule(
             return
 
         system_settings = get_system_settings()
-        protect_attrs = system_settings["general"].get("project", {}).get("protect_anatomy_attributes", False)
+        protect_attrs = system_settings[GENERAL_SETTINGS_KEY].get("project", {}).get("protect_anatomy_attributes", False)
 
         # If we just create the project on the server (prepare project) we want to send attributes to Ftrack
         bypass_protect_anatomy_attributes = new_value_metadata.get("bypass_protect_anatomy_attributes", False)
@@ -448,7 +453,6 @@ class FtrackModule(
             get_openpype_attr,
             default_custom_attributes_definition,
             CUST_ATTR_TOOLS,
-            CUST_ATTR_APPLICATIONS,
             CUST_ATTR_INTENT
         )
 
@@ -481,7 +485,7 @@ class FtrackModule(
         ca_keys = (
             set(hierarchical_attrs.keys())
             | set(project_attrs.keys())
-            | {CUST_ATTR_TOOLS, CUST_ATTR_APPLICATIONS, CUST_ATTR_INTENT}
+            | {CUST_ATTR_TOOLS, APPS_SETTINGS_KEY, CUST_ATTR_INTENT}
         )
 
         cust_attr, hier_attr = get_openpype_attr(session)
