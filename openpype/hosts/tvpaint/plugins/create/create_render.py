@@ -1047,7 +1047,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         self.apply_background = False
         self.keep_frame_index = False
         self.exports_types = ['scene', 'camera']
-        self.review_types = ['Video', 'Seq Img']
+        self.review_types = ['Video', 'Seq_Img']
         self.ignore_layers_transparency = False
 
     def get_dynamic_data(self, variant, *args, **kwargs):

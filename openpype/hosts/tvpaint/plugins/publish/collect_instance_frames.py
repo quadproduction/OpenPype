@@ -99,9 +99,10 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             return list(range(int(mark_in), int(mark_out) + 1))
 
         # Check if custom_frames is correctly written and no illegal character is present
-        character_pattern = r'[^][\-:, \d]'
-        match = re.search(character_pattern, custom_frames)
-        if match:
+        character_pattern = r'[\d\[\],: -]+'
+        match = re.match(character_pattern, custom_frames)
+
+        if not match:
             self.log.warning("!!!!\nUnauthorized characters found: {}\n!!!!".format(match.group()))
             raise NameError
 
@@ -111,29 +112,37 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
 
         custom_frames_list = set()
         for element in custom_frames_elements:
-            match = re.match(r'\[(\d+|:)-(\d+|:)\]', element)
+            matches = re.findall(r'\[(\d+|:)-(\d+|:)\]', element)
             # If element is [#-#], then process the custom_frames_list construction
-            if match:
-                start, end = match.group(1), match.group(2)
+            if matches:
+                # Gather by binome in case multiple [#-#] are not separated by ","
+                for match_group in matches:
+                    start, end = match_group[0], match_group[1]
+                    if start == ':' or int(start) < 0:
+                        # Security if must start on mark_in
+                        start = mark_in + sceneStartFrame
 
-                if start == ':':
-                    # Security if must start on mark_in
-                    start = mark_in + sceneStartFrame
-                if end == ":":
-                    # Security if must end on mark_out
-                    end = mark_out + sceneStartFrame
+                    if end == ":" or int(end) < 0:
+                        # Security if must end on mark_out
+                        end = mark_out + sceneStartFrame
 
-                # Check if the end if AFTER the start
-                # Can happen if the user set the markIn AFTER the end frame he entered in the custom frame string
-                if int(end) < int(start):
-                    self.log.warning("The End frame in [:-{}] is lower than the tvpp markIn {}".format(end, mark_in + sceneStartFrame))
-                    raise IndexError
+                    # Check if the end is AFTER the start
+                    # Can happen if the user set the markIn AFTER the end frame he entered in the custom frame string
+                    if int(end) < int(start):
+                        self.log.warning("The End frame in [:-{}] is lower than the tvpp markIn {}".format(end, mark_in + sceneStartFrame))
+                        raise IndexError
 
-                # Add frame_index in custom_frames_list for frame_index in [#-#]
-                for frame_index in range(int(start), int(end)+1):
-                    custom_frames_list.add(frame_index)
+                    # Add frame_index in custom_frames_list for frame_index in [#-#]
+                    for frame_index in range(int(start), int(end)+1):
+                        custom_frames_list.add(frame_index)
 
             else:
+                if element == ":":
+                    self.log.warning("The ':' can't be used outside a [:-:] pattern")
+                    raise IndexError
+                if int(element) < 0:
+                    self.log.warning("Numbers can't be negatives")
+                    raise IndexError
                 custom_frames_list.add(int(element))
 
         return list(sorted(custom_frames_list))

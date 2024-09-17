@@ -4,6 +4,8 @@ import tempfile
 import clique
 import speedcopy
 import re
+from pathlib import Path
+from enum import Enum
 
 from PIL import Image
 
@@ -24,6 +26,10 @@ from openpype.hosts.tvpaint.lib import (
     rename_filepaths_by_frame_start,
     get_layer_pos_filename_template,
 )
+
+class ReviewTypes(Enum):
+    Video = False
+    Seq_Img = True
 
 
 class ExtractSequence(pyblish.api.Extractor):
@@ -143,7 +149,7 @@ class ExtractSequence(pyblish.api.Extractor):
         )
 
         make_playblast = instance.data["creator_attributes"].get("make_playblast", False)
-        export_type = instance.data["creator_attributes"].get("export_type", None)
+        export_type = instance.data["creator_attributes"].get("export_type", "scene")
         apply_background = instance.data["creator_attributes"].get("apply_background", True)
         is_review = instance.data["family"] == "review"
 
@@ -196,12 +202,12 @@ class ExtractSequence(pyblish.api.Extractor):
         if "review" in instance.data["families"]:
             tags.append("review")
 
-        review_media_type = instance.data["creator_attributes"].get("review_media_type", None)
-        review_img_seq = True if review_media_type == "Seq Img" else False
+        # Retrieving review media type, default is video
+        review_media_type = instance.data["creator_attributes"].get("review_media_type", "Video")
 
         # if a custom_mark_range is given, always make the review a seq and not a video
         # It makes no sense to make a video of discontinuous frame range
-        if review_img_seq or custom_mark_range:
+        if ReviewTypes[review_media_type].value or custom_mark_range:
             custom_tags.append("sequence")
 
         # Sequence of one frame
@@ -275,7 +281,7 @@ class ExtractSequence(pyblish.api.Extractor):
                 script command `tv_background`.
             ignore_layers_transparency (bool): Layer's opacity will be ignored.
             layers (list): List of layers to be exported.
-            custom_mark_range (list): List of frames to render
+            custom_mark_range (list): List of custom frames to process, if any is given
             origin_mark_in (int): Original markIn position before modification if custom_mark_range is given
             origin_mark_out (int): Original markOut position before modification if custom_mark_range is given
         Returns:
@@ -627,7 +633,6 @@ class ExtractSequence(pyblish.api.Extractor):
         return filepaths_by_frame
 
     def fill_sequence_gaps(self, filepaths_by_frame_index, staging_dir, start_frame, end_frame):
-        # type: (list, str, int, int) -> list
         """Fill missing files in sequence by duplicating existing ones.
 
         This will take nearest frame file and copy it with so as to fill
@@ -643,75 +648,48 @@ class ExtractSequence(pyblish.api.Extractor):
         Returns:
             list of added files. Those should be cleaned after work
                 is done.
-
-        Raises:
-            KnownPublishError: if more than one collection is obtained.
         """
-        files = []
-        pattern = r'\d{4}\.png$'
-        reference_file_pattern = None
-        frame_to_avoid = []
-        index = []
-
-        for frame, filepath in filepaths_by_frame_index.items():
-            # Avoid treating the frame if the pre or post layer behaviour is set to None
-            if filepath is None:
-                frame_to_avoid.append(frame)
-                continue
-            # Regex to capture suffix iterations
-            match = re.search(pattern, filepath)
-            if match:
-                files.append(match.group())
-                reference_file_pattern = filepath
-
-        if len(files) == 1:
-            # Prepare which hole is filled with what frame
-            #   - the frame is filled only with already existing frames
-            prev_frame = files[0]
-            match = re.search(r'0*(\d+)\.png', prev_frame)
-            if match:
-                index = [int(match.group(1))]
-
-        collections = clique.assemble(files)[0]
-        if len(collections) != 1 and not index:
-            raise KnownPublishError(
-                "Multiple collections {} found.".format(collections))
-
-        if not index:
-            col = collections[0]
-            index = col.indexes
-            # Prepare which hole is filled with what frame
-            #   - the frame is filled only with already existing frames
-            prev_frame = next(iter(col.indexes))
-
         hole_frame_to_nearest = {}
-        for frame in range(int(start_frame), int(end_frame) + 1):
-            if frame in index:
-                prev_frame = frame
 
-            elif frame in frame_to_avoid:
+        # Frame existing in the staging_dir.
+        frame_list = [frame for frame, filepath in filepaths_by_frame_index.items() if filepath]
+
+        # Frame to not copy if None is present (Pre or Post behavior set to None).
+        frame_to_avoid = [frame for frame, filepath in filepaths_by_frame_index.items() if not filepath]
+
+        # Set the previous frame as the first of the existing ones.
+        prev_frame = frame_list[0]
+
+        for frame in range(int(start_frame), int(end_frame) + 1):
+            # if frame is to avoid, continue.
+            if frame in frame_to_avoid:
+                continue
+            # if frame is in existing ones, set it as the new previous one.
+            if frame in frame_list:
+                prev_frame = frame
                 continue
 
-            else:
-                # Use previous frame as source for hole
-                hole_frame_to_nearest[frame] = prev_frame
+            # complete the frame to fill.
+            hole_frame_to_nearest[frame] = prev_frame
 
         # Calculate paths
         added_filepaths_by_frame_index = {}
         finale_template = get_frame_filename_template(end_frame)
 
-        #col_format = col.format("{head}{padding}{tail}")
         for hole_frame, src_frame in hole_frame_to_nearest.items():
-            hole_f = finale_template.format(frame=hole_frame)
-            src_f = finale_template.format(frame=src_frame)
-            hole_fpath = re.sub(r'0*(\d+)\.png', hole_f, reference_file_pattern)
-            src_fpath = re.sub(r'0*(\d+)\.png', src_f, reference_file_pattern)
-            if not os.path.isfile(src_fpath):
-                raise KnownPublishError(
-                    "Missing previously detected file: {}".format(src_fpath))
+            src_file_path = filepaths_by_frame_index[src_frame]
 
-            speedcopy.copyfile(src_fpath, hole_fpath)
-            added_filepaths_by_frame_index[hole_frame] = hole_fpath
+            hole_file_name = finale_template.format(frame=hole_frame)
+            src_file_name = finale_template.format(frame=src_frame)
+
+            hole_file_path = re.sub(src_file_name, hole_file_name, src_file_path)
+
+            if not os.path.isfile(src_file_path):
+                raise KnownPublishError(
+                    "Missing previously detected file: {}".format(src_file_path))
+
+            speedcopy.copyfile(src_file_path, hole_file_path)
+            added_filepaths_by_frame_index[hole_frame] = hole_file_path
 
         return added_filepaths_by_frame_index
 
@@ -725,7 +703,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
         for frame_idx in range(bg_layer["frame_start"], bg_layer["frame_end"] + 1):
             filename = layer_template.format(pos=bg_layer["position"],frame=frame_idx)
-            dst_path = "/".join([output_dir, filename])
+            dst_path = Path(output_dir).joinpath(filename)
             filepaths_by_frame[frame_idx] = dst_path
 
             bg_image = Image.new("RGBA", resolution, bg_color)
