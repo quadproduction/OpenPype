@@ -71,6 +71,8 @@ class OBJECT_OT_UPDATE_PATHS(bpy.types.Operator):
 
             # Set Scale
             for mesh_object in mesh_objects:
+                # Scale set to 0.01 to adjust different unit systems between Maya and Blender.
+                # TODO : Need a scale converter
                 mesh_object.scale = (0.01, 0.01, 0.01)
 
         # Disable UV Data Reading
