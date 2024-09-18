@@ -1,12 +1,10 @@
 import bpy
 import logging
 import subprocess
-
-from openpype.pipeline.anatomy import Anatomy
-from openpype.lib import StringTemplate
-from openpype.pipeline.context_tools import get_template_data_from_session
 import os
-import re
+import sys
+
+from openpype.hosts.blender.api.pipeline import get_path_from_template
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -29,7 +27,7 @@ RENDER_TYPES = {
 }
 
 
-# Define the All The Playblast Properties
+# Define the Playblast Settings
 class PlayblastSettings(bpy.types.PropertyGroup):
     use_camera_view: bpy.props.BoolProperty(
         name="Use Camera View",
@@ -76,6 +74,7 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
         file_extension_use = scene.render.use_file_extension
         engine = scene.render.engine
         film_transparent = scene.render.film_transparent
+        color_mode = scene.render.image_settings.color_mode
 
         # Apply camera view if needed
         if region and scene.playblast_settings.use_camera_view:
@@ -85,18 +84,27 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
         # Disable file extension for playblast
         scene.render.use_file_extension = False
 
-        # Apply transparent background settings if needed
-        if scene.playblast_settings.use_transparent_bg:
-            scene.render.engine = "CYCLES"
-            scene.render.film_transparent = True
-            scene.render.image_settings.color_mode = "RGBA"
-
         # Render playblast for each file format
-        is_version_already_bumped = False
+        version_to_bump = True
         for file_format, options in RENDER_TYPES.items():
             scene.render.image_settings.file_format = file_format
-            scene.render.filepath = self.get_playblast_path(options['extension'], is_version_already_bumped)
-            is_version_already_bumped = True
+            scene.render.filepath = get_path_from_template('playblast',
+                                                           'path',
+                                                           {'ext': options['extension']},
+                                                           bump_version=version_to_bump,
+                                                           makedirs=True)
+            version_to_bump = False
+
+            # Check if the current format supports RGBA (transparency)
+            if file_format == "PNG" and scene.playblast_settings.use_transparent_bg:
+                # Set PNG specific settings for transparency
+                scene.render.image_settings.color_mode = "RGBA"
+                scene.render.film_transparent = True
+                scene.render.engine = "CYCLES"
+            else:
+                # set color mode to RGB (no transparency support)
+                scene.render.image_settings.color_mode = "RGB"
+                scene.render.film_transparent = False
 
             # Apply container settings for ffmpeg if needed
             container = options.get('container')
@@ -113,6 +121,14 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
         scene.render.filepath = render_filepath
         scene.render.image_settings.file_format = file_format
         scene.render.use_file_extension = file_extension_use
+
+        # Restore color_mode safely: check if the original color_mode is allowed
+        if color_mode in ['RGB', 'BW'] or (file_format == "PNG" and color_mode == "RGBA"):
+            scene.render.image_settings.color_mode = color_mode
+        else:
+            # Fallback to RGB if the original mode is not compatible with the format
+            scene.render.image_settings.color_mode = 'RGB'
+
         if region and scene.playblast_settings.use_camera_view:
             region.view_perspective = perspective_region
 
@@ -120,7 +136,7 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
             # reset to memorized parameters for render
             scene.render.engine = engine
             scene.render.film_transparent = film_transparent
-            scene.render.image_settings.color_mode = 'RGB'
+
         return {"FINISHED"}
 
     def get_view_3D_region(self):
@@ -132,44 +148,6 @@ class OBJECT_OT_RENDER_PLAYBLAST(bpy.types.Operator):
                         return space.region_3d
         return None
 
-    def get_playblast_path(self, extension, is_version_already_bumped=False):
-        """ Build the playblast path based on actual context"""
-        # Get Project Anatomy in order to access templates
-        anatomy = Anatomy()
-        playblast_template = anatomy.templates.get('playblast')
-        if not playblast_template:
-            raise NotImplemented("'playblast' template need to be setted in your project settings")
-
-        # Build data dict to fill the template later
-        template_data = {'ext': extension}
-        template_data.update(get_template_data_from_session())
-        template_data.update({'root': anatomy.roots})
-
-        # Build playblast Folder Template
-        playblast_folder = StringTemplate.format_template(playblast_template['folder'], template_data)
-
-        # Get versions
-        if not os.path.exists(os.path.dirname(playblast_folder)):
-            template_data.update({'version': 1})
-        else:
-            latest_version = 1
-            regex = fr'v(\d{{{playblast_template["version_padding"]}}})$'
-            for version in os.listdir(os.path.dirname(playblast_folder)):
-                match = re.search(regex, version)
-                if match:
-                    version_num = int(match.group(1))
-                    if not is_version_already_bumped:
-                        latest_version = max(latest_version, version_num + 1)  # Increment the highest version number
-                    else:
-                        latest_version = max(latest_version, version_num)
-            # Update the template data with the latest version
-            template_data.update({'version': latest_version})
-
-        # Build playblast path and create file architecture if not exists
-        playblast_path = StringTemplate.format_template(playblast_template['path'], template_data)
-        os.makedirs(os.path.dirname(playblast_path), exist_ok=True)
-        return playblast_path
-
 
 class OBJECT_OT_OPEN_PLAYBLAST_FOLDER(bpy.types.Operator):
     bl_idname = "playblast.open"
@@ -177,45 +155,23 @@ class OBJECT_OT_OPEN_PLAYBLAST_FOLDER(bpy.types.Operator):
 
     def execute(self, context):
         # Get the path to the most recent playblast folder
-        latest_playblast_filepath = self.get_latest_playblast_path()
+        latest_playblast_filepath = get_path_from_template('playblast',
+                                                           'folder')
 
         if not os.path.exists(latest_playblast_filepath):
             self.report({'ERROR'}, f"File '{latest_playblast_filepath}' not found")
             return {'CANCELLED'}
 
-        subprocess.Popen(f'explorer "{latest_playblast_filepath}"', shell=True)
+        if 'win' in sys.platform:  # windows
+            subprocess.Popen(f'explorer "{latest_playblast_filepath}"')
+        elif sys.platform == 'darwin':  # macOS
+            subprocess.Popen(['open', f'{latest_playblast_filepath}'])
+        else:  # linux
+            try:
+                subprocess.Popen(['xdg-open', f'{latest_playblast_filepath}'])
+            except OSError:
+                raise OSError('unsupported xdg-open call')
         return {'FINISHED'}
-
-    def get_latest_playblast_path(self):
-        # Get Project Anatomy in order to access templates
-        anatomy = Anatomy()
-        playblast_template = anatomy.templates.get('playblast')
-        if not playblast_template:
-            raise NotImplemented("Playblast template need to be setted in your project settings")
-
-        # Build data dict to fill the template later
-        template_data = get_template_data_from_session()
-        template_data.update({'root': anatomy.roots})
-
-        # Build playblast folder template
-        playblast_folder = StringTemplate.format_template(playblast_template['folder'], template_data)
-
-        # Get versions
-        if not os.path.exists(os.path.dirname(playblast_folder)):
-            return ""
-        else:
-            latest_version = 1
-            # Build regex based on padding's project
-            regex = fr'v(\d{{{playblast_template["version_padding"]}}})$'
-            for version in os.listdir(os.path.dirname(playblast_folder)):
-                match = re.search(regex, version)
-                if match:
-                    latest_version = max(latest_version, int(match.group(1)))
-            # Update the template data with the latest version
-            template_data.update({'version': latest_version})
-
-        # Build playblast path and create file architecture if not exists
-        return os.path.normpath(StringTemplate.format_template(playblast_template['folder'], template_data))
 
 
 def register():

@@ -2,9 +2,8 @@ import os
 import logging
 import re
 
+from openpype.hosts.blender.api.pipeline import get_path_from_template
 from openpype.pipeline.anatomy import Anatomy
-from openpype.lib import StringTemplate
-from openpype.pipeline.context_tools import get_template_data_from_session
 
 import bpy
 
@@ -22,6 +21,8 @@ bl_info = {
     "category": "Render",
     "location": "View 3D > UI",
 }
+
+ALEMBIC_EXTENSION = '.abc'
 
 
 class VIEW3D_PT_UPDATE_PATHS(bpy.types.Panel):
@@ -42,7 +43,7 @@ class VIEW3D_PT_UPDATE_PATHS(bpy.types.Panel):
 
 class OBJECT_OT_UPDATE_PATHS(bpy.types.Operator):
     bl_idname = "paths.update_animation_paths"
-    bl_label = "Update tasks in scene objects paths"
+    bl_label = "Update Animation Paths and Cache Versions in Scene Objects"
 
     mode: bpy.props.StringProperty()
 
@@ -86,7 +87,8 @@ class OBJECT_OT_UPDATE_PATHS(bpy.types.Operator):
                 continue
 
             # Detect version and directory from file_path
-            version_pattern = re.search(r"(.*[/\\])v(\d{3})[/\\]", absolute_file_path)
+            version_padding = Anatomy().templates.get('version_padding', '3')
+            version_pattern = re.search(rf"(.*[/\\])v(\d{{{version_padding}}})[/\\]", absolute_file_path)
             if not version_pattern:
                 logging.warning(f"Unable to detect version pattern {cache_file.name}")
                 continue
@@ -162,17 +164,12 @@ class OBJECT_OT_UPDATE_PATHS(bpy.types.Operator):
         asset_name = modifier_object_path.split("/")[1].split('_')[0]  # "/" is the blender delimiter
 
         # Construct the animation directory path
-        anatomy = Anatomy()
-        publish_template = anatomy.templates.get('publish')
-        template_session_data = get_template_data_from_session()
-        template_session_data.update({
-            'root': anatomy.roots,
+        template_data= {
             'family': 'animation',
             'subset': f'{asset_name}_animation',
-        })
-        animation_directory = os.path.normpath(
-            os.path.dirname(StringTemplate.format_template(publish_template['folder'], template_session_data))
-        )
+        }
+
+        animation_directory = os.path.dirname(get_path_from_template('publish', 'folder', template_data))
         if not os.path.exists(animation_directory):
             return
 
@@ -188,7 +185,7 @@ class OBJECT_OT_UPDATE_PATHS(bpy.types.Operator):
 
         alembic_file = None
         for abc_file in os.listdir(version_directory):
-            if abc_file.endswith('.abc'):
+            if abc_file.endswith(f'{ALEMBIC_EXTENSION}'):
                 alembic_file = abc_file
 
         if not alembic_file:

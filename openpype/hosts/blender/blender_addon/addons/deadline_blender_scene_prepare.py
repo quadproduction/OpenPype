@@ -1,14 +1,11 @@
 import os
-import re
 import tempfile
 import functools
 import logging
 import uuid
 
-from openpype.pipeline.anatomy import Anatomy
-from openpype.lib import StringTemplate
-from openpype.pipeline.context_tools import get_template_data_from_session
 from openpype.settings import get_system_settings
+from openpype.hosts.blender.api.pipeline import get_path_from_template
 
 import bpy
 
@@ -76,17 +73,12 @@ RENDER_PROPERTIES_CHECKBOX = [
 
 def generate_enums_from_render_selectors(self, context):
 
-    def _get_render_property_from_name(name):
-         return next(
-              iter(
-                   render_property for render_property in RENDER_PROPERTIES_SELECTORS
-                   if render_property['name'] == name
-              )
-         )
-
-    items=[]
-    for values in _get_render_property_from_name(self.name)['values']:
-        items.append(values)
+    items = []
+    for render_property in RENDER_PROPERTIES_SELECTORS:
+        if render_property['name'] == self.name:
+            for values in render_property['values']:
+                items.append(values)
+            break
 
     return items
 
@@ -181,14 +173,6 @@ class PrepareTemporaryFile(bpy.types.Operator):
     bl_label = "Prepare Render Scene"
     bl_description = "Create temporary blender file and set properties"
 
-    def __init__(self):
-        self.anatomy = Anatomy()
-        if not self.anatomy.templates.get('deadline_render'):
-            raise NotImplemented("'deadline_render' template need to be setted in your project settings")
-
-        self.renders_path_template = self.anatomy.templates.get('deadline_render')
-        self.template_session_data = {'root': self.anatomy.roots, **get_template_data_from_session()}
-
     def execute(self, context):
         log.info("Preparing temporary scene for Deadline's render")
 
@@ -241,10 +225,10 @@ class PrepareTemporaryFile(bpy.types.Operator):
     def convert_path_to_linux(self, path):
         return bpy.path.abspath(path).replace(
             self.anatomy.roots['work'],
-            "/prod/project"
+            self.anatomy._data['roots']['work']['linux']
         ).replace(
             self.anatomy.roots['work'],
-            "/prod/project"
+            self.anatomy._data['roots']['work']['linux']
         ).replace('\\', '/')
 
     def convert_modifiers_windows_path_to_linux(self):
@@ -281,53 +265,26 @@ class PrepareTemporaryFile(bpy.types.Operator):
             log.info(f"Cache file path has updated from {old_path} to {cache_file.filepath}")
 
     def set_global_output_path(self, create_directory=False):
-        bpy.context.scene.render.filepath = self.get_render_global_output_path()
+        bpy.context.scene.render.filepath = get_path_from_template(template_module='deadline_render',
+                                                                   template_name='global_output',
+                                                                   template_data={},
+                                                                   makedirs=create_directory)
         log.info(f"Global output path has been set to '{bpy.context.scene.render.filepath}'")
-        if create_directory:
-            os.makedirs(bpy.context.scene.render.filepath, exist_ok=True)
-            log.info(f"Folder at path '{bpy.context.scene.render.filepath}' has been created.")
 
     def set_render_nodes_output_path(self, convert_to_linux_paths=False):
         for output_node in [node for node in bpy.context.scene.node_tree.nodes if node.type == 'OUTPUT_FILE']:
             render_node = self._browse_render_nodes(output_node.inputs)
-            render_node_output_path = self.get_render_node_path(render_layer_name=render_node.layer)
+            render_node_output_path = get_path_from_template(template_module='deadline_render',
+                                                             template_name='node_output',
+                                                             template_data={'render_layer_name': render_node.layer},
+                                                             bump_version=True,
+                                                             makedirs=True)
 
             if convert_to_linux_paths:
                 render_node_output_path = self.convert_path_to_linux(render_node_output_path)
 
             output_node.base_path = render_node_output_path
             log.info(f"File output path has been set to '{output_node.base_path}'.")
-
-    def get_render_node_path(self, render_layer_name):
-        """ Build the render node path based on actual context"""
-        # Build render node folder template
-        self.template_session_data.update({"render_layer_name": render_layer_name})
-        render_node_folder_path = StringTemplate.format_template(self.renders_path_template['folder'], self.template_session_data)
-
-        # Get versions
-        if not os.path.exists(render_node_folder_path):
-            self.template_session_data.update({'version': 1})
-        else:
-            latest_version = 1
-            regex = fr'v(\d{{{self.renders_path_template["version_padding"]}}})$'
-            for version in os.listdir(render_node_folder_path):
-                match = re.search(regex, version)
-                if match:
-                    latest_version = max(latest_version, int(match.group(1)) + 1)# Increment the highest version number
-            # Update the template data with the latest version
-            self.template_session_data.update({'version': latest_version})
-
-        # Build render node path and create file architecture if not exists
-        render_node_path = StringTemplate.format_template(self.renders_path_template['node_output'], self.template_session_data)
-        os.makedirs(os.path.dirname(render_node_path), exist_ok=True)
-        return render_node_path
-
-    def get_render_global_output_path(self):
-        """ Build the temp render path based on actual context"""
-        # Build temp render path, create folder hierarchy
-        temp_render_path = StringTemplate.format_template(self.renders_path_template['global_output'], self.template_session_data)
-        os.makedirs(os.path.dirname(temp_render_path), exist_ok=True)
-        return temp_render_path
 
     def save_as_temporary_scene(self):
         bpy.context.window_manager.scene_filepath = bpy.data.filepath
@@ -400,17 +357,20 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(PrepareTemporaryFile)
-    bpy.utils.unregister_class(LoadPreviousScene)
-    bpy.utils.unregister_class(ExecutionOrder)
-    bpy.utils.unregister_class(PrepareAndRenderScene)
-    bpy.utils.unregister_class(RenderBoolProperty)
-    bpy.utils.unregister_class(RenderListProperty)
-    bpy.utils.unregister_class(RenderLayerProperty)
+    system_settings = get_system_settings()
+    modules_settings = system_settings["modules"]
+    if modules_settings["deadline"].get("enabled", False):
+        bpy.utils.unregister_class(PrepareTemporaryFile)
+        bpy.utils.unregister_class(LoadPreviousScene)
+        bpy.utils.unregister_class(ExecutionOrder)
+        bpy.utils.unregister_class(PrepareAndRenderScene)
+        bpy.utils.unregister_class(RenderBoolProperty)
+        bpy.utils.unregister_class(RenderListProperty)
+        bpy.utils.unregister_class(RenderLayerProperty)
 
-    del bpy.types.WindowManager.scene_filepath
-    del bpy.types.WindowManager.render_bool_properties
-    del bpy.types.WindowManager.render_list_properties
-    del bpy.types.WindowManager.render_layers_to_use
+        del bpy.types.WindowManager.scene_filepath
+        del bpy.types.WindowManager.render_bool_properties
+        del bpy.types.WindowManager.render_list_properties
+        del bpy.types.WindowManager.render_layers_to_use
 
-    bpy.app.handlers.load_post.remove(populate_render_properties)
+        bpy.app.handlers.load_post.remove(populate_render_properties)
