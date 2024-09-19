@@ -21,6 +21,7 @@ class TVPaintReviewType(Enum):
 
     @classmethod
     def _missing_(cls, value):
+        # Returning default value
         return cls.Video
 
 
