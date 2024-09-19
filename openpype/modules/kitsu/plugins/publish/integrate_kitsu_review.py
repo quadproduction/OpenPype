@@ -3,6 +3,8 @@ import re
 import gazu
 import pyblish.api
 
+from openpype.pipeline.anatomy import Anatomy
+
 
 class IntegrateKitsuReview(pyblish.api.InstancePlugin):
     """Integrate Kitsu Review"""
@@ -33,8 +35,7 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
 
             filenames = representation.get("files")
 
-            custom_frames = instance.data.get("customFrames", [])
-            keep_frame_index = instance.data.get("keepFrameIndex", False)
+            export_frames = instance.data.get("exportFrames", [])
             frame_start = instance.data["frameStart"]
             frame_end = instance.data["frameEnd"]
 
@@ -53,15 +54,17 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
                 raise IndexError
             self.log.debug("Found review at: {}".format(review_path))
 
-            frame_indexes = list(range(frame_start, frame_end+1))
-            if custom_frames:
-                frame_indexes = custom_frames
+            if not export_frames:
+                export_frames = list(range(frame_start, frame_end+1))
 
+            frame_padding = Anatomy().templates.get('frame_padding', 4)
+            frame_file_format = f"{{:0{frame_padding}d}}.{{}}"
             if "burnin" in representation.get("tags", []):
-                filenames = ["{:04d}.{}".format(index, extension) for index in frame_indexes]
+                filenames = [frame_file_format.format(index, extension) for index in export_frames]
 
-            for file_index in filenames:
-                image_filepath = self._rename_output_filepath(review_path, extension, file_index)
+            subtract_pattern = rf"\d{{{frame_padding}}}\.{re.escape(extension)}"
+            for filename in filenames:
+                image_filepath = re.sub(subtract_pattern, filename, review_path)
                 self.log.info(image_filepath)
 
                 gazu.task.add_preview(
@@ -69,7 +72,3 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
                 )
 
             self.log.info("Review upload on comment")
-
-    def _rename_output_filepath(self, published_path, extension, file_index):
-        # Replace frame number + extension in given filepath with new file_index
-        return re.sub(r"\d{4}\." + re.escape(extension), file_index, published_path)

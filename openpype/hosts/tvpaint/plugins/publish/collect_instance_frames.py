@@ -35,7 +35,7 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             )
         )
 
-        custom_instance_frames = instance.data["creator_attributes"].get("custom_frames", None)
+        export_frames_selection = instance.data["creator_attributes"].get("export_frames_selection")
         keep_frame_index = instance.data["creator_attributes"].get("keep_frame_index", False)
 
         # If we want to keep the frame index from the tvpp scene and not recalculate them
@@ -46,103 +46,119 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             instance.data["frameStart"] = frame_start
             instance.data["frameEnd"] = frame_end
 
-        # If custom frames are given
-        if custom_instance_frames:
-            # Create a list of custom frame to render
-            custom_frames = self.list_custom_frames_export(
-                        custom_instance_frames,
-                        context.data["sceneMarkIn"],
-                        context.data["sceneMarkOut"],
-                        context.data["sceneStartFrame"]
-                        )
+        if not export_frames_selection:
+            return
 
-            start_value = max(asset_doc["data"]["frameStart"], instance.context.data["sceneStartFrame"])
-            # Avoid exporting frame before the tracker frameStart or scene sceneStartFrame
-            if custom_frames[0] < start_value:
-                self.log.warning("The custom frames to export start BEFORE the scene Tracking Start Frame or the tvpp scene Start Frame")
-                self.log.info("An auto clean will be applied to start at {}".format(start_value))
-                # Remove frames lower that the tracker frameStart
-                custom_frames = [frame for frame in custom_frames if (start_value < frame)]
-                # Replace by the true tracker frameStart
-                custom_frames.insert(0, start_value)
+        # Create a list of the frames to render
+        export_frames = self.list_frames_to_export(
+                    export_frames_selection,
+                    context.data["sceneMarkIn"],
+                    context.data["sceneMarkOut"],
+                    context.data["sceneStartFrame"]
+                    )
 
-            instance.data["customFrames"] = custom_frames
+        start_frame_index = max(asset_doc["data"]["frameStart"], instance.context.data["sceneStartFrame"])
+        # Avoid exporting frame before the tracker frameStart or scene sceneStartFrame
+        if export_frames[0] < start_frame_index:
+            self.log.warning("The custom frames to export start BEFORE the scene Tracking Start Frame or the tvpp scene Start Frame")
+            self.log.info("An auto clean will be applied to start at {}".format(start_frame_index))
+            # Remove frames lower that the tracker start_frame_index
+            export_frames = [frame for frame in export_frames if (frame > start_frame_index)]
+            # Insert the true start_frame_index
+            export_frames.insert(0, start_frame_index)
 
-            # Update the instance data
-            instance.data["frameStart"] = custom_frames[0]
-            instance.data["frameEnd"] = custom_frames[-1]
-            self.log.info("Export Custom frames {}".format(custom_frames))
+        instance.data["exportFrames"] = export_frames
 
-        if custom_instance_frames or keep_frame_index:
+        # Update the instance data
+        instance.data["frameStart"] = export_frames[0]
+        instance.data["frameEnd"] = export_frames[-1]
+        self.log.info("Export Custom frames {}".format(export_frames))
+
+        if keep_frame_index:
             self.log.info("Changed frames Start/End {}-{} on instance {} ".format(instance.data["frameStart"] , instance.data["frameEnd"], instance.data["subset"]))
 
-    def list_custom_frames_export(self, custom_frames , mark_in, mark_out, sceneStartFrame):
+    @staticmethod
+    def list_frames_to_export(export_frames_selection, mark_in, mark_out, project_start_frame_index):
         """
         Create a list of frame to export based on a string
 
         Args:
-            custom_frames(str): frames to export, can be :
+            export_frames_selection(str): frames to export, can be :
                                 "1, 4, 6"
                                 "[1-6], 15"
                                 "[:-4], 6"
                                 "1, 4, [6-:]"
-                                the ":" implise that it will go to the mark_in or to the mark_out
+                                the ":" implies that it will go to the mark_in or to the mark_out
             mark_in(int): frame on which is set markIn in tvpp
             mark_out(int): frame on which is set markOut in tvpp
-            sceneStartFrame(int): frame de start du projet tvpp
+            40 60
+            1
+            project_start_frame_index(int): start frame index declared in the project settings
 
         Returns:
             list: A interpreted list of int based on the str input, sorted
         """
         # if no str is given, return a range based on mark_in and mark_out
-        if not custom_frames:
+        if not export_frames_selection:
             return list(range(int(mark_in), int(mark_out) + 1))
 
         # Check if custom_frames is correctly written and no illegal character is present
         character_pattern = r'[\d\[\],: -]+'
-        match = re.match(character_pattern, custom_frames)
+        match = re.match(character_pattern, export_frames_selection)
 
         if not match:
-            self.log.warning("!!!!\nUnauthorized characters found: {}\n!!!!".format(match.group()))
-            raise NameError
+            raise ValueError(
+                "Unauthorized character(s) found, selection string should contains positive numbers "
+                "separated by commas, and you can specify range(s) with the following format: [4-12]\n"
+                "In a range you can include all the frame before or after a frame index with the character ':'\n"
+                "This is used like this: [:-12] (This will add all frame from the start frame up to "
+                "the 12 in the selection)\n"
+                "To create a range including all the frame from one specific frame to the end_frame use: [4-:]")
 
-        # Prepare a list to separate each element in custom_frames
-        custom_frames = re.sub(r'\s+', '', custom_frames)
-        custom_frames_elements = custom_frames.split(",")
+        # Prepare a list to separate each element
+        export_frames_selection = re.sub(r'\s+', '', export_frames_selection)
+        export_frames_selection_elements = export_frames_selection.split(",")
 
-        custom_frames_list = set()
-        for element in custom_frames_elements:
-            matches = re.findall(r'\[(\d+|:)-(\d+|:)\]', element)
-            # If element is [#-#], then process the custom_frames_list construction
-            if matches:
-                # Gather by binome in case multiple [#-#] are not separated by ","
-                for match_group in matches:
-                    start, end = match_group[0], match_group[1]
-                    if start == ':' or int(start) < 0:
-                        # Security if must start on mark_in
-                        start = mark_in + sceneStartFrame
+        export_frames = set()
+        for element in export_frames_selection_elements:
+            matches = re.findall(r'\[(\d+|:)-(\d+|:)]', element)
 
-                    if end == ":" or int(end) < 0:
-                        # Security if must end on mark_out
-                        end = mark_out + sceneStartFrame
+            if not matches:
+                # First handle classic individual frame selection
+                if element in [":", "-"]:
+                    raise ValueError("The character '{}' can't be used outside "
+                                     "of '[:-X]' or '[X-:]' patterns".format(element))
+                frame_index = int(element)
+                if frame_index < 0:
+                    raise IndexError("Numbers can't be negatives")
 
-                    # Check if the end is AFTER the start
-                    # Can happen if the user set the markIn AFTER the end frame he entered in the custom frame string
-                    if int(end) < int(start):
-                        self.log.warning("The End frame in [:-{}] is lower than the tvpp markIn {}".format(end, mark_in + sceneStartFrame))
-                        raise IndexError
+                export_frames.add(frame_index)
+                continue
 
-                    # Add frame_index in custom_frames_list for frame_index in [#-#]
-                    for frame_index in range(int(start), int(end)+1):
-                        custom_frames_list.add(frame_index)
+            # Now handle range(s): [X-X] / [:-X] / [X-:]
+            # There can be multiple range selections not separated by a comma, this is tolerated
+            # (this is why we use a for loop)
+            for match_group in matches:
+                start_element, end_element = match_group[0], match_group[1]
+                if start_element == ':':
+                    range_start_frame = mark_in + project_start_frame_index
+                else:
+                    range_start_frame = int(start_element)
 
-            else:
-                if element == ":":
-                    self.log.warning("The ':' can't be used outside a [:-:] pattern")
-                    raise IndexError
-                if int(element) < 0:
-                    self.log.warning("Numbers can't be negatives")
-                    raise IndexError
-                custom_frames_list.add(int(element))
+                if end_element == ":":
+                    range_end_frame = mark_out + project_start_frame_index
+                else:
+                    range_end_frame = int(end_element)
 
-        return list(sorted(custom_frames_list))
+                # Check if the end is AFTER the start
+                # Can happen if the user set the markIn AFTER the end frame he taped in the selection string
+                if range_end_frame < range_start_frame:
+                    raise IndexError(
+                        "The End frame in [:-{}] is lower than the tvpp "
+                        "markIn {}".format(range_end_frame, mark_in + project_start_frame_index))
+
+                # Add frame_index in custom_frames_list for frame_index in [X-X]
+                for frame_index in range(range_start_frame, range_end_frame+1):
+                    export_frames.add(frame_index)
+
+        return list(sorted(export_frames))

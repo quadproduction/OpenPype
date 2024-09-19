@@ -1,17 +1,18 @@
 import os
 import copy
 import tempfile
-import clique
 import speedcopy
 import re
 from pathlib import Path
-from enum import Enum
 
 from PIL import Image
 
 import pyblish.api
 
 from openpype.pipeline.publish import KnownPublishError
+from openpype.hosts.tvpaint.api.plugin import (
+    TVPaintReviewType
+)
 from openpype.hosts.tvpaint.api.lib import (
     execute_george,
     execute_george_through_file,
@@ -27,20 +28,10 @@ from openpype.hosts.tvpaint.lib import (
     get_layer_pos_filename_template,
 )
 
-class ReviewTypes(Enum):
-    Video = False
-    Seq_Img = True
-
-
 class ExtractSequence(pyblish.api.Extractor):
     label = "Extract Sequence"
     hosts = ["tvpaint"]
     families = ["review", "render"]
-
-    # Modifiable with settings under:
-    # project_settings/tvpaint/publish/ExtractSequence
-    review_bg = [255, 255, 255, 255]
-    render_bg = [255, 255, 255, 255]
 
     def process(self, instance):
         self.log.info(
@@ -80,7 +71,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
         mark_in = instance.context.data["sceneMarkIn"]
         mark_out = instance.context.data["sceneMarkOut"]
-        # Stock the origin mark in in case the markIn is modifed
+        # Stock the origin marks in case the marks are modified
         origin_mark_in = instance.context.data["sceneMarkIn"]
         origin_mark_out = instance.context.data["sceneMarkOut"]
 
@@ -93,12 +84,10 @@ class ExtractSequence(pyblish.api.Extractor):
         #     different way when Start Frame is not `0`
         # NOTE It will be set back after rendering
         scene_start_frame = instance.context.data["sceneStartFrame"]
-        scene_end_frame = max([layer["frame_end"] for layer in layers]) + scene_start_frame
         execute_george("tv_startframe 0")
 
         # Frame start/end may be stored as float
         frame_start = int(instance.data["frameStart"])
-        frame_end = int(instance.data["frameEnd"])
 
         # Handles are not stored per instance but on Context
         handle_start = instance.context.data["handleStart"]
@@ -119,21 +108,22 @@ class ExtractSequence(pyblish.api.Extractor):
         # Calculate frame end
         output_frame_end = output_frame_start + (mark_out - mark_in)
 
-        # Reduce the mark position in case of custom frames, to render less images
-        custom_frames = instance.data.get("customFrames", [])
-        custom_mark_range = []
+        # Reduce the mark position in case of user specified a list of frames to export
+        export_frames = instance.data.get("exportFrames", [])
+        export_frames_without_offset = []
 
-        if custom_frames:
-            # make the custom_mark_range to export the right tvpp frame with a sceneStartFrame at 0
-            custom_mark_range = [(frame - instance.context.data["sceneStartFrame"]) for frame in custom_frames]
-            # store the custom mark range for psd export
-            instance.data["customMarkRange"] = custom_mark_range
-            if custom_mark_range[0] < mark_in:
-                instance.data["originFrameStart"] = custom_mark_range[0] + scene_start_frame
-            if custom_mark_range[-1] > mark_out:
-                instance.data["originFrameEnd"] = custom_mark_range[-1] + scene_start_frame
-            mark_in = custom_mark_range[0]
-            mark_out = custom_mark_range[-1]
+        if export_frames:
+            # List of frames to export without the sceneStartFrame offset
+            export_frames_without_offset = [(frame - instance.context.data["sceneStartFrame"]) for frame in export_frames]
+
+            instance.data["ExportFramesWithoutOffset"] = export_frames_without_offset
+            if export_frames_without_offset[0] < mark_in:
+                instance.data["originFrameStart"] = export_frames[0]
+            if export_frames_without_offset[-1] > mark_out:
+                instance.data["originFrameEnd"] = export_frames[-1]
+
+            mark_in = export_frames_without_offset[0]
+            mark_out = export_frames_without_offset[-1]
 
         # Save to staging dir
         output_dir = instance.data.get("stagingDir")
@@ -162,7 +152,7 @@ class ExtractSequence(pyblish.api.Extractor):
                 scene_bg_color if apply_background else None,
                 ignore_layers_transparency,
                 layers,
-                custom_mark_range,
+                export_frames_without_offset,
                 origin_mark_in,
                 origin_mark_out
             )
@@ -176,21 +166,21 @@ class ExtractSequence(pyblish.api.Extractor):
                 ignore_layers_transparency,
                 apply_background,
                 resolution,
-                custom_mark_range
+                export_frames_without_offset
             )
 
-        output_filepaths_by_frame_idx, thumbnail_fullpath = result
+        output_filepaths_by_frame_index, thumbnail_fullpath = result
 
         # Change scene frame Start back to previous value
         execute_george("tv_startframe {}".format(scene_start_frame))
 
         # Sequence of one frame
-        if not output_filepaths_by_frame_idx:
+        if not output_filepaths_by_frame_index:
             self.log.warning("Extractor did not create any output.")
             return
 
         repre_files = self._rename_output_files(
-            output_filepaths_by_frame_idx,
+            output_filepaths_by_frame_index,
             mark_in,
             mark_out,
             output_frame_start
@@ -203,11 +193,13 @@ class ExtractSequence(pyblish.api.Extractor):
             tags.append("review")
 
         # Retrieving review media type, default is video
-        review_media_type = instance.data["creator_attributes"].get("review_media_type", "Video")
+        review_media_type = instance.data["creator_attributes"].get("review_media_type", None)
+        if review_media_type is None:
+            review_media_type = TVPaintReviewType(review_media_type)
 
         # if a custom_mark_range is given, always make the review a seq and not a video
         # It makes no sense to make a video of discontinuous frame range
-        if ReviewTypes[review_media_type].value or custom_mark_range:
+        if review_media_type == TVPaintReviewType.Seq_Img or export_frames_without_offset:
             custom_tags.append("sequence")
 
         # Sequence of one frame
@@ -269,7 +261,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
     def render_review(
         self, output_dir, export_type, mark_in, mark_out, scene_bg_color,
-        ignore_layers_transparency, layers, custom_mark_range, origin_mark_in, origin_mark_out
+        ignore_layers_transparency, layers, export_frames_without_offset, origin_mark_in, origin_mark_out
     ):
         """ Export images from TVPaint using `tv_savesequence` command.
 
@@ -281,7 +273,7 @@ class ExtractSequence(pyblish.api.Extractor):
                 script command `tv_background`.
             ignore_layers_transparency (bool): Layer's opacity will be ignored.
             layers (list): List of layers to be exported.
-            custom_mark_range (list): List of custom frames to process, if any is given
+            export_frames_without_offset (list): List of frame indexes to process, if any is given
             origin_mark_in (int): Original markIn position before modification if custom_mark_range is given
             origin_mark_out (int): Original markOut position before modification if custom_mark_range is given
         Returns:
@@ -354,8 +346,8 @@ class ExtractSequence(pyblish.api.Extractor):
                     "tv_layerdensity {}".format(layer["opacity"]),
                 ])
 
-        #change the mark in place if custom_mark_range detected
-        if custom_mark_range:
+        # Change the mark in place if a selection of frame indexes are specified
+        if export_frames_without_offset:
             george_script_lines.insert(0,"tv_markin {}".format(mark_in))
             george_script_lines.insert(0,"tv_markout {}".format(mark_out))
             george_script_lines.extend(["tv_markin {}".format(origin_mark_in)])
@@ -364,54 +356,57 @@ class ExtractSequence(pyblish.api.Extractor):
         george_script_lines = "\n".join(george_script_lines)
         execute_george_through_file(george_script_lines)
 
-        first_frame_filepath = None
-        output_filepaths_by_frame_idx = {}
-        for frame_idx in range(mark_in, mark_out + 1):
-            filename = filename_template.format(frame=frame_idx)
+        output_filepaths_by_frame_index = {}
+
+        # Check if frames has been properly created on the disk
+        for frame_index in range(mark_in, mark_out + 1):
+            filename = filename_template.format(frame=frame_index)
             filepath = os.path.join(output_dir, filename)
 
-            output_filepaths_by_frame_idx[frame_idx] = filepath
+            output_filepaths_by_frame_index[frame_index] = filepath
 
+            # Ensure the frame has been properly created
             if not os.path.exists(filepath):
-                # a bug in tvpaint seems to NOT render the last frame in camera mode sometimes
-                # here is a fix to generate it
-                if export_type == "camera":
-                    # replace export file path
-                    george_script_lines = re.sub(origin_first_filename, filename, george_script_lines)
+                if export_type == "camera" and frame_index == mark_out:
+                    # There is a bug in TVPaint, it seems to NOT render the last frame in camera mode sometimes
+
+                    # TODO: We should recreate a clean george_script_lines with only info to render the last frame
+                    # Replace the export filepath
+                    last_frame_filename = filename_template.format(frame=mark_out)
+                    george_script_lines = re.sub(origin_first_filename, last_frame_filename, george_script_lines)
 
                     # set the mark in to mark_out
                     if "tv_markin" not in george_script_lines:
                         george_script_lines = "{}\n{}".format("tv_markin {}".format(mark_out), george_script_lines)
-                        george_script_lines = "{}\n{}".format(george_script_lines, "tv_markin {}".format(origin_mark_in))
+                        george_script_lines = "{}\n{}".format(george_script_lines,
+                                                              "tv_markin {}".format(origin_mark_in))
                     else:
-                        george_script_lines = re.sub("tv_markin {}".format(mark_in), "tv_markin {}".format(mark_out), george_script_lines)
+                        george_script_lines = re.sub("tv_markin {}".format(mark_in), "tv_markin {}".format(mark_out),
+                                                     george_script_lines)
 
-                    george_script_lines = re.sub(tv_export, tv_export.replace(str(export_lenght), "0"), george_script_lines)
+                    george_script_lines = re.sub(tv_export, tv_export.replace(str(export_lenght), "0"),
+                                                 george_script_lines)
 
                     execute_george_through_file(george_script_lines)
 
-                if not os.path.exists(filepath):
-                    raise KnownPublishError(
-                        "Output was not rendered. File was not found {}".format(
-                            filepath
-                        )
+                raise KnownPublishError(
+                    "Output was not rendered. File was not found {}".format(
+                        filepath
                     )
-
-            if first_frame_filepath is None:
-                first_frame_filepath = filepath
+                )
 
         thumbnail_filepath = None
-        if first_frame_filepath and os.path.exists(first_frame_filepath):
+        if output_filepaths_by_frame_index:
             thumbnail_filepath = os.path.join(output_dir, "thumbnail.jpg")
-            source_img = Image.open(first_frame_filepath)
+            source_img = Image.open(next(iter(output_filepaths_by_frame_index)))
             if source_img.mode.lower() != "rgb":
                 source_img = source_img.convert("RGB")
             source_img.save(thumbnail_filepath)
 
-        return output_filepaths_by_frame_idx, thumbnail_filepath
+        return output_filepaths_by_frame_index, thumbnail_filepath
 
     def render(
-        self, output_dir, mark_in, mark_out, layers, ignore_layers_transparency, apply_background, resolution, custom_mark_range
+        self, output_dir, mark_in, mark_out, layers, ignore_layers_transparency, apply_background, resolution, export_frames
     ):
         """ Export images from TVPaint.
 
@@ -423,6 +418,7 @@ class ExtractSequence(pyblish.api.Extractor):
             ignore_layers_transparency (bool): Layer's opacity will be ignored.
             apply_background (bool): Apply a bg color to the render set in settings of OP.
             resolution (tuple): Resolution of the tvpaint project (Width, Height).
+            export_frames (list)
 
         Returns:
             tuple: With 2 items first is list of filenames second is path to
@@ -474,7 +470,7 @@ class ExtractSequence(pyblish.api.Extractor):
             layer = layers_by_id[layer_id]
             output_used_layers_id.append(layer_id)
             filepaths_by_layer_id[layer_id] = self._render_layer(
-                render_data, layer, output_dir, custom_mark_range
+                render_data, layer, output_dir, export_frames
             )
 
             opacity_by_layer_id[layer_id] = self._convert_opacity_range(layer["opacity"])
@@ -505,18 +501,18 @@ class ExtractSequence(pyblish.api.Extractor):
             filtered_layers.append(bg_layer)
 
             # Add to extraction_data_by_layer_id
-            filepaths_by_layer_id[bg_id] = self._create_bg_images(bg_layer, output_dir, resolution, custom_mark_range)
+            filepaths_by_layer_id[bg_id] = self._create_bg_images(bg_layer, output_dir, resolution)
             opacity_by_layer_id[bg_id] = 255
 
         # Prepare final filepaths where compositing should store result
-        output_filepaths_by_frame = {}
+        output_filepath_by_frame_index = {}
         thumbnail_src_filepath = None
         finale_template = get_frame_filename_template(mark_out)
-        for frame_idx in range(mark_in, mark_out + 1):
-            filename = finale_template.format(frame=frame_idx)
+        for frame_index in range(mark_in, mark_out + 1):
+            filename = finale_template.format(frame=frame_index)
 
             filepath = os.path.join(output_dir, filename)
-            output_filepaths_by_frame[frame_idx] = filepath
+            output_filepath_by_frame_index[frame_index] = filepath
 
             if thumbnail_src_filepath is None:
                 thumbnail_src_filepath = filepath
@@ -524,19 +520,18 @@ class ExtractSequence(pyblish.api.Extractor):
         self.log.info("Started compositing of layer frames.")
 
         # Fill gap on rendered frame to composed properly all of them
-        for filepaths_by_frame_index in filepaths_by_layer_id.values():
-            new_filepaths_by_frame_index = self.fill_sequence_gaps(
-                    filepaths_by_frame_index=filepaths_by_frame_index,
-                    staging_dir=output_dir,
+        for filepath_by_frame_index in filepaths_by_layer_id.values():
+            new_filepath_by_frame_index = self.fill_sequence_gaps(
+                    filepath_by_frame_index=filepath_by_frame_index,
                     start_frame=mark_in,
                     end_frame=mark_out
                 )
-            filepaths_by_frame_index.update(new_filepaths_by_frame_index)
+            filepath_by_frame_index.update(new_filepath_by_frame_index)
 
         composite_rendered_layers(
             filtered_layers, filepaths_by_layer_id,
             mark_in, mark_out,
-            output_filepaths_by_frame,
+            output_filepath_by_frame_index,
             opacity_by_layer_id
         )
 
@@ -563,7 +558,7 @@ class ExtractSequence(pyblish.api.Extractor):
                 ).format(source_img.mode))
                 source_img.save(thumbnail_filepath)
 
-        return output_filepaths_by_frame, thumbnail_filepath
+        return output_filepath_by_frame_index, thumbnail_filepath
 
     def _get_settings_bg_color(self, review=True):
         """Return the review_bg_color set in OP settings if review=True
@@ -582,9 +577,9 @@ class ExtractSequence(pyblish.api.Extractor):
                 red, green, blue, _ = bg_color
             elif len(bg_color) == 3:
                 red, green, blue = bg_color
-        return (red, green, blue)
+        return red, green, blue
 
-    def _render_layer(self, render_data, layer, output_dir, custom_mark_range):
+    def _render_layer(self, render_data, layer, output_dir, export_frames):
         frame_references = render_data["frame_references"]
         filenames_by_frame_index = render_data["filenames_by_frame_index"]
 
@@ -596,24 +591,24 @@ class ExtractSequence(pyblish.api.Extractor):
 
         filepaths_by_frame = {}
         frames_to_render = []
-        for frame_idx, ref_idx in frame_references.items():
-            # None reference is skipped because does not have source
-            if ref_idx is None:
-                filepaths_by_frame[frame_idx] = None
+        for frame_index, ref_index in frame_references.items():
+            # Skip because does not have a ref_index
+            if ref_index is None:
+                filepaths_by_frame[frame_index] = None
                 continue
-            filename = filenames_by_frame_index[frame_idx]
+            filename = filenames_by_frame_index[frame_index]
             dst_path = "/".join([output_dir, filename])
-            filepaths_by_frame[frame_idx] = dst_path
+            filepaths_by_frame[frame_index] = dst_path
 
-            # Set the ref_idx depending on the custom_mark_range given
-            # To avoid error if the given frame in custom_mark_range is not a ref_idx
-            frame_to_render = frame_idx
-            if frame_idx != ref_idx:
-                if not custom_mark_range:
+            # Set the ref_index depending on the custom_mark_range given
+            # To avoid error if the given frame in custom_mark_range is not a ref_index
+            frame_to_render = frame_index
+            if frame_index != ref_index:
+                if not export_frames:
                     continue
-                frame_to_render = ref_idx
+                frame_to_render = ref_index
 
-            frames_to_render.append(str(frame_idx))
+            frames_to_render.append(str(frame_index))
             # Go to frame
             george_script_lines.append("tv_layerImage {}".format(frame_to_render))
             # Store image to output
@@ -627,12 +622,12 @@ class ExtractSequence(pyblish.api.Extractor):
 
         # Fill frames between `frame_start_index` and `frame_end_index` only if no custom_mark_range is given
         self.log.debug("Filling frames not rendered frames.")
-        if not custom_mark_range:
+        if not export_frames:
             fill_reference_frames(frame_references, filepaths_by_frame)
 
         return filepaths_by_frame
 
-    def fill_sequence_gaps(self, filepaths_by_frame_index, staging_dir, start_frame, end_frame):
+    def fill_sequence_gaps(self, filepath_by_frame_index, start_frame, end_frame):
         """Fill missing files in sequence by duplicating existing ones.
 
         This will take nearest frame file and copy it with so as to fill
@@ -640,8 +635,7 @@ class ExtractSequence(pyblish.api.Extractor):
         hole ahead.
 
         Args:
-            filepaths_by_frame_index (dict): Dict associating a frame to a filepath.
-            staging_dir (str): Path to staging directory.
+            filepath_by_frame_index (dict): Dict associating a frame to a filepath.
             start_frame (int): Sequence start (no matter what files are there)
             end_frame (int): Sequence end (no matter what files are there)
 
@@ -652,10 +646,10 @@ class ExtractSequence(pyblish.api.Extractor):
         hole_frame_to_nearest = {}
 
         # Frame existing in the staging_dir.
-        frame_list = [frame for frame, filepath in filepaths_by_frame_index.items() if filepath]
+        frame_list = [frame for frame, filepath in filepath_by_frame_index.items() if filepath]
 
         # Frame to not copy if None is present (Pre or Post behavior set to None).
-        frame_to_avoid = [frame for frame, filepath in filepaths_by_frame_index.items() if not filepath]
+        frame_to_avoid = [frame for frame, filepath in filepath_by_frame_index.items() if not filepath]
 
         # Set the previous frame as the first of the existing ones.
         prev_frame = frame_list[0]
@@ -673,11 +667,11 @@ class ExtractSequence(pyblish.api.Extractor):
             hole_frame_to_nearest[frame] = prev_frame
 
         # Calculate paths
-        added_filepaths_by_frame_index = {}
+        added_filepath_by_frame_index = {}
         finale_template = get_frame_filename_template(end_frame)
 
         for hole_frame, src_frame in hole_frame_to_nearest.items():
-            src_file_path = filepaths_by_frame_index[src_frame]
+            src_file_path = filepath_by_frame_index[src_frame]
 
             hole_file_name = finale_template.format(frame=hole_frame)
             src_file_name = finale_template.format(frame=src_frame)
@@ -689,27 +683,27 @@ class ExtractSequence(pyblish.api.Extractor):
                     "Missing previously detected file: {}".format(src_file_path))
 
             speedcopy.copyfile(src_file_path, hole_file_path)
-            added_filepaths_by_frame_index[hole_frame] = hole_file_path
+            added_filepath_by_frame_index[hole_frame] = hole_file_path
 
-        return added_filepaths_by_frame_index
+        return added_filepath_by_frame_index
 
-    def _create_bg_images(self, bg_layer, output_dir, resolution, custom_mark_range):
+    def _create_bg_images(self, bg_layer, output_dir, resolution):
 
         bg_color = self._get_settings_bg_color(review=False)
 
-        filepaths_by_frame = {}
+        filepath_by_frame_index = {}
 
         layer_template = get_layer_pos_filename_template(range_end=bg_layer["frame_end"])
 
-        for frame_idx in range(bg_layer["frame_start"], bg_layer["frame_end"] + 1):
-            filename = layer_template.format(pos=bg_layer["position"],frame=frame_idx)
+        for frame_index in range(bg_layer["frame_start"], bg_layer["frame_end"] + 1):
+            filename = layer_template.format(pos=bg_layer["position"],frame=frame_index)
             dst_path = Path(output_dir).joinpath(filename)
-            filepaths_by_frame[frame_idx] = dst_path
+            filepath_by_frame_index[frame_index] = dst_path
 
             bg_image = Image.new("RGBA", resolution, bg_color)
             bg_image.save(dst_path, "PNG")
 
-        return filepaths_by_frame
+        return filepath_by_frame_index
 
     def _convert_opacity_range(self, value):
         """

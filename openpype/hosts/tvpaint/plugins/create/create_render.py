@@ -52,6 +52,7 @@ from openpype.pipeline.create import (
     CreatorError,
 )
 from openpype.hosts.tvpaint.api.plugin import (
+    TVPaintReviewType,
     TVPaintCreator,
     TVPaintAutoCreator,
 )
@@ -1047,7 +1048,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         self.apply_background = False
         self.keep_frame_index = False
         self.exports_types = ['scene', 'camera']
-        self.review_types = ['Video', 'Seq_Img']
+        self.review_types = [el.name for el in TVPaintReviewType]
         self.ignore_layers_transparency = False
 
     def get_dynamic_data(self, variant, *args, **kwargs):
@@ -1198,10 +1199,9 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
                 label="Apply BG Color (as defined in settings)",
                 default=self.apply_background
             ),
-            TextDef(
-                "custom_frames",
-                label="Custom Frames Export",
-                placeholder="[1-15], 18, 20"
+            TextDef("export_frames_selection",
+                label="Frames to Export",
+                placeholder="[1:15], 18, 20"
             ),
             BoolDef(
                 "extract_psd",

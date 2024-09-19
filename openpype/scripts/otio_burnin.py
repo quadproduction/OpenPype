@@ -474,8 +474,7 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
                                "use overwrite" % output)
 
         is_sequence = "%" in output
-
-        frame_id = kwargs.get("frame_id", 0)
+        duration = kwargs.get("duration", 0)
 
         command = self.command(
             output=output,
@@ -505,7 +504,7 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
             )
 
         if is_sequence:
-            output = output % frame_id
+            output = output % duration
 
         if not os.path.exists(output):
             raise RuntimeError(
