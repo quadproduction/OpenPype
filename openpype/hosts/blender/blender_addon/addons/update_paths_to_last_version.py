@@ -89,7 +89,7 @@ class OBJECT_OT_UPDATE_PATHS(bpy.types.Operator):
                 continue
 
             # Detect version and directory from file_path
-            version_padding = Anatomy().templates.get('version_padding', '3')
+            version_padding = Anatomy().templates.get('version_padding', 3)
             version_pattern = re.search(rf"(.*[/\\])v(\d{{{version_padding}}})[/\\]", absolute_file_path)
             if not version_pattern:
                 logging.warning(f"Unable to detect version pattern {cache_file.name}")

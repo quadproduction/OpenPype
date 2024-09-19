@@ -1,10 +1,10 @@
-import bpy
 import logging
-import subprocess
 import os
-import sys
+
+import bpy
 
 from openpype.hosts.blender.api.pipeline import get_path_from_template
+from openpype.lib import open_in_explorer
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -162,15 +162,7 @@ class OBJECT_OT_OPEN_PLAYBLAST_FOLDER(bpy.types.Operator):
             self.report({'ERROR'}, f"File '{latest_playblast_filepath}' not found")
             return {'CANCELLED'}
 
-        if 'win' in sys.platform:  # windows
-            subprocess.Popen(f'explorer "{latest_playblast_filepath}"')
-        elif sys.platform == 'darwin':  # macOS
-            subprocess.Popen(['open', f'{latest_playblast_filepath}'])
-        else:  # linux
-            try:
-                subprocess.Popen(['xdg-open', f'{latest_playblast_filepath}'])
-            except OSError:
-                raise OSError('unsupported xdg-open call')
+        open_in_explorer(latest_playblast_filepath)
         return {'FINISHED'}
 
 
