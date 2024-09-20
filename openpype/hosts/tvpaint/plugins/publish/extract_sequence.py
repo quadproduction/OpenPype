@@ -392,11 +392,10 @@ class ExtractSequence(pyblish.api.Extractor):
 
                     execute_george_through_file(george_script_lines)
 
-                raise KnownPublishError(
-                    "Output was not rendered. File was not found {}".format(
-                        filepath
-                    )
-                )
+                # If we didn't enter the previous condition or the frame has still not been generated,
+                # this is a true issue we need to crash and notify the user
+                if not os.path.exists(filepath):
+                    raise KnownPublishError("Output ('{}') was not rendered and exported to disk.".format(filepath))
 
         thumbnail_filepath = None
         if output_filepaths_by_frame_index:
