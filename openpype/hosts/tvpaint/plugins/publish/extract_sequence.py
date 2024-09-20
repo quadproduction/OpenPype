@@ -199,7 +199,7 @@ class ExtractSequence(pyblish.api.Extractor):
 
         # if a custom_mark_range is given, always make the review a seq and not a video
         # It makes no sense to make a video of discontinuous frame range
-        if review_media_type == TVPaintReviewType.Seq_Img or export_frames_without_offset:
+        if review_media_type == TVPaintReviewType.Seq_Img.name or export_frames_without_offset:
             custom_tags.append("sequence")
 
         # Sequence of one frame
