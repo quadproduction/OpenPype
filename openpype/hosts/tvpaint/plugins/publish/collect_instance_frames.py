@@ -103,8 +103,8 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             return list(range(int(mark_in), int(mark_out) + 1))
 
         # Check if custom_frames is correctly written and no illegal character is present
-        character_pattern = r'[\d\[\],: -]+'
-        match = re.match(character_pattern, export_frames_selection)
+        character_pattern = r'^[\d\[\],: -]+$'
+        match = re.fullmatch(character_pattern, export_frames_selection)
 
         if not match:
             raise ValueError(
