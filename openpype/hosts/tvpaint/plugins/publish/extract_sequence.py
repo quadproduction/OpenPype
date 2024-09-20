@@ -66,6 +66,9 @@ class ExtractSequence(pyblish.api.Extractor):
             "ignoreLayersTransparency", False
         )
 
+        # For the scene render subsets, an option has been added to override the ignore_layers_transparency
+        # So a "render.scene" subset instance can allow transparency while the global value ignore transparency
+        # for the other subsets
         if instance.data["creator_identifier"] == "render.scene":
             ignore_layers_transparency = instance.data["creator_attributes"].get("ignore_layers_transparency", False)
 

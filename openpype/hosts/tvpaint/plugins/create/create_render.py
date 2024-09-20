@@ -1049,7 +1049,12 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
         self.keep_frame_index = False
         self.exports_types = ['scene', 'camera']
         self.review_types = [el.name for el in TVPaintReviewType]
-        self.ignore_layers_transparency = False
+
+        # A global value to ignore transparency for the subsets exists, this option here adds the ability
+        # to override this value for the "render.scene" subset instances, so we put the global value as
+        # the default value.
+        self.ignore_layers_transparency = \
+            project_settings["tvpaint"]["publish"]["CollectRenderInstances"]["ignore_render_pass_transparency"]
 
     def get_dynamic_data(self, variant, *args, **kwargs):
         dynamic_data = super().get_dynamic_data(variant, *args, **kwargs)
