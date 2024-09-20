@@ -401,7 +401,7 @@ class ExtractSequence(pyblish.api.Extractor):
         thumbnail_filepath = None
         if output_filepaths_by_frame_index:
             thumbnail_filepath = os.path.join(output_dir, "thumbnail.jpg")
-            source_img = Image.open(next(iter(output_filepaths_by_frame_index)))
+            source_img = Image.open(next(iter(output_filepaths_by_frame_index.values())))
             if source_img.mode.lower() != "rgb":
                 source_img = source_img.convert("RGB")
             source_img.save(thumbnail_filepath)
