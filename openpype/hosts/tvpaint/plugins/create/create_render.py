@@ -1206,7 +1206,7 @@ class TVPaintSceneRenderCreator(TVPaintAutoCreator):
             ),
             TextDef("export_frames_selection",
                 label="Frames to Export",
-                placeholder="[1:15], 18, 20"
+                placeholder="[1-15], 18, 20"
             ),
             BoolDef(
                 "extract_psd",
