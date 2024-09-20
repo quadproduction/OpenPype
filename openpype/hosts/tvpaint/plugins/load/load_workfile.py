@@ -1,6 +1,6 @@
 import os
 
-from openpype.lib import StringTemplate
+from openpype.lib import StringTemplate, optimize_path_compatibility
 from openpype.pipeline import (
     registered_host,
     get_current_context,
@@ -33,7 +33,7 @@ class LoadWorkfile(plugin.Loader):
         # Load context of current workfile as first thing
         #   - which context and extension has
         filepath = self.filepath_from_context(context)
-        filepath = filepath.replace("\\", "/")
+        filepath = optimize_path_compatibility(filepath).replace("\\", "/")
 
         if not os.path.exists(filepath):
             raise FileExistsError(

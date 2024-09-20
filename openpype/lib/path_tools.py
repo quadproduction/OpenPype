@@ -2,6 +2,10 @@ import os
 import re
 import logging
 import platform
+import sys
+import ctypes
+from pathlib import Path
+from ctypes import wintypes
 
 import clique
 
@@ -257,3 +261,33 @@ def get_last_version_from_path(path_dir, filter):
         return filtred_files[-1]
 
     return None
+
+
+def optimize_path_compatibility(filepath):
+    workfile_path = Path(filepath)
+    workfile_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if 'win' not in sys.platform:
+        log.info("improve_compatibility: nothing done, only applicable for Windows.")
+        return filepath
+
+    # Windows-specific logic to convert the filepath to its short path form.
+    _GetShortPathNameW = ctypes.windll.kernel32.GetShortPathNameW
+    _GetShortPathNameW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
+    _GetShortPathNameW.restype = wintypes.DWORD
+
+    workfile_parent = str(workfile_path.parent)
+    output_buf_size = len(workfile_parent)
+    # Iteratively try to get the short path name, increasing buffer size if needed.
+    while True:
+        output_buf = ctypes.create_unicode_buffer(output_buf_size)
+        needed_size = _GetShortPathNameW(workfile_parent, output_buf, output_buf_size)
+        if needed_size == 0:
+            raise ctypes.WinError()
+        if output_buf_size >= needed_size:
+            return os.path.join(output_buf.value, workfile_path.name)  # Return the short path version.
+        else:
+            output_buf_size = needed_size  # Adjust the buffer size if needed.
+
+    # Fallback return to the original path if for some reason Windows-specific logic fails.
+    return str(workfile_path)

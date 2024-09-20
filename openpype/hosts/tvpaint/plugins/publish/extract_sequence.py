@@ -20,7 +20,7 @@ from openpype.hosts.tvpaint.lib import (
     composite_rendered_layers,
     rename_filepaths_by_frame_start,
 )
-
+from openpype.lib import optimize_path_compatibility
 
 class ExtractSequence(pyblish.api.Extractor):
     label = "Extract Sequence"
@@ -96,7 +96,7 @@ class ExtractSequence(pyblish.api.Extractor):
         output_frame_end = output_frame_start + (mark_out - mark_in)
 
         # Save to staging dir
-        output_dir = instance.data.get("stagingDir")
+        output_dir = optimize_path_compatibility(instance.data.get("stagingDir"))
         if not output_dir:
             # Create temp folder if staging dir is not set
             output_dir = (
@@ -233,10 +233,10 @@ class ExtractSequence(pyblish.api.Extractor):
         filename_template = get_frame_filename_template(mark_out)
 
         self.log.debug("Preparing data for rendering.")
-        first_frame_filepath = os.path.join(
+        first_frame_filepath = optimize_path_compatibility(os.path.join(
             output_dir,
             filename_template.format(frame=mark_in)
-        )
+        ))
 
         george_script_lines = [
             "tv_SaveMode \"PNG\"",
