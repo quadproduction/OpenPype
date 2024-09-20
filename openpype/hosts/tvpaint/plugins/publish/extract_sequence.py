@@ -591,16 +591,16 @@ class ExtractSequence(pyblish.api.Extractor):
             "tv_SaveMode \"PNG\""
         ]
 
-        filepaths_by_frame = {}
+        filepath_by_frame_index = {}
         frames_to_render = []
         for frame_index, ref_index in frame_references.items():
             # Skip because does not have a ref_index
             if ref_index is None:
-                filepaths_by_frame[frame_index] = None
+                filepath_by_frame_index[frame_index] = None
                 continue
             filename = filenames_by_frame_index[frame_index]
             dst_path = "/".join([output_dir, filename])
-            filepaths_by_frame[frame_index] = dst_path
+            filepath_by_frame_index[frame_index] = dst_path
 
             # Set the ref_index depending on the custom_mark_range given
             # To avoid error if the given frame in custom_mark_range is not a ref_index
@@ -625,9 +625,9 @@ class ExtractSequence(pyblish.api.Extractor):
         # Fill frames between `frame_start_index` and `frame_end_index` only if no custom_mark_range is given
         self.log.debug("Filling frames not rendered frames.")
         if not export_frames:
-            fill_reference_frames(frame_references, filepaths_by_frame)
+            fill_reference_frames(frame_references, filepath_by_frame_index)
 
-        return filepaths_by_frame
+        return filepath_by_frame_index
 
     def fill_sequence_gaps(self, filepath_by_frame_index, start_frame, end_frame):
         """Fill missing files in sequence by duplicating existing ones.

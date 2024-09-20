@@ -39,7 +39,7 @@ def get_layer_pos_filename_template(range_end, filename_prefix=None, ext=None):
 def _calculate_in_range_frames(
     range_start, range_end,
     exposure_frames, layer_frame_end,
-    output_idx_by_frame_idx
+    output_index_by_frame_index
 ):
     """Calculate frame references in defined range.
 
@@ -51,36 +51,36 @@ def _calculate_in_range_frames(
         range_end(int): Last frame of range which should be rendered.
         exposure_frames(list): List of all exposure frames on layer.
         layer_frame_end(int): Last frame of layer.
-        output_idx_by_frame_idx(dict): References to already prepared frames
+        output_index_by_frame_index(dict): References to already prepared frames
             and where result will be stored.
     """
     # Calculate in range frames
     in_range_frames = []
-    for frame_idx in exposure_frames:
+    for frame_index in exposure_frames:
         # if the range_start is in between 2 exposure frame
-        if range_start > frame_idx:
-            output_idx_by_frame_idx[range_start] = frame_idx
-        if range_start <= frame_idx <= range_end:
-            output_idx_by_frame_idx[frame_idx] = frame_idx
-            in_range_frames.append(frame_idx)
+        if range_start > frame_index:
+            output_index_by_frame_index[range_start] = frame_index
+        if range_start <= frame_index <= range_end:
+            output_index_by_frame_index[frame_index] = frame_index
+            in_range_frames.append(frame_index)
 
     if in_range_frames:
         first_in_range_frame = min(in_range_frames)
         # Calculate frames from first exposure frames to range end or last
         #   frame of layer (post behavior should be calculated since that time)
         previous_exposure = first_in_range_frame
-        for frame_idx in range(first_in_range_frame, range_end + 1):
-            if frame_idx > layer_frame_end:
+        for frame_index in range(first_in_range_frame, range_end + 1):
+            if frame_index > layer_frame_end:
                 break
 
-            if frame_idx in exposure_frames:
-                previous_exposure = frame_idx
+            if frame_index in exposure_frames:
+                previous_exposure = frame_index
             else:
-                output_idx_by_frame_idx[frame_idx] = previous_exposure
+                output_index_by_frame_index[frame_index] = previous_exposure
 
     # There can be frames before first exposure frame in range
     # First check if we don't alreade have first range frame filled
-    if range_start in output_idx_by_frame_idx:
+    if range_start in output_index_by_frame_index:
         return
 
     first_exposure_frame = max(exposure_frames)
@@ -96,20 +96,20 @@ def _calculate_in_range_frames(
         return
 
     closest_exposure_frame = first_exposure_frame
-    for frame_idx in exposure_frames:
-        if frame_idx >= range_start:
+    for frame_index in exposure_frames:
+        if frame_index >= range_start:
             break
-        if frame_idx > closest_exposure_frame:
-            closest_exposure_frame = frame_idx
+        if frame_index > closest_exposure_frame:
+            closest_exposure_frame = frame_index
 
-    output_idx_by_frame_idx[closest_exposure_frame] = closest_exposure_frame
-    for frame_idx in range(range_start, range_end + 1):
-        if frame_idx in output_idx_by_frame_idx:
+    output_index_by_frame_index[closest_exposure_frame] = closest_exposure_frame
+    for frame_index in range(range_start, range_end + 1):
+        if frame_index in output_index_by_frame_index:
             break
-        output_idx_by_frame_idx[frame_idx] = closest_exposure_frame
+        output_index_by_frame_index[frame_index] = closest_exposure_frame
 
 
-def _cleanup_frame_references(output_idx_by_frame_idx):
+def _cleanup_frame_references(output_index_by_frame_index):
     """Cleanup frame references to frame reference.
 
     Cleanup not direct references to rendered frame.
@@ -129,29 +129,29 @@ def _cleanup_frame_references(output_idx_by_frame_idx):
     ```
     Result is dictionary where keys leads to frame that should be rendered.
     """
-    for frame_idx in tuple(output_idx_by_frame_idx.keys()):
-        reference_idx = output_idx_by_frame_idx[frame_idx]
+    for frame_index in tuple(output_index_by_frame_index.keys()):
+        reference_index = output_index_by_frame_index[frame_index]
         # Skip transparent frames
-        if reference_idx is None or reference_idx == frame_idx:
+        if reference_index is None or reference_index == frame_index:
             continue
 
-        real_reference_idx = reference_idx
-        _tmp_reference_idx = reference_idx
+        real_reference_index = reference_index
+        _tmp_reference_index = reference_index
         while True:
-            _temp = output_idx_by_frame_idx.get(_tmp_reference_idx)
+            _temp = output_index_by_frame_index.get(_tmp_reference_index)
             if not _temp:
                 # Key outside the range, skip
                 break
-            if _temp == _tmp_reference_idx:
-                real_reference_idx = _tmp_reference_idx
+            if _temp == _tmp_reference_index:
+                real_reference_index = _tmp_reference_index
                 break
-            _tmp_reference_idx = _temp
+            _tmp_reference_index = _temp
 
-        if real_reference_idx != reference_idx:
-            output_idx_by_frame_idx[frame_idx] = real_reference_idx
+        if real_reference_index != reference_index:
+            output_index_by_frame_index[frame_index] = real_reference_index
 
 
-def _cleanup_out_range_frames(output_idx_by_frame_idx, range_start, range_end):
+def _cleanup_out_range_frames(output_index_by_frame_index, range_start, range_end):
     """Cleanup frame references to frames out of passed range.
 
     First available frame in range is used
@@ -172,32 +172,32 @@ def _cleanup_out_range_frames(output_idx_by_frame_idx, range_start, range_end):
     """
     in_range_frames_by_out_frames = collections.defaultdict(set)
     out_range_frames = set()
-    for frame_idx in tuple(output_idx_by_frame_idx.keys()):
+    for frame_index in tuple(output_index_by_frame_index.keys()):
         # Skip frames that are already out of range
-        if frame_idx < range_start or frame_idx > range_end:
-            out_range_frames.add(frame_idx)
+        if frame_index < range_start or frame_index > range_end:
+            out_range_frames.add(frame_index)
             continue
 
-        reference_idx = output_idx_by_frame_idx[frame_idx]
+        reference_index = output_index_by_frame_index[frame_index]
         # Skip transparent frames
-        if reference_idx is None:
+        if reference_index is None:
             continue
 
         # Skip references in range
-        if reference_idx < range_start or reference_idx > range_end:
-            in_range_frames_by_out_frames[reference_idx].add(frame_idx)
+        if reference_index < range_start or reference_index > range_end:
+            in_range_frames_by_out_frames[reference_index].add(frame_index)
 
-    for reference_idx in tuple(in_range_frames_by_out_frames.keys()):
-        frame_indexes = in_range_frames_by_out_frames.pop(reference_idx)
+    for reference_index in tuple(in_range_frames_by_out_frames.keys()):
+        frame_indexes = in_range_frames_by_out_frames.pop(reference_index)
         new_reference = None
-        for frame_idx in frame_indexes:
+        for frame_index in frame_indexes:
             if new_reference is None:
-                new_reference = frame_idx
-            output_idx_by_frame_idx[frame_idx] = new_reference
+                new_reference = frame_index
+            output_index_by_frame_index[frame_index] = new_reference
 
     # Finally remove out of range frames
-    for frame_idx in out_range_frames:
-        output_idx_by_frame_idx.pop(frame_idx)
+    for frame_index in out_range_frames:
+        output_index_by_frame_index.pop(frame_index)
 
 
 def calculate_frame_indexes_to_copy(fill_mode, frame_count, layer_frame_start, start_frame_index,
@@ -418,10 +418,10 @@ def calculate_layers_extraction_data(
             | frames_to_render
         )
         filenames_by_frame_index = {}
-        for frame_idx in filename_frames:
-            filenames_by_frame_index[frame_idx] = layer_template.format(
+        for frame_index in filename_frames:
+            filenames_by_frame_index[frame_index] = layer_template.format(
                 pos=layer_position,
-                frame=frame_idx
+                frame=frame_index
             )
 
         # Store objects under the layer id
@@ -432,17 +432,17 @@ def calculate_layers_extraction_data(
     return output
 
 
-def fill_reference_frames(frame_references, frames_data_by_layer_id):
+def fill_reference_frames(frame_references, filepath_by_frame_index):
     # Store path to first transparent image if there is any
-    for frame_idx, ref_idx in frame_references.items():
+    for frame_index, ref_index in frame_references.items():
         # Frame referencing to self should be rendered and used as source
         #   and reference indexes with None can't be filled
-        if ref_idx is None or frame_idx == ref_idx:
+        if ref_index is None or frame_index == ref_index:
             continue
 
         # Get destination filepath
-        src_filepath = frames_data_by_layer_id[ref_idx]["filepath"]
-        dst_filepath = frames_data_by_layer_id[frame_idx]["filepath"]
+        src_filepath = filepath_by_frame_index[ref_index]
+        dst_filepath = filepath_by_frame_index[frame_index]
 
         if hasattr(os, "link"):
             os.link(src_filepath, dst_filepath)
