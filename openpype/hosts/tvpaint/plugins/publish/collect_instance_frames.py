@@ -52,9 +52,8 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
         # Create a list of the frames to render
         export_frames = self.list_frames_to_export(
                     export_frames_selection,
-                    context.data["sceneMarkIn"],
-                    context.data["sceneMarkOut"],
-                    context.data["sceneStartFrame"]
+                    context.data["sceneStartFrame"] + context.data["sceneMarkIn"],
+                    context.data["sceneStartFrame"] + context.data["sceneMarkOut"],
                     )
 
         start_frame_index = max(asset_doc["data"]["frameStart"], instance.context.data["sceneStartFrame"])
@@ -78,7 +77,7 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             self.log.info("Changed frames Start/End {}-{} on instance {} ".format(instance.data["frameStart"] , instance.data["frameEnd"], instance.data["subset"]))
 
     @staticmethod
-    def list_frames_to_export(export_frames_selection, mark_in, mark_out, project_start_frame_index):
+    def list_frames_to_export(export_frames_selection, start_frame_index, end_frame_index):
         """
         Create a list of frame to export based on a string
 
@@ -89,19 +88,12 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
                                 "[:-4], 6"
                                 "1, 4, [6-:]"
                                 the ":" implies that it will go to the mark_in or to the mark_out
-            mark_in(int): frame on which is set markIn in tvpp
-            mark_out(int): frame on which is set markOut in tvpp
-            40 60
-            1
-            project_start_frame_index(int): start frame index declared in the project settings
+            start_frame_index(int)
+            end_frame_index(int)
 
         Returns:
             list: A interpreted list of int based on the str input, sorted
         """
-        # if no str is given, return a range based on mark_in and mark_out
-        if not export_frames_selection:
-            return list(range(int(mark_in), int(mark_out) + 1))
-
         # Check if custom_frames is correctly written and no illegal character is present
         character_pattern = r'^[\d\[\],: -]+$'
         match = re.fullmatch(character_pattern, export_frames_selection)
@@ -126,8 +118,8 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             if not matches:
                 # First handle classic individual frame selection
                 if element in [":", "-"]:
-                    raise ValueError("The character '{}' can't be used outside "
-                                     "of '[:-X]' or '[X-:]' patterns".format(element))
+                    raise ValueError("The character '{}' can only be used in the following patterns: "
+                                     "'[:-X]' or '[X-:]'".format(element))
                 frame_index = int(element)
                 if frame_index < 0:
                     raise IndexError("Numbers can't be negatives")
@@ -141,21 +133,20 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             for match_group in matches:
                 start_element, end_element = match_group[0], match_group[1]
                 if start_element == ':':
-                    range_start_frame = mark_in + project_start_frame_index
+                    range_start_frame = start_frame_index
                 else:
                     range_start_frame = int(start_element)
 
                 if end_element == ":":
-                    range_end_frame = mark_out + project_start_frame_index
+                    range_end_frame = end_frame_index
                 else:
                     range_end_frame = int(end_element)
 
-                # Check if the end is AFTER the start
-                # Can happen if the user set the markIn AFTER the end frame he taped in the selection string
+                # Check if the range end frame index is before the start
                 if range_end_frame < range_start_frame:
                     raise IndexError(
-                        "The End frame in [:-{}] is lower than the tvpp "
-                        "markIn {}".format(range_end_frame, mark_in + project_start_frame_index))
+                        "The range end frame index is lower than the start frame index: "
+                        "{} < {}".format(range_end_frame, range_start_frame))
 
                 # Add frame_index in custom_frames_list for frame_index in [X-X]
                 for frame_index in range(range_start_frame, range_end_frame+1):
