@@ -9,6 +9,7 @@ import os
 import clique
 import opentimelineio as otio
 import pyblish.api
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.editorial import (
     get_media_range_with_retimes,
     range_from_frames,
@@ -257,6 +258,6 @@ class CollectOtioSubsetResources(pyblish.api.InstancePlugin):
             family,
             task_name=task_info.get("name"),
             task_type=task_info.get("type"),
-            project_settings=context.data["project_settings"],
+            project_settings=context.data[PROJECT_SETTINGS_KEY],
             logger=self.log
         )

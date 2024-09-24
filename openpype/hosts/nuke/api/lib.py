@@ -36,6 +36,7 @@ from openpype.lib import (
 from openpype.settings import (
     get_project_settings,
     get_current_project_settings,
+    GENERAL_SETTINGS_KEY
 )
 from openpype.modules import ModulesManager
 from openpype.pipeline.template_data import get_template_data_with_names
@@ -2629,7 +2630,7 @@ Reopening Nuke should synchronize these paths and resolve any discrepancies.
 
     def set_workfile_overrides(self, custom_settings):
         project_name = get_current_project_name()
-        resolution_overrides = custom_settings.get("general", {}).get("working_resolution_overrides", None)
+        resolution_overrides = custom_settings.get(GENERAL_SETTINGS_KEY, {}).get("working_resolution_overrides", None)
         if not resolution_overrides:
             log.warning("Can't retrieve resolution overrides for workfiles. Will not be applied.")
             return

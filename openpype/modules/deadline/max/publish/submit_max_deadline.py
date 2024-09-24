@@ -8,6 +8,7 @@ from openpype.lib import (
     BoolDef,
     NumberDef,
 )
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import (
     legacy_io,
     OpenPypePyblishPluginMixin
@@ -184,7 +185,7 @@ class MaxSubmitDeadline(abstract_submit_deadline.AbstractSubmitDeadline,
         }
 
         self.log.debug("Submitting 3dsMax render..")
-        project_settings = instance.context.data["project_settings"]
+        project_settings = instance.context.data[PROJECT_SETTINGS_KEY]
         payload = self._use_published_name(payload_data, project_settings)
         job_info, plugin_info = payload
         self.submit(self.assemble_payload(job_info, plugin_info))
