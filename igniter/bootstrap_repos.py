@@ -1548,7 +1548,8 @@ class BootstrapRepos:
             if self._step_text_signal:
                 self._step_text_signal.emit("Install ZXP extension for <b>{}</b> ...".format(extension.host_id))
             completed_process = subprocess.run([str(path_prog), "{}install".format(cmd_arg_prefix),
-                                                str(fullpath_curr_zxp_extension)], capture_output=True, creationflags=creation_flags)
+                                                str(fullpath_curr_zxp_extension)], capture_output=True,
+                                               creationflags=creation_flags)
             if completed_process.returncode != 0 or completed_process.stderr:
                 if self._log_signal:
                     self._log_signal.emit("Couldn't install the ZXP extension for {} "
