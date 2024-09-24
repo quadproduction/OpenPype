@@ -1520,8 +1520,10 @@ class BootstrapRepos:
         path_prog = self._get_zxp_handler_program_path(low_platform)
         if low_platform == "windows":
             cmd_arg_prefix = "/"
+            creation_flags = subprocess.CREATE_NO_WINDOW
         else:
             cmd_arg_prefix = "--"
+            creation_flags = 0  # No need to specify on non-Windows platforms
 
         for extension in extensions:
             # Remove installed ZXP extension
@@ -1529,7 +1531,7 @@ class BootstrapRepos:
                 self._step_text_signal.emit("Removing installed ZXP extension for "
                                             "<b>{}</b> ...".format(extension.host_id))
             subprocess.run([str(path_prog), "{}remove".format(cmd_arg_prefix), extension.id],
-                           stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+                           stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=creation_flags)
 
             # Install ZXP shipped in the current version folder
             fullpath_curr_zxp_extension = version_path.joinpath("openpype",
@@ -1546,7 +1548,7 @@ class BootstrapRepos:
             if self._step_text_signal:
                 self._step_text_signal.emit("Install ZXP extension for <b>{}</b> ...".format(extension.host_id))
             completed_process = subprocess.run([str(path_prog), "{}install".format(cmd_arg_prefix),
-                                                str(fullpath_curr_zxp_extension)], capture_output=True)
+                                                str(fullpath_curr_zxp_extension)], capture_output=True, creationflags=creation_flags)
             if completed_process.returncode != 0 or completed_process.stderr:
                 if self._log_signal:
                     self._log_signal.emit("Couldn't install the ZXP extension for {} "
@@ -1570,12 +1572,14 @@ class BootstrapRepos:
         path_prog = self._get_zxp_handler_program_path(low_platform)
         if low_platform == "windows":
             cmd_arg_prefix = "/"
+            creation_flags = subprocess.CREATE_NO_WINDOW
         else:
             cmd_arg_prefix = "--"
+            creation_flags = 0
 
         # Get installed extensions
         completed_process = subprocess.run([str(path_prog), "{}list".format(cmd_arg_prefix), "all"],
-                                           capture_output=True)
+                                           capture_output=True, creationflags=creation_flags)
         installed_extensions_info = completed_process.stdout
 
         zxp_hosts_to_update = []
