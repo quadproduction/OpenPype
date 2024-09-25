@@ -264,6 +264,9 @@ def get_last_version_from_path(path_dir, filter):
 
 
 def optimize_path_compatibility(filepath):
+    if not filepath:
+        return
+
     workfile_path = Path(filepath)
     workfile_path.parent.mkdir(parents=True, exist_ok=True)
 
