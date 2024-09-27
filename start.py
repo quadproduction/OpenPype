@@ -195,6 +195,13 @@ else:
     ssl_cert_file = certifi.where()
     os.environ["SSL_CERT_FILE"] = ssl_cert_file
 
+if "--zxp-ignore-update" in sys.argv:
+    os.environ["OPENPYPE_IGNORE_ZXP_UPDATE"] = "1"
+    sys.argv.remove("--zxp-ignore-update")
+elif os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE") != "1":
+    os.environ.pop("OPENPYPE_IGNORE_ZXP_UPDATE", None)
+
+
 if "--headless" in sys.argv:
     os.environ["OPENPYPE_HEADLESS_MODE"] = "1"
     sys.argv.remove("--headless")
@@ -1186,8 +1193,11 @@ def boot():
     set_openpype_global_environments()
     _print("  - for modules ...")
     set_modules_environments()
-    _print(">>> check ZXP extensions ...")
-    update_zxp_extensions(openpype_version)
+    if os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE"):
+        _print(">>> skip ZXP extensions ...")
+    else:
+        _print(">>> check ZXP extensions ...")
+        update_zxp_extensions(openpype_version)
 
     assert openpype_version, "Version path not defined."
 
