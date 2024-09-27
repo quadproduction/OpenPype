@@ -7,7 +7,7 @@ import re
 import shutil
 import sys
 import tempfile
-import subprocess
+import zipfile
 from pathlib import Path
 from typing import Union, Callable, List, Tuple
 import hashlib
@@ -1470,9 +1470,19 @@ class BootstrapRepos:
 
         return destination
 
-    def extract_zxp_info_from_manifest(self, openpype_version: OpenPypeVersion, host_id: str):
-        version_path = openpype_version.path
-        path_manifest = version_path.joinpath("openpype", "hosts", host_id, "api", "extension", "CSXS", "manifest.xml")
+    @staticmethod
+    def _get_zxp_handler_program_path(platform_name_lowercase):
+        if platform_name_lowercase == "linux":
+            # No host in array or user is on Linux, the platform doesn't support Adobe softwares
+            return None
+        path_prog_folder = Path(os.environ["OPENPYPE_ROOT"]).resolve().joinpath(
+            "vendor", "bin", "ex_man_cmd", platform_name_lowercase)
+        if platform_name_lowercase == "windows":
+            return path_prog_folder.joinpath("ExManCmd.exe")
+
+        return path_prog_folder.joinpath("MacOS", "ExManCmd")
+
+    def extract_zxp_info_from_manifest(self, path_manifest: Path):
         pattern_regex_extension_id = r"ExtensionBundleId=\"(?P<extension_id>[\w.]+)\""
         pattern_regex_extension_version = r"ExtensionBundleVersion=\"(?P<extension_version>[\d.]+)\""
 
@@ -1497,29 +1507,21 @@ class BootstrapRepos:
         return extension_id, extension_version
 
     def update_zxp_extensions(self, openpype_version: OpenPypeVersion, extensions: [ZXPExtensionData]):
-        # Check the current OS
-        low_platform = platform.system().lower()
-        if not extensions or platform.system().lower() == "linux":
-            # No host in array or user is on Linux, the platform doesn't support Adobe softwares
-            return
+        # Determine the user-specific Adobe extensions directory
+        user_extensions_dir = Path(os.getenv('APPDATA'), 'Adobe', 'CEP', 'extensions')
+
+        # Create the user extensions directory if it doesn't exist
+        os.makedirs(user_extensions_dir, exist_ok=True)
 
         version_path = openpype_version.path
-
-        path_prog = self._get_zxp_handler_program_path(low_platform)
-        if low_platform == "windows":
-            cmd_arg_prefix = "/"
-            creation_flags = subprocess.CREATE_NO_WINDOW
-        else:
-            cmd_arg_prefix = "--"
-            creation_flags = 0  # No need to specify on non-Windows platforms
 
         for extension in extensions:
             # Remove installed ZXP extension
             if self._step_text_signal:
                 self._step_text_signal.emit("Removing installed ZXP extension for "
                                             "<b>{}</b> ...".format(extension.host_id))
-            subprocess.run([str(path_prog), "{}remove".format(cmd_arg_prefix), extension.id],
-                           stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=creation_flags)
+            if user_extensions_dir.joinpath(extension.host_id).exists():
+                shutil.rmtree(user_extensions_dir.joinpath(extension.host_id))
 
             # Install ZXP shipped in the current version folder
             fullpath_curr_zxp_extension = version_path.joinpath("openpype",
@@ -1535,15 +1537,18 @@ class BootstrapRepos:
 
             if self._step_text_signal:
                 self._step_text_signal.emit("Install ZXP extension for <b>{}</b> ...".format(extension.host_id))
-            completed_process = subprocess.run([str(path_prog), "{}install".format(cmd_arg_prefix),
-                                                str(fullpath_curr_zxp_extension)], capture_output=True,
-                                               creationflags=creation_flags)
-            if completed_process.returncode != 0 or completed_process.stderr:
-                if self._log_signal:
-                    self._log_signal.emit("Couldn't install the ZXP extension for {} "
-                                          "due to an error: full log: {}\n{}".format(extension.host_id,
-                                                                                     completed_process.stdout,
-                                                                                     completed_process.stderr), True)
+
+            # Copy zxp into APPDATA user folder
+            shutil.copy2(fullpath_curr_zxp_extension, user_extensions_dir)
+            extracted_folder = Path(user_extensions_dir, extension.id)
+            zip_path = Path(user_extensions_dir, 'extension.zxp')
+
+            # Extract the .zxp file
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(extracted_folder)
+
+            # Cleaned up temporary files removed zip_path
+            os.remove(zip_path)
 
     def get_zxp_extensions_to_update(self, openpype_version, system_settings, force=False) -> [ZXPExtensionData]:
         # List of all Adobe software ids (named hosts) handled by OpenPype
@@ -1552,41 +1557,22 @@ class BootstrapRepos:
 
         zxp_hosts_to_update = []
 
-        # Check the current OS
-        low_platform = platform.system().lower()
-        if low_platform == "linux":
-            # The platform doesn't support Adobe softwares
-            return zxp_hosts_to_update
-
-        path_prog = self._get_zxp_handler_program_path(low_platform)
-        if low_platform == "windows":
-            cmd_arg_prefix = "/"
-            creation_flags = subprocess.CREATE_NO_WINDOW
-        else:
-            cmd_arg_prefix = "--"
-            creation_flags = 0
-
-        # Get installed extensions
-        completed_process = subprocess.run([str(path_prog), "{}list".format(cmd_arg_prefix), "all"],
-                                           capture_output=True, creationflags=creation_flags)
-        installed_extensions_info = completed_process.stdout
+        # Determine the user-specific Adobe extensions directory
+        user_extensions_dir = Path(os.getenv('APPDATA'), 'Adobe', 'CEP', 'extensions')
 
         zxp_hosts_to_update = []
         for zxp_host_id in zxp_host_ids:
-            extension_id, extension_new_version = self.extract_zxp_info_from_manifest(openpype_version, zxp_host_id)
-            if not extension_id or not extension_new_version:
+            version_path = openpype_version.path
+            path_manifest = version_path.joinpath("openpype", "hosts", zxp_host_id, "api", "extension", "CSXS",
+                                                  "manifest.xml")
+            extension_new_id, extension_new_version = self.extract_zxp_info_from_manifest(path_manifest)
+            if not extension_new_id or not extension_new_version:
                 # ZXP extension seems invalid or doesn't exists for this software, skipping
                 continue
 
-            extension_curr_version = ""
-
+            cur_manifest = user_extensions_dir.joinpath(extension_new_id, "CSXS", "manifest.xml")
             # Get the installed version
-            escaped_extension_id_str = extension_id.replace(".", "\.")  # noqa
-            pattern_regex_extension_version = fr"{escaped_extension_id_str}\s+(?P<version>[\d.]+)"
-
-            match_extension = re.search(pattern_regex_extension_version, str(installed_extensions_info))
-            if match_extension:
-                extension_curr_version = semver.VersionInfo.parse(match_extension.group("version"))
+            extension_cur_id, extension_curr_version = self.extract_zxp_info_from_manifest(cur_manifest)
 
             if not force:
                 # Is the update required?
@@ -1602,7 +1588,7 @@ class BootstrapRepos:
                     continue
 
             zxp_hosts_to_update.append(ZXPExtensionData(zxp_host_id,
-                                                        extension_id,
+                                                        extension_new_id,
                                                         extension_curr_version,
                                                         extension_new_version))
 

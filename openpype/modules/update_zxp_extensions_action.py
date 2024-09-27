@@ -20,6 +20,8 @@ class UpdateZXPExtensionsAction(OpenPypeModule, ITrayAction):
         self.enabled = True
         if AYON_SERVER_ENABLED:
             self.enabled = False
+        if os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE"):
+            self.enabled = False
 
     def tray_init(self):
         return
