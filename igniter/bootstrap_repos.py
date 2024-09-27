@@ -1470,18 +1470,6 @@ class BootstrapRepos:
 
         return destination
 
-    @staticmethod
-    def _get_zxp_handler_program_path(platform_name_lowercase):
-        if platform_name_lowercase == "linux":
-            # No host in array or user is on Linux, the platform doesn't support Adobe softwares
-            return None
-        path_prog_folder = Path(os.environ["OPENPYPE_ROOT"]).resolve().joinpath(
-            "vendor", "bin", "ex_man_cmd", platform_name_lowercase)
-        if platform_name_lowercase == "windows":
-            return path_prog_folder.joinpath("ExManCmd.exe")
-
-        return path_prog_folder.joinpath("MacOS", "ExManCmd")
-
     def extract_zxp_info_from_manifest(self, path_manifest: Path):
         pattern_regex_extension_id = r"ExtensionBundleId=\"(?P<extension_id>[\w.]+)\""
         pattern_regex_extension_version = r"ExtensionBundleVersion=\"(?P<extension_version>[\d.]+)\""
