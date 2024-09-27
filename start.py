@@ -196,10 +196,10 @@ else:
     os.environ["SSL_CERT_FILE"] = ssl_cert_file
 
 if "--zxp-ignore-update" in sys.argv:
-    os.environ["OPENPYPE_IGNORE_ZXP"] = "1"
+    os.environ["OPENPYPE_IGNORE_ZXP_UPDATE"] = "1"
     sys.argv.remove("--zxp-ignore-update")
-elif os.getenv("OPENPYPE_IGNORE_ZXP") != "1":
-    os.environ.pop("OPENPYPE_IGNORE_ZXP", None)
+elif os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE") != "1":
+    os.environ.pop("OPENPYPE_IGNORE_ZXP_UPDATE", None)
 
 
 if "--headless" in sys.argv:
@@ -1193,7 +1193,7 @@ def boot():
     set_openpype_global_environments()
     _print("  - for modules ...")
     set_modules_environments()
-    if os.getenv("OPENPYPE_IGNORE_ZXP"):
+    if os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE"):
         _print(">>> skip ZXP extensions ...")
     else:
         _print(">>> check ZXP extensions ...")
