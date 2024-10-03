@@ -686,6 +686,10 @@ class ExtractBurnin(publish.Extractor):
             burnin_frame_end = temp_data["frame_end_handle"]
 
         burnin_duration = burnin_frame_end - burnin_frame_start + 1
+        # TODO: Find better a way to detect non-sequential images and manage them through the pip
+        # TODO: Check input_is_sequence() in extract_review,
+        if instance.data.get('exportFrames', []) and (len(repre.get('files', [])) is not len(instance.data.get('exportFrames'))):
+            burnin_duration = instance.data.get('exportFrames')[-1]
 
         burnin_data.update({
             "frame_start": burnin_frame_start,
