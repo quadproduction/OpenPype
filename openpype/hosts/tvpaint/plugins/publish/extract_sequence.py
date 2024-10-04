@@ -176,10 +176,10 @@ class ExtractSequence(pyblish.api.Extractor):
         output_filepaths_by_frame_index_rst, thumbnail_fullpath = result
 
         # Filter frames
-        if export_frames:
+        if export_frames_without_offset:
             output_filepaths_by_frame_index = {}
             for frame_index, output_path in output_filepaths_by_frame_index_rst.items():
-                if frame_index in export_frames:
+                if frame_index in export_frames_without_offset:
                     output_filepaths_by_frame_index[frame_index] = output_path
                 else:
                     os.remove(output_path)
@@ -398,7 +398,7 @@ class ExtractSequence(pyblish.api.Extractor):
                                                               "tv_markin {}".format(origin_mark_in))
                     else:
                         george_script_lines = re.sub("tv_markin {}".format(mark_in), "tv_markin {}".format(mark_out),
-                                                     george_script_lines)
+                                                     george_script_lines, count=1)
 
                     george_script_lines = re.sub(tv_export, tv_export.replace(str(export_lenght), "0"),
                                                  george_script_lines)
