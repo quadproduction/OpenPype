@@ -176,12 +176,15 @@ class ExtractSequence(pyblish.api.Extractor):
         output_filepaths_by_frame_index_rst, thumbnail_fullpath = result
 
         # Filter frames
-        output_filepaths_by_frame_index = {}
-        for frame_index, output_path in output_filepaths_by_frame_index_rst.items():
-            if frame_index in export_frames:
-                output_filepaths_by_frame_index[frame_index] = output_path
-            else:
-                os.remove(output_path)
+        if export_frames:
+            output_filepaths_by_frame_index = {}
+            for frame_index, output_path in output_filepaths_by_frame_index_rst.items():
+                if frame_index in export_frames:
+                    output_filepaths_by_frame_index[frame_index] = output_path
+                else:
+                    os.remove(output_path)
+        else:
+            output_filepaths_by_frame_index = output_filepaths_by_frame_index_rst
 
         # Change scene frame Start back to previous value
         execute_george("tv_startframe {}".format(scene_start_frame))
