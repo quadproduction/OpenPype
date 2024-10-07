@@ -900,17 +900,18 @@ class ExtractReview(pyblish.api.InstancePlugin):
         """
 
         repre = temp_data["origin_repre"]
+        repre_files_collection = None
         src_staging_dir = repre["stagingDir"]
         dst_staging_dir = new_repre["stagingDir"]
 
         if temp_data["input_is_sequence"]:
-            collections = clique.assemble(repre["files"])[0]
+            repre_files_collection = clique.assemble(repre["files"])[0][0]
             full_input_path = os.path.join(
                 src_staging_dir,
-                collections[0].format("{head}{padding}{tail}")
+                repre_files_collection.format("{head}{padding}{tail}")
             )
 
-            filename = collections[0].format("{head}")
+            filename = repre_files_collection.format("{head}")
             if filename.endswith("."):
                 filename = filename[:-1]
 
@@ -952,20 +953,27 @@ class ExtractReview(pyblish.api.InstancePlugin):
             output_ext_is_image
             and "sequence" in output_def["tags"]
         )
+
+        sequence_with_gaps = bool("sequence_with_gaps" in output_def["tags"])
+
         if output_is_sequence:
             new_repre_files = []
             frame_start = temp_data["output_frame_start"]
             frame_end = temp_data["output_frame_end"]
 
             filename_base = "{}_{}".format(filename, filename_suffix)
-            # Temporary tempalte for frame filling. Example output:
+            # Temporary template for frame filling. Example output:
             # "basename.%04d.exr" when `frame_end` == 1001
             repr_file = "{}.%{:0>2}d.{}".format(
                 filename_base, len(str(frame_end)), output_ext
             )
 
-            for frame in range(frame_start, frame_end + 1):
-                new_repre_files.append(repr_file % frame)
+            if not sequence_with_gaps:
+                for frame in range(frame_start, frame_end + 1):
+                    new_repre_files.append(repr_file % frame)
+            else:
+                for frame in repre_files_collection.indexes:
+                    new_repre_files.append(repr_file % frame)
 
             new_repre["sequence_file"] = repr_file
             full_output_path = os.path.join(

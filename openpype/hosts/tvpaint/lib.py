@@ -475,6 +475,7 @@ def composite_rendered_layers(
     layers_data, filepaths_by_layer_id,
     range_start, range_end,
     dst_filepaths_by_frame, opacity_by_layer_id,
+    export_frames=None,
     cleanup=True
 ):
     """Composite multiple rendered layers by their position.
@@ -496,6 +497,7 @@ def composite_rendered_layers(
             image after compositing will be stored. Path must not clash with
             source filepaths.
         opacity_by_layer_id(dict): Opacity stored by layer id (0-255). Used as source for compositing.
+        export_frames (list)
         cleanup(bool): Remove all source filepaths when done with compositing.
     """
     layer_ids_by_position = {}
@@ -510,7 +512,12 @@ def composite_rendered_layers(
     image_size = None
 
     # Generate composited images
+    if export_frames is None:
+        export_frames = []
+
     for frame_index in range(range_start, range_end + 1):
+        if frame_index not in export_frames:
+            continue
         dst_filepath = dst_filepaths_by_frame[frame_index]
         src_files_opacity = {}
 

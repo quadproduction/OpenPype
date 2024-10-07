@@ -4,6 +4,7 @@ import subprocess
 import platform
 import json
 import tempfile
+from pathlib import Path
 from string import Formatter
 
 import opentimelineio_contrib.adapters.ffmpeg_burnins as ffmpeg_burnins
@@ -53,9 +54,9 @@ def _get_ffprobe_data(source):
     }
     if platform.system().lower() == "windows":
         kwargs["creationflags"] = (
-            subprocess.CREATE_NEW_PROCESS_GROUP
-            | getattr(subprocess, "DETACHED_PROCESS", 0)
-            | getattr(subprocess, "CREATE_NO_WINDOW", 0)
+                subprocess.CREATE_NEW_PROCESS_GROUP
+                | getattr(subprocess, "DETACHED_PROCESS", 0)
+                | getattr(subprocess, "CREATE_NO_WINDOW", 0)
         )
     proc = subprocess.Popen(command, **kwargs)
     out = proc.communicate()[0]
@@ -116,7 +117,7 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
     }
 
     def __init__(
-        self, source, ffprobe_data=None, options_init=None, first_frame=None
+            self, source, ffprobe_data=None, options_init=None, first_frame=None
     ):
         if not ffprobe_data:
             ffprobe_data = _get_ffprobe_data(source)
@@ -126,9 +127,9 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
         source_streams = ffprobe_data.get("streams")
         if not source_streams:
             raise ValueError((
-                "Input file \"{}\" does not contain any streams"
-                " with image/video content."
-            ).format(source))
+                                 "Input file \"{}\" does not contain any streams"
+                                 " with image/video content."
+                             ).format(source))
 
         self.ffprobe_data = ffprobe_data
         self.first_frame = first_frame
@@ -141,12 +142,12 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
             self.options_init.update(options_init)
 
     def add_text(
-        self,
-        text,
-        align,
-        frame_start=None,
-        frame_end=None,
-        options=None,
+            self,
+            text,
+            align,
+            frame_start=None,
+            frame_end=None,
+            options=None,
     ):
         """
         Adding static text to a filter.
@@ -167,13 +168,12 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
         if frame_end is not None:
             options["frame_end"] = frame_end
 
-
         options["label"] = align
         self._add_burnin(text, align, options, DRAWTEXT)
 
     def add_timecode(
-        self, align, frame_start=None, frame_end=None, frame_start_tc=None,
-        text=None, options=None
+            self, align, frame_start=None, frame_end=None, frame_start_tc=None,
+            text=None, options=None
     ):
         """
         Convenience method to create the frame number expression.
@@ -215,13 +215,13 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
         self._add_burnin(text, align, options, TIMECODE)
 
     def add_per_frame_text(
-        self,
-        text,
-        align,
-        frame_start,
-        frame_end,
-        listed_keys,
-        options=None
+            self,
+            text,
+            align,
+            frame_start,
+            frame_end,
+            listed_keys,
+            options=None
     ):
         """Add text that changes per frame.
 
@@ -343,8 +343,8 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
         if frame_start is None:
             return None
         return (
-            "%{eif:n+" + str(frame_start)
-            + ":d:" + str(len(str(frame_end))) + "}"
+                "%{eif:n+" + str(frame_start)
+                + ":d:" + str(len(str(frame_end))) + "}"
         )
 
     def _add_burnin(self, text, align, options, draw):
@@ -504,12 +504,13 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
             )
 
         if is_sequence:
-            output = output % duration
-
-        if not os.path.exists(output):
-            raise RuntimeError(
-                "Failed to generate this f*cking file '%s'" % output
-            )
+            folder_path, filename = output.rsplit('/', maxsplit=1)
+            folder_path_obj = Path(folder_path)
+            matched_files = folder_path_obj.glob("*burnin_tvpaint.*")
+            if not matched_files or len(list(matched_files)) != duration:
+                raise RuntimeError("Failed to generate the sequence '%s'" % output)
+        elif not os.path.exists(output):
+            raise RuntimeError("Failed to generate the file '%s'" % output)
 
         for path in self.cleanup_paths:
             if os.path.exists(path):
@@ -581,9 +582,9 @@ def prepare_fill_values(burnin_template, data):
 
 
 def burnins_from_data(
-    input_path, output_path, data,
-    codec_data=None, options=None, burnin_values=None, overwrite=True,
-    full_input_path=None, first_frame=None, source_ffmpeg_cmd=None
+        input_path, output_path, data,
+        codec_data=None, options=None, burnin_values=None, overwrite=True,
+        full_input_path=None, first_frame=None, source_ffmpeg_cmd=None
 ):
     """This method adds burnins to video/image file based on presets setting.
 
@@ -702,10 +703,10 @@ def burnins_from_data(
 
         if isinstance(value, dict):
             raise TypeError((
-                "Expected string, number or list type."
-                " Got: {} - \"{}\""
-                " (Make sure you have new burnin presets)."
-            ).format(str(type(value)), str(value)))
+                                "Expected string, number or list type."
+                                " Got: {} - \"{}\""
+                                " (Make sure you have new burnin presets)."
+                            ).format(str(type(value)), str(value)))
 
         align = None
         align_text = align_text.strip().lower()

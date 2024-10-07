@@ -202,8 +202,11 @@ class ExtractSequence(pyblish.api.Extractor):
 
         # if a custom_mark_range is given, always make the review a seq and not a video
         # It makes no sense to make a video of discontinuous frame range
-        if review_media_type == TVPaintReviewType.Seq_Img.name or export_frames_without_offset:
-            custom_tags.append("sequence")
+        if review_media_type == TVPaintReviewType.Seq_Img.name:
+            if export_frames_without_offset:
+                custom_tags.append("extract_frames")
+            else:
+                custom_tags.append("extract_sequence")
 
         # Sequence of one frame
         single_file = len(repre_files) == 1
@@ -222,7 +225,11 @@ class ExtractSequence(pyblish.api.Extractor):
         }
 
         if not single_file:
-            new_repre["frameStart"] = output_frame_start
+            if not export_frames_without_offset:
+                # We only want to add frame start information if it's a sequence without gap
+                # Because if frameStart is present in the repr data an index remapping while occur
+                # We don't want this in case of list of frames with gap(s)
+                new_repre["frameStart"] = output_frame_start
             new_repre["frameEnd"] = output_frame_end
 
         self.log.debug("Creating new representation: {}".format(new_repre))
@@ -363,6 +370,10 @@ class ExtractSequence(pyblish.api.Extractor):
 
         # Check if frames has been properly created on the disk
         for frame_index in range(mark_in, mark_out + 1):
+            if export_frames_without_offset and frame_index not in export_frames_without_offset:
+                # TODO?: Maybe we should delete from disk the file
+                continue
+
             filename = filename_template.format(frame=frame_index)
             filepath = os.path.join(output_dir, filename)
 
@@ -385,7 +396,7 @@ class ExtractSequence(pyblish.api.Extractor):
                                                               "tv_markin {}".format(origin_mark_in))
                     else:
                         george_script_lines = re.sub("tv_markin {}".format(mark_in), "tv_markin {}".format(mark_out),
-                                                     george_script_lines)
+                                                     george_script_lines, count=1)
 
                     george_script_lines = re.sub(tv_export, tv_export.replace(str(export_lenght), "0"),
                                                  george_script_lines)
@@ -511,6 +522,9 @@ class ExtractSequence(pyblish.api.Extractor):
         thumbnail_src_filepath = None
         finale_template = get_frame_filename_template(mark_out)
         for frame_index in range(mark_in, mark_out + 1):
+            if export_frames and frame_index not in export_frames:
+                continue
+
             filename = finale_template.format(frame=frame_index)
 
             filepath = os.path.join(output_dir, filename)
@@ -521,20 +535,12 @@ class ExtractSequence(pyblish.api.Extractor):
 
         self.log.info("Started compositing of layer frames.")
 
-        # Fill gap on rendered frame to composed properly all of them
-        for filepath_by_frame_index in filepaths_by_layer_id.values():
-            new_filepath_by_frame_index = self.fill_sequence_gaps(
-                    filepath_by_frame_index=filepath_by_frame_index,
-                    start_frame=mark_in,
-                    end_frame=mark_out
-                )
-            filepath_by_frame_index.update(new_filepath_by_frame_index)
-
         composite_rendered_layers(
             filtered_layers, filepaths_by_layer_id,
             mark_in, mark_out,
             output_filepath_by_frame_index,
-            opacity_by_layer_id
+            opacity_by_layer_id,
+            export_frames=export_frames
         )
 
         self.log.info("Compositing finished")
