@@ -47,7 +47,6 @@ class CollectOutputFrameRange(pyblish.api.InstancePlugin):
             instance.data["frameEnd"] = frame_end
 
         if not export_frames_selection:
-            instance.data["exportFrames"] = []
             return
 
         # Create a list of the frames to render
