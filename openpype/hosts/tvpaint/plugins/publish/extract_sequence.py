@@ -1,4 +1,3 @@
-import logging
 import os
 import copy
 import tempfile
@@ -173,15 +172,7 @@ class ExtractSequence(pyblish.api.Extractor):
                 export_frames_without_offset
             )
 
-        output_filepaths_by_frame_index_rst, thumbnail_fullpath = result
-
-        # Filter frames
-        output_filepaths_by_frame_index = {}
-        for frame_index, output_path in output_filepaths_by_frame_index_rst.items():
-            if frame_index in export_frames:
-                output_filepaths_by_frame_index[frame_index] = output_path
-            else:
-                os.remove(output_path)
+        output_filepaths_by_frame_index, thumbnail_fullpath = result
 
         # Change scene frame Start back to previous value
         execute_george("tv_startframe {}".format(scene_start_frame))
@@ -212,7 +203,7 @@ class ExtractSequence(pyblish.api.Extractor):
         # if a custom_mark_range is given, always make the review a seq and not a video
         # It makes no sense to make a video of discontinuous frame range
         if review_media_type == TVPaintReviewType.Seq_Img.name or export_frames_without_offset:
-            custom_tags.append("sequence_tvpaint")
+            custom_tags.append("sequence")
 
         # Sequence of one frame
         single_file = len(repre_files) == 1
@@ -254,7 +245,6 @@ class ExtractSequence(pyblish.api.Extractor):
             "tags": ["thumbnail"]
         }
         instance.data["representations"].append(thumbnail_repre)
-
 
     def _rename_output_files(
         self, filepaths_by_frame, mark_in, mark_out, output_frame_start

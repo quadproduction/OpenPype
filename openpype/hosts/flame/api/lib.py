@@ -1010,8 +1010,8 @@ class MediaInfoFile(object):
         # Create cmd arguments for gettig xml file info file
         cmd_args = [
             self.MEDIA_SCRIPT_PATH,
-            f"-e {feed_ext}",
-            f"-o {fpath}",
+            "-e", feed_ext,
+            "-o", fpath,
             feed_dir
         ]
 
