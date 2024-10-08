@@ -290,7 +290,7 @@ class ExtractSequence(pyblish.api.Extractor):
             tuple: With 2 items first is list of filenames second is path to
                 thumbnail.
         """
-        filename_template = get_frame_filename_template(mark_out)
+        filename_template = get_frame_filename_template(mark_out, filename_prefix="review.")
 
         self.log.debug("Preparing data for rendering.")
         origin_first_filename = filename_template.format(frame=mark_in)
@@ -358,8 +358,8 @@ class ExtractSequence(pyblish.api.Extractor):
 
         # Change the mark in place if a selection of frame indexes are specified
         if export_frames_without_offset:
-            george_script_lines.insert(0,"tv_markin {}".format(mark_in))
-            george_script_lines.insert(0,"tv_markout {}".format(mark_out))
+            george_script_lines.insert(0, "tv_markin {}".format(mark_in))
+            george_script_lines.insert(0, "tv_markout {}".format(mark_out))
             george_script_lines.extend(["tv_markin {}".format(origin_mark_in)])
             george_script_lines.extend(["tv_markout {}".format(origin_mark_out)])
 
@@ -520,7 +520,7 @@ class ExtractSequence(pyblish.api.Extractor):
         # Prepare final filepaths where compositing should store result
         output_filepath_by_frame_index = {}
         thumbnail_src_filepath = None
-        finale_template = get_frame_filename_template(mark_out)
+        finale_template = get_frame_filename_template(mark_out, filename_prefix="render.")
         for frame_index in range(mark_in, mark_out + 1):
             if export_frames and frame_index not in export_frames:
                 continue
@@ -534,6 +534,15 @@ class ExtractSequence(pyblish.api.Extractor):
                 thumbnail_src_filepath = filepath
 
         self.log.info("Started compositing of layer frames.")
+
+        filepath_by_frame_index: dict
+        for filepath_by_frame_index in filepaths_by_layer_id.values():
+            new_filepath_by_frame_index = self.fill_sequence_gaps(
+                filepath_by_frame_index=filepath_by_frame_index,
+                start_frame=mark_in,
+                end_frame=mark_out
+            )
+            filepath_by_frame_index.update(new_filepath_by_frame_index)
 
         composite_rendered_layers(
             filtered_layers, filepaths_by_layer_id,

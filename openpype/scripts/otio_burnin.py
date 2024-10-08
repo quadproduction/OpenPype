@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import subprocess
 import platform
@@ -505,8 +506,12 @@ class ModifiedBurnins(ffmpeg_burnins.Burnins):
 
         if is_sequence:
             folder_path, filename = output.rsplit('/', maxsplit=1)
+            file_identifier_match = re.match(r"^.*%0\dd(?P<identifier>.+)", filename)
+            if not file_identifier_match:
+                raise RuntimeError("Failed to ensure sequence has been properly generated '%s'" % output)
+
             folder_path_obj = Path(folder_path)
-            matched_files = folder_path_obj.glob("*burnin_tvpaint.*")
+            matched_files = folder_path_obj.glob("*{}".format(file_identifier_match.group("identifier")))
             if not matched_files or len(list(matched_files)) != duration:
                 raise RuntimeError("Failed to generate the sequence '%s'" % output)
         elif not os.path.exists(output):
