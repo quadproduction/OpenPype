@@ -516,7 +516,7 @@ def composite_rendered_layers(
         export_frames = []
 
     for frame_index in range(range_start, range_end + 1):
-        if frame_index not in export_frames:
+        if export_frames and frame_index not in export_frames:
             continue
         dst_filepath = dst_filepaths_by_frame[frame_index]
         src_files_opacity = {}
