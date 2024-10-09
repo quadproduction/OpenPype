@@ -264,11 +264,23 @@ def get_last_version_from_path(path_dir, filter):
 
 
 def optimize_path_compatibility(filepath):
+    # Check if filepath is None or empty first, return original value
     if not filepath:
-        return
+        return filepath
 
-    workfile_path = Path(filepath)
-    workfile_path.parent.mkdir(parents=True, exist_ok=True)
+    # Check if path contains bracket (template path), return original value
+    if any(char in filepath for char in '{}'):
+        return filepath
+
+    # Check if the path starts with a Windows drive letter (e.g., C:, D:) or uses backslashes
+    if not filepath[1:3] == ':\\' or not '\\' in filepath:
+        return filepath
+
+    try:
+        workfile_path = Path(filepath)
+        workfile_path.parent.mkdir(parents=True, exist_ok=True)
+    except (PermissionError, OSError):
+         return filepath
 
     if 'win' not in sys.platform:
         log.info("improve_compatibility: nothing done, only applicable for Windows.")
