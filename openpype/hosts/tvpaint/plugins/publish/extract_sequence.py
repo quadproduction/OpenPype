@@ -200,18 +200,18 @@ class ExtractSequence(pyblish.api.Extractor):
         if review_media_type is None:
             review_media_type = TVPaintReviewType(review_media_type)
 
-        # if a custom_mark_range is given, always make the review a seq and not a video
-        # It makes no sense to make a video of discontinuous frame range
-        if review_media_type == TVPaintReviewType.Seq_Img.name:
-            if export_frames_without_offset:
-                custom_tags.append("extract_frames")
-            else:
-                custom_tags.append("extract_sequence")
-
         # Sequence of one frame
         single_file = len(repre_files) == 1
         if single_file:
             repre_files = repre_files[0]
+
+        # if a custom_mark_range is given, always make the review a seq and not a video
+        # It makes no sense to make a video of discontinuous frame range
+        if review_media_type == TVPaintReviewType.Seq_Img.name and not single_file:
+            if export_frames_without_offset:
+                custom_tags.append("extract_frames")
+            else:
+                custom_tags.append("extract_sequence")
 
         # Extension is hardcoded
         #   - changing extension would require change code
