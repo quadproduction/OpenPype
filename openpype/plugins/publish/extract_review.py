@@ -1604,8 +1604,9 @@ class ExtractReview(pyblish.api.InstancePlugin):
     def filter_outputs_by_frame(self, outputs, files, file_extension):
         """Filter output definitions by frame filter.
 
-        Output definitions without custom_tags filter are marked as invalid,
-        only in case representation is having any custom_tags defined.
+        Filters a list of output definitions related to 'single_frame_filter' condition
+        that checks whether the provided files match certain criteria (single or
+        multiple frame file, video or all types).
 
         Args:
             outputs (list): Contain list of output definitions from presets.
