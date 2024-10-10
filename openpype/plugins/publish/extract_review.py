@@ -145,6 +145,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
             repre_name = str(repre.get("name"))
             tags = repre.get("tags") or []
             custom_tags = repre.get("custom_tags")
+            files = repre.get("files")
             if "review" not in tags:
                 self.log.debug((
                     "Repre: {} - Didn't found \"review\" in tags. Skipping"
@@ -175,10 +176,15 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 )
                 continue
 
+            # Filter output definition by "single_frame_filter"
+            frame_outputs = self.filter_outputs_by_frame(
+                profile_outputs, files
+            )
+
             # Filter output definition by representation's
             # custom tags (optional)
             outputs = self.filter_outputs_by_custom_tags(
-                profile_outputs, custom_tags)
+                frame_outputs, custom_tags)
             if not outputs:
                 self.log.info((
                     "Skipped representation. All output definitions from"
@@ -1591,6 +1597,48 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         self.log.debug("__ filtered_outputs: {}".format(
             [_o["filename_suffix"] for _o in filtered_outputs]
+        ))
+
+        return filtered_outputs
+
+    def filter_outputs_by_frame(self, outputs, files):
+        """Filter output definitions by frame filter.
+
+        Output definitions without custom_tags filter are marked as invalid,
+        only in case representation is having any custom_tags defined.
+
+        Args:
+            outputs (list): Contain list of output definitions from presets.
+            files (str or list): A string or a list of filenames
+
+        Returns:
+            list: Containg all output definitions matching entered "single_frame_filter".
+        """
+        filtered_outputs = []
+        self.log.debug(files)
+
+        # Check if files is a string (single file) or a list (potentially multiple files)
+        is_single_file = isinstance(files, str)
+        is_multi_file = isinstance(files, list) and len(files) > 1
+        is_single_file_in_list = isinstance(files, list) and len(files) == 1
+
+        for output_def in outputs:
+            frame_filter = output_def.get("filter", {}).get("single_frame_filter")
+            valid = False
+
+            if frame_filter == "everytime":
+                valid = True
+            elif frame_filter == "single_frame":
+                valid = is_single_file or is_single_file_in_list
+            elif frame_filter == "multi_frame":
+                valid = is_multi_file
+
+            if valid:
+                filtered_outputs.append(output_def)
+
+        # Logging the filenames of the filtered outputs
+        self.log.debug("__ filtered_outputs: {}".format(
+            [_o.get("filename_suffix", "unknown") for _o in filtered_outputs]
         ))
 
         return filtered_outputs
