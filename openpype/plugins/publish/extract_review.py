@@ -178,7 +178,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
             # Filter output definition by "single_frame_filter"
             frame_outputs = self.filter_outputs_by_frame(
-                profile_outputs, files
+                profile_outputs, files, input_ext
             )
 
             # Filter output definition by representation's
@@ -1601,7 +1601,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         return filtered_outputs
 
-    def filter_outputs_by_frame(self, outputs, files):
+    def filter_outputs_by_frame(self, outputs, files, file_extension):
         """Filter output definitions by frame filter.
 
         Output definitions without custom_tags filter are marked as invalid,
@@ -1610,6 +1610,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
         Args:
             outputs (list): Contain list of output definitions from presets.
             files (str or list): A string or a list of filenames
+            file_extension (str): File extension
 
         Returns:
             list: Containg all output definitions matching entered "single_frame_filter".
@@ -1619,7 +1620,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         # Check if files is a string (single file) or a list (potentially multiple files)
         is_single_file = isinstance(files, str)
-        is_multi_file = isinstance(files, list) and len(files) > 1
+        is_multi_file = file_extension in self.video_exts or isinstance(files, list) and len(files) > 1
         is_single_file_in_list = isinstance(files, list) and len(files) == 1
 
         for output_def in outputs:
