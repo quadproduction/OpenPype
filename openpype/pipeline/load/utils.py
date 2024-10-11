@@ -287,7 +287,7 @@ def get_representation_context(representation):
 
 
 def load_with_repre_context(
-    Loader, repre_context, namespace=None, name=None, options=None, **kwargs
+    Loader, repre_context, namespace=None, name=None, options=None, template_build=False, **kwargs
 ):
 
     # Ensure the Loader is compatible for the representation
@@ -320,6 +320,10 @@ def load_with_repre_context(
     # representation context to set `fname` attribute to the filename to load
     # Deprecated - to be removed in OpenPype 3.16.6 or 3.17.0.
     loader._fname = get_representation_path_from_context(repre_context)
+
+    # Needed for blender workfile template builder to execute when launched
+    if template_build:
+        return loader.load(repre_context, name, namespace, options, template_build)
 
     return loader.load(repre_context, name, namespace, options)
 

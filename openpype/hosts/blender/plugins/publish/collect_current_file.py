@@ -2,7 +2,9 @@ import os
 import bpy
 
 import pyblish.api
-from openpype.pipeline import get_current_task_name, get_current_asset_name
+from openpype.pipeline import get_current_task_name, get_current_asset_name, get_current_project_name
+from openpype.pipeline.create.subset_name import get_subset_name
+from openpype.client.mongo.entities import get_asset_by_name
 from openpype.hosts.blender.api import workio
 
 
@@ -23,12 +25,15 @@ class CollectBlenderCurrentFile(pyblish.api.ContextPlugin):
     label = "Blender Current File"
     hosts = ["blender"]
     actions = [SaveWorkfiledAction]
+    default_variant = "Main"
 
     def process(self, context):
         """Inject the current working file"""
         current_file = workio.current_file()
 
         context.data["currentFile"] = current_file
+
+        variant = self.default_variant
 
         assert current_file, (
             "Current file is empty. Save the file before continuing."
@@ -38,12 +43,22 @@ class CollectBlenderCurrentFile(pyblish.api.ContextPlugin):
         filename, ext = os.path.splitext(file)
 
         task = get_current_task_name()
+        asset_doc = get_asset_by_name(
+                get_current_project_name(), get_current_asset_name()
+            )
 
         data = {}
 
         # create instance
         instance = context.create_instance(name=filename)
-        subset = "workfile" + task.capitalize()
+
+        # Retrieve subset from settings and no longer hardcoded
+        subset = get_subset_name(
+                "workfile",
+                variant,
+                task,
+                asset_doc
+        )
 
         data.update({
             "subset": subset,

@@ -170,7 +170,7 @@ class BlendLoader(plugin.AssetLoader):
         ]
 
         self[:] = objects
-        return objects
+        return objects, container
 
     def exec_update(self, container: Dict, representation: Dict):
         """

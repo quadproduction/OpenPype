@@ -181,7 +181,7 @@ class JsonLayoutLoader(plugin.AssetLoader):
         }
 
         self[:] = asset_group.children
-        return asset_group.children
+        return asset_group.children, asset_group
 
     def exec_update(self, container: Dict, representation: Dict):
         """Update the loaded asset.

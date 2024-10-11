@@ -222,8 +222,12 @@ class AssetLoader(LoaderPlugin):
              context: dict,
              name: Optional[str] = None,
              namespace: Optional[str] = None,
-             options: Optional[Dict] = None) -> Optional[bpy.types.Collection]:
+             options: Optional[Dict] = None,
+             template_build=False) -> Optional[bpy.types.Collection]:
         """ Run the loader on Blender main thread"""
+        if template_build:
+            return self._load(context, name, namespace, options)
+
         mti = MainThreadItem(self._load, context, name, namespace, options)
         execute_in_main_thread(mti)
 
@@ -256,7 +260,7 @@ class AssetLoader(LoaderPlugin):
             asset, subset, unique_number
         )
 
-        nodes = self.process_asset(
+        nodes, container = self.process_asset(
             context=context,
             name=name,
             namespace=namespace,
@@ -267,6 +271,7 @@ class AssetLoader(LoaderPlugin):
         if not nodes:
             return None
 
+        return container
         # Only containerise if it's not already a collection from a .blend file.
         # representation = context["representation"]["name"]
         # if representation != "blend":

@@ -173,7 +173,7 @@ class FbxModelLoader(plugin.AssetLoader):
         }
 
         self[:] = objects
-        return objects
+        return objects, asset_group
 
     def exec_update(self, container: Dict, representation: Dict):
         """Update the loaded asset.

@@ -112,7 +112,7 @@ class BlendActionLoader(openpype.hosts.blender.api.plugin.AssetLoader):
         nodes = list(container.objects)
         nodes.append(container)
         self[:] = nodes
-        return nodes
+        return nodes, container
 
     def update(self, container: Dict, representation: Dict):
         """Update the loaded asset.

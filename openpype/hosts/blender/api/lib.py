@@ -270,6 +270,9 @@ def get_selection() -> List[bpy.types.Object]:
     """Return the selected objects from the current scene."""
     return [obj for obj in bpy.context.scene.objects if obj.select_get()]
 
+def get_active_collection():
+    """Return the active collection in the current scene."""
+    return bpy.context.view_layer.active_layer_collection.collection
 
 @contextlib.contextmanager
 def maintained_selection():
@@ -315,3 +318,62 @@ def maintained_time():
         yield
     finally:
         bpy.context.scene.frame_current = current_time
+
+def make_scene_empty(scene=None):
+    """Delete all objects, worlds and collections in given scene and clean everything.
+
+        Args:
+            scene (bpy.types.Scene or str): a blender scene object, or its name
+    """
+
+    # If no scene scpecified
+    if scene is None:
+        # Not specified: it's the current scene.
+        scene = bpy.context.scene
+    else:
+        # if scene is a scene.name
+        if isinstance(scene, str):
+            # Specified by name: get the scene object.
+            scene = bpy.data.scenes[scene]
+        # Otherwise, assume it's a scene object already.
+
+    # Remove objects.
+    for object_ in scene.objects:
+        bpy.data.objects.remove(object_, do_unlink=True)
+
+    # Remove worlds.
+    for world_ in bpy.data.worlds:
+        bpy.data.worlds.remove(world_, do_unlink=True)
+
+    # Remove collections.
+    for coll_ in bpy.data.collections:
+        bpy.data.collections.remove(coll_, do_unlink=True)
+
+    # Remove linked library
+    for lib in bpy.data.libraries:
+        bpy.data.libraries.remove(lib, do_unlink=True)
+
+    # Clean everything
+    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+
+def get_object_parent_collections(obj):
+    """Retrieve the object parent's collection
+
+    Args:
+        obj (bpy.types.Object or str): a blender object or its name
+
+    Return:
+        bpy.types.Collection: The parent collection
+    """
+
+    if isinstance(obj, str):
+        obj = bpy.data.objects.get(object_name)
+
+    if obj:
+        for coll in bpy.data.collections:
+            if obj.name in coll.objects:
+                return coll
+        else:
+            return None
+
+    raise ValueError("Object doesn't exist")

@@ -16,6 +16,7 @@ from openpype.pipeline import (
     legacy_io,
     get_current_project_name,
     get_current_asset_name,
+    get_current_context,
     register_loader_plugin_path,
     register_creator_plugin_path,
     deregister_loader_plugin_path,
@@ -27,6 +28,18 @@ from openpype.lib import (
     register_event_callback,
     emit_event
 )
+
+from openpype.pipeline.workfile.workfile_template_builder import (
+    is_last_workfile_exists,
+    should_build_first_workfile
+)
+
+from .workfile_template_builder import (
+    build_workfile_template,
+    BlenderPlaceholderLoadPlugin,
+    BlenderPlaceholderCreatePlugin,
+)
+
 import openpype.hosts.blender
 from openpype.settings import get_project_settings
 
@@ -46,6 +59,54 @@ IS_HEADLESS = bpy.app.background
 
 log = Logger.get_logger(__name__)
 
+
+def get_workfile_build_placeholder_plugins():
+        return [
+            BlenderPlaceholderLoadPlugin,
+            BlenderPlaceholderCreatePlugin
+        ]
+
+def get_context_data():
+    """Needed to launch placeholder tools
+    """
+    pass
+
+def update_context_data(data, changes):
+    """Needed to launch placeholder tools
+    """
+    pass
+
+def get_context_title():
+    """Context title shown for UI purposes.
+
+    Should return current context title if possible.
+
+    Note:
+        This method is used only for UI purposes so it is possible to
+            return some logical title for contextless cases.
+        Is not meant for "Context menu" label.
+
+    Returns:
+        str: Context title.
+        None: Default title is used based on UI implementation.
+    """
+
+    # Use current context to fill the context title
+    current_context = get_current_context()
+    project_name = current_context["project_name"]
+    asset_name = current_context["asset_name"]
+    task_name = current_context["task_name"]
+    items = []
+    if project_name:
+        items.append(project_name)
+        if asset_name:
+            items.append(asset_name)
+            if task_name:
+                items.append(task_name)
+    if items:
+        from pprint import pprint
+        return "/".join(items)
+    return None
 
 def pype_excepthook_handler(*args):
     traceback.print_exception(*args)
@@ -164,7 +225,15 @@ def set_resolution(data):
     scene.render.resolution_y = resolution_y
 
 
+def _autobuild_first_workfile():
+    if not is_last_workfile_exists() and should_build_first_workfile():
+        build_workfile_template()
+
+
 def on_new():
+
+    _autobuild_first_workfile()
+
     project = os.environ.get("AVALON_PROJECT")
     settings = get_project_settings(project).get("blender")
 

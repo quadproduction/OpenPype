@@ -15,7 +15,7 @@ class CreateAction(openpype.hosts.blender.api.plugin.Creator):
     family = "action"
     icon = "male"
 
-    def process(self):
+    def process(self, template_build=False):
 
         asset = self.data["asset"]
         subset = self.data["subset"]

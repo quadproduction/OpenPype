@@ -16,8 +16,21 @@ import bpy
 import bpy.utils.previews
 
 from openpype import style
-from openpype.pipeline import get_current_asset_name, get_current_task_name
+from openpype.pipeline import (
+    get_current_asset_name,
+    get_current_task_name,
+    registered_host
+    )
 from openpype.tools.utils import host_tools
+
+from openpype.pipeline.workfile import BuildWorkfile
+from openpype.hosts.blender.api.workfile_template_builder import BlenderTemplateBuilder
+
+from .workfile_template_builder import (
+    get_placeholder_to_update,
+    build_workfile_template,
+    update_workfile_template,
+    )
 
 from .workio import OpenFileCacher
 from . import pipeline
@@ -222,9 +235,11 @@ class LaunchQtApp(bpy.types.Operator):
                 raise AttributeError("`self._window` is not set.")
 
         else:
+            host = registered_host()
+            builder = BlenderTemplateBuilder(host)
             window = self._app.get_window(self.bl_idname)
             if window is None:
-                window = host_tools.get_tool_by_name(self._tool_name)
+                window = host_tools.get_tool_by_name(self._tool_name, builder=builder)
                 self._app.store_window(self.bl_idname, window)
             self._window = window
 
@@ -258,9 +273,14 @@ class LaunchQtApp(bpy.types.Operator):
             #     self._window.setWindowFlags(origin_flags)
             #     self._window.show()
 
+            self.after_window_show()
+
         return {'FINISHED'}
 
     def before_window_show(self):
+        return
+
+    def after_window_show(self):
         return
 
 
@@ -344,6 +364,51 @@ class LaunchWorkFiles(LaunchQtApp):
         ))
         self._window.refresh()
 
+class CreatePlaceholder(LaunchQtApp):
+    bl_idname = "wm.ayon_create_placeholder"
+    bl_label = "Create Placeholder"
+    _tool_name = "create_placeholder"
+
+    def execute(self, context):
+        result = super().execute(context)
+        return {"FINISHED"}
+
+class UpdatePlaceholder(LaunchQtApp):
+    bl_idname = "wm.ayon_update_placeholder"
+    bl_label = "Update Placeholder"
+    _tool_name = "update_placeholder"
+
+    def __init__(self):
+        super().__init__()
+        self.item = None
+
+    def execute(self, context):
+        result = super().execute(context)
+        return {"FINISHED"}
+
+    def before_window_show(self):
+        """ Get which one to update """
+        self.item = get_placeholder_to_update()
+
+    def after_window_show(self):
+        """ Update the window """
+        self._window.set_update_mode(self.item)
+
+class BuildWorkfileFromTemplate(bpy.types.Operator):
+    bl_idname = "wm.ayon_build_workfile_from_tempalte"
+    bl_label = "Build Workfile From Template"
+    def execute(self, context):
+        build_workfile_template()
+        return {"FINISHED"}
+
+
+class UpdateWorkfileFromTemplate(bpy.types.Operator):
+    bl_idname = "wm.ayon_update_workfile_from_tempalte"
+    bl_label = "Update Workfile From Template"
+    def execute(self, context):
+        update_workfile_template()
+        return {"FINISHED"}
+
 
 class SetFrameRange(bpy.types.Operator):
     bl_idname = "wm.ayon_set_frame_range"
@@ -406,7 +471,22 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
         layout.operator(SetResolution.bl_idname, text="Set Resolution")
         layout.separator()
         layout.operator(LaunchWorkFiles.bl_idname, text="Work Files...")
+        layout.separator()
+        layout.menu(SUBMENU_MT_avalon.bl_idname)
         # TODO (jasper): maybe add 'Reload Pipeline'
+
+
+class SUBMENU_MT_avalon(bpy.types.Menu):
+    bl_label = "Template Builder"
+    bl_idname = "OBJECT_MT_custom_menu"
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.operator(CreatePlaceholder.bl_idname, text="Create Placeholder")
+        layout.operator(UpdatePlaceholder.bl_idname, text="Update Placeholder")
+        layout.operator(BuildWorkfileFromTemplate.bl_idname, text="Build Workfile From Template")
+        layout.operator(UpdateWorkfileFromTemplate.bl_idname, text="Update Workfile From Template")
 
 
 def draw_avalon_menu(self, context):
@@ -422,9 +502,14 @@ classes = [
     LaunchManager,
     LaunchLibrary,
     LaunchWorkFiles,
+    CreatePlaceholder,
+    UpdatePlaceholder,
+    BuildWorkfileFromTemplate,
+    UpdateWorkfileFromTemplate,
     SetFrameRange,
     SetResolution,
     TOPBAR_MT_avalon,
+    SUBMENU_MT_avalon
 ]
 
 

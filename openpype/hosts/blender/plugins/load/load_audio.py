@@ -91,7 +91,7 @@ class AudioLoader(plugin.AssetLoader):
 
         objects = []
         self[:] = objects
-        return [objects]
+        return [objects], asset_group
 
     def exec_update(self, container: Dict, representation: Dict):
         """Update an audio strip in the sequence editor.

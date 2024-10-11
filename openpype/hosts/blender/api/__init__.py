@@ -10,6 +10,11 @@ from .pipeline import (
     ls,
     publish,
     containerise,
+    get_workfile_build_placeholder_plugins,
+    get_current_context,
+    get_context_title,
+    get_context_data,
+    update_context_data
 )
 
 from .plugin import (
@@ -45,6 +50,11 @@ __all__ = [
     "ls",
     "publish",
     "containerise",
+    "get_workfile_build_placeholder_plugins",
+    "get_current_context",
+    "get_context_title",
+    "get_context_data",
+    "update_context_data",
 
     "Creator",
     "Loader",

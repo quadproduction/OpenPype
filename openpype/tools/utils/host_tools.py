@@ -41,6 +41,8 @@ class HostToolsHelper:
         self._scene_inventory_tool = None
         self._library_loader_tool = None
         self._experimental_tools_dialog = None
+        self._create_placeholder_tool = None
+        self._update_placeholder_tool = None
 
     @property
     def log(self):
@@ -261,6 +263,34 @@ class HostToolsHelper:
             dialog.activateWindow()
             dialog.showNormal()
 
+    def get_create_placeholder(self, builder, parent=None):
+        """Create, cache and return create placeholder window."""
+        if self._create_placeholder_tool is None:
+            from openpype.tools.workfile_template_build.window import WorkfileBuildPlaceholderDialog
+            host = registered_host()
+            ILoadHost.validate_load_methods(host)
+
+            create_placeholder_window = WorkfileBuildPlaceholderDialog(
+                host=host, parent=parent or self._parent, builder=builder
+            )
+            self._create_placeholder_tool = create_placeholder_window
+
+        return self._create_placeholder_tool
+
+    def get_update_placeholder(self, builder, parent=None):
+        """Create, cache and return create placeholder window."""
+        if self._update_placeholder_tool is None:
+            from openpype.tools.workfile_template_build.window import WorkfileBuildPlaceholderDialog
+            host = registered_host()
+            ILoadHost.validate_load_methods(host)
+
+            update_placeholder_window = WorkfileBuildPlaceholderDialog(
+                host=host, parent=parent or self._parent, builder=builder
+            )
+            self._update_placeholder_tool = update_placeholder_window
+
+        return self._update_placeholder_tool
+
     def get_publisher_tool(self, parent=None, controller=None):
         """Create, cache and return publisher window."""
 
@@ -284,7 +314,7 @@ class HostToolsHelper:
                 window.set_current_tab(tab)
             window.make_sure_is_visible()
 
-    def get_tool_by_name(self, tool_name, parent=None, *args, **kwargs):
+    def get_tool_by_name(self, tool_name, builder=None, parent=None, *args, **kwargs):
         """Show tool by it's name.
 
         This is helper for
@@ -316,6 +346,12 @@ class HostToolsHelper:
 
         elif tool_name == "experimental_tools":
             return self.get_experimental_tools_dialog(parent, *args, **kwargs)
+
+        elif tool_name == "create_placeholder":
+            return self.get_create_placeholder(builder, parent, *args, **kwargs)
+
+        elif tool_name == "update_placeholder":
+            return self.get_update_placeholder(builder, parent, *args, **kwargs)
 
         else:
             self.log.warning(
@@ -380,14 +416,14 @@ class _SingletonPoint:
         cls.helper.show_tool_by_name(tool_name, parent, *args, **kwargs)
 
     @classmethod
-    def get_tool_by_name(cls, tool_name, parent=None, *args, **kwargs):
+    def get_tool_by_name(cls, tool_name, builder=None, parent=None, *args, **kwargs):
         cls._create_helper()
-        return cls.helper.get_tool_by_name(tool_name, parent, *args, **kwargs)
+        return cls.helper.get_tool_by_name(tool_name, builder, parent, *args, **kwargs)
 
 
 # Function callbacks using singleton access point
-def get_tool_by_name(tool_name, parent=None, *args, **kwargs):
-    return _SingletonPoint.get_tool_by_name(tool_name, parent, *args, **kwargs)
+def get_tool_by_name(tool_name, builder=None, parent=None, *args, **kwargs):
+    return _SingletonPoint.get_tool_by_name(tool_name, builder, parent, *args, **kwargs)
 
 
 def show_tool_by_name(tool_name, parent=None, *args, **kwargs):

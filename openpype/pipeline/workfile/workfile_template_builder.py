@@ -1634,11 +1634,21 @@ class PlaceholderLoadMixin(object):
                 )
             )
             try:
-                container = load_with_repre_context(
-                    loaders_by_name[loader_name],
-                    repre_load_context,
-                    options=self.parse_loader_args(loader_args)
-                )
+                # For blender, must use a bool to make him understand not to launch as MainThreadItem
+                # Otherwise, the load won't happen when opening blender
+                if self.builder.host_name == "blender":
+                    container = load_with_repre_context(
+                        loaders_by_name[loader_name],
+                        repre_load_context,
+                        options=self.parse_loader_args(loader_args),
+                        template_build=True
+                    )
+                else:
+                    container = load_with_repre_context(
+                        loaders_by_name[loader_name],
+                        repre_load_context,
+                        options=self.parse_loader_args(loader_args)
+                    )
             except Exception:
                 failed = True
                 self.load_failed(placeholder, representation)
@@ -1849,10 +1859,18 @@ class PlaceholderCreateMixin(object):
         # compile subset name from variant
         try:
             if legacy_create:
-                creator_instance = creator_plugin(
-                    subset_name,
-                    asset_name
-                ).process()
+                # Needed for blender workfile template builder to execute when launched
+                if self.builder.host_name == "blender":
+                    creator_instance = creator_plugin(
+                        subset_name,
+                        asset_name
+                    ).process(template_build=True)
+
+                else:
+                    creator_instance = creator_plugin(
+                        subset_name,
+                        asset_name
+                    ).process()
             else:
                 creator_instance = self.builder.create_context.create(
                     creator_plugin.identifier,

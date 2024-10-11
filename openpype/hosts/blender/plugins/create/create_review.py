@@ -15,8 +15,10 @@ class CreateReview(plugin.Creator):
     family = "review"
     icon = "video-camera"
 
-    def process(self):
+    def process(self, template_build=False):
         """ Run the creator on Blender main thread"""
+        if template_build:
+            return self._process()
         mti = ops.MainThreadItem(self._process)
         ops.execute_in_main_thread(mti)
 

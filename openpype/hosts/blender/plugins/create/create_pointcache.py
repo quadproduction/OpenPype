@@ -15,7 +15,7 @@ class CreatePointcache(openpype.hosts.blender.api.plugin.Creator):
     family = "pointcache"
     icon = "gears"
 
-    def process(self):
+    def process(self, template_build=False):
 
         asset = self.data["asset"]
         subset = self.data["subset"]
