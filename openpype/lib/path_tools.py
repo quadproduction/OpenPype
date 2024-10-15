@@ -263,18 +263,30 @@ def get_last_version_from_path(path_dir, filter):
     return None
 
 
-def optimize_path_compatibility(filepath):
-    # Check if filepath is None or empty first, return original value
-    if not filepath:
+def check_input_is_optimizable_path(input_path):
+    # Expand environment variables and user home path
+    filepath = os.path.expandvars(input_path)
+    filepath = os.path.expanduser(filepath)
+
+    # Check valid Windows path (drive letters and network paths)
+    windows_path_regex = r'^[a-zA-Z]:\\|^\\\\'
+    if re.match(windows_path_regex, filepath):
         return filepath
+    return None
+
+
+def optimize_path_compatibility(input_string):
+    # Check if filepath is None or empty first, return original value
+    if not input_string:
+        return input_string
 
     # Check if path contains bracket (template path), return original value
-    if any(char in filepath for char in '{}'):
-        return filepath
+    if any(char in input_string for char in '{}'):
+        return input_string
 
-    # Check if the path starts with a Windows drive letter (e.g., C:, D:) or uses backslashes
-    if not filepath[1:3] == ':\\' or not '\\' in filepath:
-        return filepath
+    filepath = check_input_is_optimizable_path(input_string)
+    if not filepath:
+        return input_string
 
     try:
         workfile_path = Path(filepath)

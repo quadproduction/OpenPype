@@ -1,5 +1,5 @@
 from openpype.lib.applications import PreLaunchHook, LaunchTypes
-from openpype.lib import optimize_path_compatibility
+from openpype.lib import optimize_path_compatibility, check_input_is_optimizable_path
 
 
 class WindowsPathOptimizer(PreLaunchHook):
@@ -22,12 +22,20 @@ class WindowsPathOptimizer(PreLaunchHook):
         for env_key, env_value in self.launch_context.env.items():
             # Check if the environment variable contains multiple paths (separated by ;)
             if ";" in env_value:
-                paths = env_value.split(";")
-                optimized_paths = [optimize_path_compatibility(path) for path in paths]
+                env_inputs = env_value.split(";")
+                optimized_paths = []
+                for env_input in env_inputs:
+                    if check_input_is_optimizable_path(env_input):
+                        optimized_paths.append(optimize_path_compatibility(env_input))
+                    else:
+                        optimized_paths.append(env_input)
                 optimized_env[env_key] = ";".join(optimized_paths)
             else:
                 # Optimize the single path
-                optimized_env[env_key] = optimize_path_compatibility(env_value)
+                if check_input_is_optimizable_path(env_value):
+                    optimized_env[env_key] = optimize_path_compatibility(env_value)
+                else:
+                    optimized_env[env_key] = env_value
 
         # Update the launch context with the optimized environment
         self.launch_context.kwargs['env'] = optimized_env
