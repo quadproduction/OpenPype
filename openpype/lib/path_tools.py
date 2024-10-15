@@ -263,16 +263,30 @@ def get_last_version_from_path(path_dir, filter):
     return None
 
 
-def check_input_is_optimizable_path(input_path):
-    # Expand environment variables and user home path
-    filepath = os.path.expandvars(input_path)
-    filepath = os.path.expanduser(filepath)
+def check_input_is_optimizable_path(input):
+    if not input:
+        return False
 
-    # Check valid Windows path (drive letters and network paths)
-    windows_path_regex = r'^[a-zA-Z]:\\|^\\\\'
-    if re.match(windows_path_regex, filepath):
-        return filepath
-    return None
+    # Skip if input contains template path syntax: {template_var}
+    if re.search(r'{[\w.-]+}', input):
+        return False
+
+    # Expand environment variables and user home in the input element
+    input_expanded = os.path.expandvars(input)
+    input_expanded = os.path.expanduser(input_expanded)
+
+    low_platform = platform.system().lower()
+    # Check if input is a valid path according to the platform
+    if low_platform == "windows":
+        # Match path with drive letter or network syntax
+        # Examples: C:/blabla , D:\blabla , //blabla , \\blabla
+        path_regex = r'^([a-zA-Z]:[/\\]|^[/\\]{2}).+$'
+    else:
+        # Unix (MacOS or Linux)
+        # Examples: /blabla , ///blabla
+        path_regex = r'^/(//)?.+$'
+
+    return True if re.match(path_regex, input_expanded) else False
 
 
 def optimize_path_compatibility(input_string):
@@ -284,19 +298,18 @@ def optimize_path_compatibility(input_string):
     if any(char in input_string for char in '{}'):
         return input_string
 
-    filepath = check_input_is_optimizable_path(input_string)
-    if not filepath:
+    if not check_input_is_optimizable_path(input_string):
         return input_string
 
     try:
-        workfile_path = Path(filepath)
+        workfile_path = Path(input_string)
         workfile_path.parent.mkdir(parents=True, exist_ok=True)
     except (PermissionError, OSError):
-         return filepath
+         return input_string
 
     if 'win' not in sys.platform:
         log.info("improve_compatibility: nothing done, only applicable for Windows.")
-        return filepath
+        return input_string
 
     # Windows-specific logic to convert the filepath to its short path form.
     _GetShortPathNameW = ctypes.windll.kernel32.GetShortPathNameW
