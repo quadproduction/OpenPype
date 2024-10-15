@@ -1,9 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="opwizzalt_prelaunch" type="PowerShellRunType" factoryName="PowerShell" scriptUrl="C:\prod\softprod\tools\pipeline\windows\quad_pre_run.ps1" scriptParameters="-wizz-alt" executablePath="C:\windows\system32\WindowsPowerShell\v1.0\powershell.exe">
-    <envs>
-      <env name="PYTHONUNBUFFERED" value="1" />
-      <env name="_INSIDE_OPENPYPE_TOOL" value="1" />
-    </envs>
-    <method v="2" />
-  </configuration>
-</component>

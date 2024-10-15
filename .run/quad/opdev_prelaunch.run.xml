@@ -1,9 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="opdev_prelaunch" type="PowerShellRunType" factoryName="PowerShell" scriptUrl="C:\prod\softprod\tools\pipeline\windows\quad_pre_run.ps1" scriptParameters="-dev" executablePath="C:\windows\system32\WindowsPowerShell\v1.0\powershell.exe">
-    <envs>
-      <env name="PYTHONUNBUFFERED" value="1" />
-      <env name="_INSIDE_OPENPYPE_TOOL" value="1" />
-    </envs>
-    <method v="2" />
-  </configuration>
-</component>
