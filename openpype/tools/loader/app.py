@@ -6,7 +6,7 @@ from qtpy import QtWidgets, QtCore
 from openpype.client import get_projects, get_project
 from openpype import style
 from openpype.lib import register_event_callback
-from openpype.settings import get_project_settings
+from openpype.widgets import BaseToolWindow
 from openpype.pipeline import (
     install_openpype_plugins,
     legacy_io,
@@ -30,24 +30,6 @@ from openpype.modules import ModulesManager
 
 module = sys.modules[__name__]
 module.window = None
-
-
-class BaseToolWindow(QtWidgets.QDialog):
-    def __init__(self, parent=None):
-        self.project_name = legacy_io.active_project()
-
-        # set a default value before trying to retrieve the value in the settings
-        self.window_stays_on_top = False
-
-        if self.project_name:
-            settings = get_project_settings(self.project_name)
-            self.window_stays_on_top = settings["global"].get("windows_stays_on_top", True)
-
-        if self.window_stays_on_top:
-            # To be able to activate the Stays On top feature, the window need have no parent.
-            parent = None
-
-        super().__init__(parent)
 
 
 class LoaderWindow(BaseToolWindow):
@@ -213,7 +195,6 @@ class LoaderWindow(BaseToolWindow):
         self._first_show = True
 
         register_event_callback("taskChanged", self.on_context_task_change)
-        self.show()
 
     def resizeEvent(self, event):
         super(LoaderWindow, self).resizeEvent(event)

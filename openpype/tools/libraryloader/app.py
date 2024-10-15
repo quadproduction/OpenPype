@@ -5,6 +5,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 from openpype import style
 from openpype.client import get_projects, get_project
 from openpype.pipeline import AvalonMongoDB
+from openpype.widgets import BaseToolWindow
 from openpype.tools.utils import lib as tools_lib
 from openpype.tools.loader.widgets import (
     ThumbnailWidget,
@@ -21,7 +22,7 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class LibraryLoaderWindow(QtWidgets.QDialog):
+class LibraryLoaderWindow(BaseToolWindow):
     """Asset library loader interface"""
 
     tool_title = "Library Loader 0.5"
@@ -37,7 +38,7 @@ class LibraryLoaderWindow(QtWidgets.QDialog):
         # Window modifications
         self.setWindowTitle(self.tool_title)
         window_flags = QtCore.Qt.Window
-        if not parent:
+        if self.window_stays_on_top:
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
         self.setWindowFlags(window_flags)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)

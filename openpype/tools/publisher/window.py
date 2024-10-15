@@ -9,6 +9,7 @@ from openpype import (
     resources,
     style
 )
+from openpype.widgets import BaseToolWindow
 from openpype.tools.utils import (
     ErrorMessageBox,
     PlaceholderLineEdit,
@@ -40,7 +41,7 @@ from .widgets import (
 )
 
 
-class PublisherWindow(QtWidgets.QDialog):
+class PublisherWindow(BaseToolWindow):
     """Main window of publisher."""
     default_width = 1300
     default_height = 800
@@ -60,7 +61,7 @@ class PublisherWindow(QtWidgets.QDialog):
         if reset_on_show is None:
             reset_on_show = True
 
-        if parent is None:
+        if self.window_stays_on_top:
             on_top_flag = QtCore.Qt.WindowStaysOnTopHint
         else:
             on_top_flag = QtCore.Qt.Dialog

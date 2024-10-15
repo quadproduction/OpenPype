@@ -1,5 +1,5 @@
 from qtpy import QtWidgets, QtCore, QtGui
-
+from openpype.widgets import BaseToolWindow
 from openpype.style import (
     load_stylesheet,
     app_icon_path
@@ -21,7 +21,7 @@ class ToolButton(QtWidgets.QPushButton):
         self.triggered.emit(self._identifier)
 
 
-class ExperimentalToolsDialog(QtWidgets.QDialog):
+class ExperimentalToolsDialog(BaseToolWindow):
     refresh_interval = 3000
 
     def __init__(self, parent=None):
@@ -30,6 +30,11 @@ class ExperimentalToolsDialog(QtWidgets.QDialog):
         icon = QtGui.QIcon(app_icon_path())
         self.setWindowIcon(icon)
         self.setStyleSheet(load_stylesheet())
+
+        if self.window_stays_on_top:
+            self.setWindowFlags(
+                self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
+            )
 
         # Widgets for cases there are not available experimental tools
         empty_widget = QtWidgets.QWidget(self)

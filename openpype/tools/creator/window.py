@@ -8,6 +8,7 @@ from openpype.client import get_asset_by_name, get_subsets
 from openpype import style
 from openpype.settings import get_current_project_settings
 from openpype.tools.utils.lib import qt_app_context
+from openpype.widgets import BaseToolWindow
 from openpype.pipeline import (
     get_current_project_name,
     get_current_asset_name,
@@ -35,12 +36,12 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class CreatorWindow(QtWidgets.QDialog):
+class CreatorWindow(BaseToolWindow):
     def __init__(self, parent=None):
         super(CreatorWindow, self).__init__(parent)
         self.setWindowTitle("Instance Creator")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
-        if not parent:
+        if self.window_stays_on_top:
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )

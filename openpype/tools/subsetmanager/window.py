@@ -5,6 +5,7 @@ from qtpy import QtWidgets, QtCore
 import qtawesome
 
 from openpype import style
+from openpype.widgets import BaseToolWindow
 from openpype.pipeline import registered_host
 from openpype.tools.utils import PlaceholderLineEdit
 from openpype.tools.utils.lib import (
@@ -23,12 +24,12 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class SubsetManagerWindow(QtWidgets.QDialog):
+class SubsetManagerWindow(BaseToolWindow):
     def __init__(self, parent=None):
         super(SubsetManagerWindow, self).__init__(parent=parent)
         self.setWindowTitle("Subset Manager 0.1")
         self.setObjectName("SubsetManager")
-        if not parent:
+        if self.window_stays_on_top:
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )

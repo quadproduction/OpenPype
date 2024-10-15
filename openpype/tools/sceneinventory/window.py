@@ -6,6 +6,7 @@ import qtawesome
 
 from openpype import style
 from openpype.client import get_projects
+from openpype.widgets import BaseToolWindow
 from openpype.pipeline import legacy_io
 from openpype.tools.utils.delegates import VersionDelegate
 from openpype.tools.utils.lib import (
@@ -26,13 +27,13 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class SceneInventoryWindow(QtWidgets.QDialog):
+class SceneInventoryWindow(BaseToolWindow):
     """Scene Inventory window"""
 
     def __init__(self, parent=None):
         super(SceneInventoryWindow, self).__init__(parent)
 
-        if not parent:
+        if self.window_stays_on_top:
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
