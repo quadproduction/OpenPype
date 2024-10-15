@@ -9,7 +9,6 @@ from openpype_modules.ftrack.lib import (
     CUST_ATTR_ID_KEY,
     CUST_ATTR_GROUP,
     CUST_ATTR_TOOLS,
-    CUST_ATTR_APPLICATIONS,
     CUST_ATTR_INTENT,
     FPS_KEYS,
 
@@ -18,7 +17,7 @@ from openpype_modules.ftrack.lib import (
     tool_definitions_from_app_manager
 )
 
-from openpype.settings import get_system_settings
+from openpype.settings import get_system_settings, APPS_SETTINGS_KEY, MODULES_SETTINGS_KEY
 from openpype.lib import ApplicationManager
 
 """
@@ -226,7 +225,7 @@ class CustomAttributes(BaseAction):
 
         self.groups = {}
 
-        self.ftrack_settings = get_system_settings()["modules"]["ftrack"]
+        self.ftrack_settings = get_system_settings()[MODULES_SETTINGS_KEY]["ftrack"]
         self.attrs_settings = self.prepare_attribute_settings()
 
     def prepare_attribute_settings(self):
@@ -380,7 +379,7 @@ class CustomAttributes(BaseAction):
 
         applications_custom_attr_data = {
             "label": "Applications",
-            "key": CUST_ATTR_APPLICATIONS,
+            "key": APPS_SETTINGS_KEY,
             "type": "enumerator",
             "entity_type": "show",
             "group": CUST_ATTR_GROUP,

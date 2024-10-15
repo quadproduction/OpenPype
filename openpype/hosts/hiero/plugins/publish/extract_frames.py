@@ -40,14 +40,14 @@ class ExtractFrames(publish.Extractor):
 
             ext = os.path.splitext(input_path)[1][1:]
             if ext in self.movie_extensions:
-                args.extend(["--subimage", str(int(input_frame))])
+                args.extend([f"--subimage {int(input_frame)}"])
             else:
-                args.extend(["--frames", str(int(input_frame))])
+                args.extend([f"--frames {int(input_frame)}"])
 
             if ext == "exr":
-                args.extend(["--powc", "0.45,0.45,0.45,1.0"])
+                args.extend(["--powc 0.45,0.45,0.45,1.0"])
 
-            args.extend([input_path, "-o", output_path])
+            args.extend([f"{input_path} -o {output_path}"])
             output = run_subprocess(args)
 
             failed_output = "oiiotool produced no output."

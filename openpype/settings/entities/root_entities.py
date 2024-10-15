@@ -696,13 +696,12 @@ class ProjectSettings(RootEntity):
     def get_entity_from_path(self, path):
         path_parts = path.split("/")
         first_part = path_parts[0]
-        # TODO replace with constants
-        if first_part == "system_settings":
+        if first_part == SYSTEM_SETTINGS_KEY:
             output = self.system_settings_entity
             path_parts.pop(0)
         else:
             output = self
-            if first_part == "project_settings":
+            if first_part == PROJECT_SETTINGS_KEY:
                 path_parts.pop(0)
 
         for path_part in path_parts:

@@ -9,6 +9,7 @@ import six
 from bson.objectid import ObjectId
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.client.operations import (
     OperationsSession,
     new_subset_document,
@@ -413,7 +414,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
         if not is_symlink_mode_enable:
             return FileTransaction.MODE_COPY
 
-        pattern = instance.context.data["project_settings"]["global"]["tools"]["publish"]["symlink"][
+        pattern = instance.context.data[PROJECT_SETTINGS_KEY]["global"]["tools"]["publish"]["symlink"][
             "file_regex_pattern"]
         if not pattern:
             is_valid_symlink_path = True
@@ -950,7 +951,7 @@ class IntegrateAsset(pyblish.api.InstancePlugin):
             family,
             task_name=task_info.get("name"),
             task_type=task_info.get("type"),
-            project_settings=context.data["project_settings"],
+            project_settings=context.data[PROJECT_SETTINGS_KEY],
             logger=self.log
         )
 
