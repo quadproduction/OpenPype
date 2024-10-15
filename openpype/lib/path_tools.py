@@ -294,10 +294,6 @@ def optimize_path_compatibility(input_string):
     if not input_string:
         return input_string
 
-    # Check if path contains bracket (template path), return original value
-    if any(char in input_string for char in '{}'):
-        return input_string
-
     if not check_input_is_optimizable_path(input_string):
         return input_string
 
