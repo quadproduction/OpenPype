@@ -1,6 +1,7 @@
 import os
 
 import pyblish.api
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline.create import get_subset_name
 
 
@@ -77,7 +78,7 @@ class CollectWorkfile(pyblish.api.ContextPlugin):
             context.data["assetEntity"],
             context.data["anatomyData"]["project"]["name"],
             host_name=context.data["hostName"],
-            project_settings=context.data["project_settings"]
+            project_settings=context.data[PROJECT_SETTINGS_KEY]
         )
         # Create instance
         instance = context.create_instance(subset)

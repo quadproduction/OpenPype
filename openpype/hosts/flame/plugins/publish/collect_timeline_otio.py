@@ -1,5 +1,6 @@
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 import openpype.hosts.flame.api as opfapi
 from openpype.hosts.flame.otio import flame_export
 from openpype.pipeline.create import get_subset_name
@@ -30,7 +31,7 @@ class CollecTimelineOTIO(pyblish.api.ContextPlugin):
             asset_doc,
             context.data["projectName"],
             context.data["hostName"],
-            project_settings=context.data["project_settings"]
+            project_settings=context.data[PROJECT_SETTINGS_KEY]
         )
 
         # adding otio timeline to context

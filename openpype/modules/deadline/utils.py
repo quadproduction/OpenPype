@@ -7,12 +7,12 @@ from openpype.pipeline.context_tools import (
     get_current_task_name
 )
 from openpype.settings.lib import load_openpype_default_settings
-from openpype.settings import get_current_project_settings
+from openpype.settings import get_current_project_settings, PROJECT_SETTINGS_KEY
 from openpype.pipeline.publish import OpenPypePyblishPluginMixin
 
 
 class DeadlineDefaultJobAttrs:
-    global_default_attrs_values = load_openpype_default_settings()["project_settings"]["deadline"]\
+    global_default_attrs_values = load_openpype_default_settings()[PROJECT_SETTINGS_KEY]["deadline"]\
                                     ["JobAttrsValues"]["DefaultValues"]
     deadline_attrs_names = ["pool", "pool_secondary", "priority", "limit_machine", "limits_plugin"]
 

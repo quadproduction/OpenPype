@@ -195,6 +195,13 @@ else:
     ssl_cert_file = certifi.where()
     os.environ["SSL_CERT_FILE"] = ssl_cert_file
 
+if "--zxp-ignore-update" in sys.argv:
+    os.environ["OPENPYPE_IGNORE_ZXP_UPDATE"] = "1"
+    sys.argv.remove("--zxp-ignore-update")
+elif os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE") != "1":
+    os.environ.pop("OPENPYPE_IGNORE_ZXP_UPDATE", None)
+
+
 if "--headless" in sys.argv:
     os.environ["OPENPYPE_HEADLESS_MODE"] = "1"
     sys.argv.remove("--headless")
@@ -1178,8 +1185,6 @@ def boot():
 
     # Do the program display popups to the users regarding updates or incompatibilities
     os.environ["OPENPYPE_VERSION_CHECK_POPUP"] = "False" if "disable_version_popup" in commands else "True"
-    _print(">>> update ZXP extensions ...")
-    update_zxp_extensions(openpype_version)
     _print(">>> loading environments ...")
     # Avalon environments must be set before avalon module is imported
     _print("  - for Avalon ...")
@@ -1188,6 +1193,11 @@ def boot():
     set_openpype_global_environments()
     _print("  - for modules ...")
     set_modules_environments()
+    if os.getenv("OPENPYPE_IGNORE_ZXP_UPDATE"):
+        _print(">>> skip ZXP extensions ...")
+    else:
+        _print(">>> check ZXP extensions ...")
+        update_zxp_extensions(openpype_version)
 
     assert openpype_version, "Version path not defined."
 

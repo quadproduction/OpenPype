@@ -7,6 +7,8 @@ import platform
 from datetime import datetime
 from abc import ABCMeta, abstractmethod
 
+from openpype.settings import GENERAL_SETTINGS_KEY
+
 # TODO Use pype igniter logic instead of using duplicated code
 # disable lru cache in Python 2
 try:
@@ -608,7 +610,7 @@ def get_openpype_username():
         local_settings = get_local_settings()
         username = (
             local_settings
-            .get("general", {})
+            .get(GENERAL_SETTINGS_KEY, {})
             .get("username")
         )
         if not username:
@@ -618,7 +620,7 @@ def get_openpype_username():
 
 def is_admin_password_required(admin_bypass_enabled=True):
     system_settings = get_system_settings()
-    password = system_settings["general"].get("admin_password")
+    password = system_settings[GENERAL_SETTINGS_KEY].get("admin_password")
     if not password:
         return False
 
@@ -634,7 +636,7 @@ def is_admin_password_required(admin_bypass_enabled=True):
     # admin_bypass_enabled, if set to False, means password is required even for admins
     if admin_bypass_enabled:
         local_settings = get_local_settings()
-        is_admin = local_settings.get("general", {}).get("is_admin", False)
+        is_admin = local_settings.get(GENERAL_SETTINGS_KEY, {}).get("is_admin", False)
         if is_admin:
             return False
     return True

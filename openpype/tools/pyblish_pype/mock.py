@@ -1,8 +1,9 @@
 import os
 import time
-import subprocess
 
 import pyblish.api
+
+from openpype.lib import open_in_explorer
 
 
 class MyAction(pyblish.api.Action):
@@ -460,7 +461,7 @@ class LaunchExplorerAction(pyblish.api.Action):
     def process(self, context):
         cwd = os.getcwd()
         self.log.info("Opening %s in Explorer" % cwd)
-        result = subprocess.call("start .", cwd=cwd, shell=True)
+        result = open_in_explorer(cwd)
         self.log.debug(result)
 
 

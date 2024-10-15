@@ -7,6 +7,7 @@ import requests
 
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import legacy_io
 from openpype.tests.lib import is_in_tests
 from openpype.lib import is_running_from_build
@@ -68,7 +69,7 @@ class HoudiniSubmitPublishDeadline(pyblish.api.ContextPlugin, DeadlineDefaultJob
         project = context.data["projectEntity"]
         code = project["data"].get("code", project["name"])
 
-        project_settings = context.data["project_settings"]
+        project_settings = context.data[PROJECT_SETTINGS_KEY]
         profile = get_deadline_job_profile(project_settings, self.hosts[0])
         self.set_job_attrs(profile)
 

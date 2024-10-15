@@ -19,6 +19,8 @@ from openpype.modules import OpenPypeModule, ITrayAction, IPluginPaths
 from openpype.settings import (
     get_project_settings,
     get_system_settings,
+    MODULES_SETTINGS_KEY,
+    PROJECTS_SETTINGS_KEY
 )
 from openpype.lib import Logger, get_local_site_id
 from openpype.pipeline import AvalonMongoDB, Anatomy
@@ -750,7 +752,7 @@ class SyncServerModule(OpenPypeModule, ITrayAction, IPluginPaths):
         if local_settings is None:
             local_settings = get_local_settings()
 
-        local_project_settings = local_settings.get("projects")
+        local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY)
         project_settings = get_project_settings(project_name)
         sync_server_settings = project_settings["global"]["sync_server"]
         if not sync_server_settings["enabled"]:
@@ -804,7 +806,7 @@ class SyncServerModule(OpenPypeModule, ITrayAction, IPluginPaths):
         if not local_settings:
             return
 
-        local_project_settings = local_settings.get("projects") or {}
+        local_project_settings = local_settings.get(PROJECTS_SETTINGS_KEY) or {}
 
         # Check for roots existence in local settings first
         roots_project_locals = (
@@ -1493,7 +1495,7 @@ class SyncServerModule(OpenPypeModule, ITrayAction, IPluginPaths):
     @property
     def sync_system_settings(self):
         if self._sync_system_settings is None:
-            self._sync_system_settings = get_system_settings()["modules"].\
+            self._sync_system_settings = get_system_settings()[MODULES_SETTINGS_KEY].\
                 get("sync_server")
 
         return self._sync_system_settings

@@ -13,6 +13,7 @@ from openpype import AYON_SERVER_ENABLED
 from openpype.client import (
     get_last_version_by_subset_name,
 )
+from openpype.settings import PROJECT_SETTINGS_KEY
 from openpype.pipeline import publish, legacy_io
 from openpype.lib import EnumDef
 from openpype.tests.lib import is_in_tests
@@ -568,7 +569,7 @@ class ProcessSubmittedJobOnFarm(pyblish.api.InstancePlugin,
                     task_type=template_data["task"]["type"],
                     family="render",
                     subset=subset,
-                    project_settings=context.data["project_settings"]
+                    project_settings=context.data[PROJECT_SETTINGS_KEY]
                 )
 
         host_name = context.data["hostName"]

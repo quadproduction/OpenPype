@@ -1,5 +1,7 @@
 import pyblish.api
 
+from openpype.settings import PROJECT_SETTINGS_KEY
+
 
 class CollectHandles(pyblish.api.InstancePlugin):
     """
@@ -24,7 +26,7 @@ class CollectHandles(pyblish.api.InstancePlugin):
 
     def process(self, instance):
         # Check the include handle settings of the actual project
-        include_handles_settings = instance.context.data["project_settings"]["maya"]["include_handles"]
+        include_handles_settings = instance.context.data[PROJECT_SETTINGS_KEY]["maya"]["include_handles"]
         current_task = instance.context.data["anatomyData"]["task"]["name"]
         include_task = include_handles_settings["include_handles_default"]
 
