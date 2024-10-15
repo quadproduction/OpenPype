@@ -2,16 +2,13 @@ import os
 import json
 import tempfile
 import logging
-
 import requests
-
 import pyblish.api
-
 from openpype.client import get_asset_by_name
 from openpype.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
 from openpype.hosts.tvpaint import TVPAINT_ROOT_DIR
 from openpype.settings import get_current_project_settings
-from openpype.lib import register_event_callback
+from openpype.lib import register_event_callback, optimize_path_compatibility
 from openpype.pipeline import (
     legacy_io,
     register_loader_plugin_path,
@@ -145,8 +142,9 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
     # --- Workfile ---
     def open_workfile(self, filepath):
+        filepath = optimize_path_compatibility(filepath).replace("\\", "/")
         george_script = "tv_LoadProject '\"'\"{}\"'\"'".format(
-            filepath.replace("\\", "/")
+            filepath
         )
         return execute_george_through_file(george_script)
 
@@ -155,9 +153,9 @@ class TVPaintHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
             filepath = self.get_current_workfile()
         context = get_global_context()
         save_current_workfile_context(context)
-
         # Execute george script to save workfile.
-        george_script = "tv_SaveProject {}".format(filepath.replace("\\", "/"))
+        filepath = optimize_path_compatibility(filepath).replace("\\", "/")
+        george_script = u"tv_SaveProject {}".format(filepath)
         return execute_george(george_script)
 
     def work_root(self, session):
@@ -310,7 +308,7 @@ def get_workfile_metadata_string_for_keys(metadata_keys):
         mode="w", prefix="a_tvp_", suffix=".txt", delete=False
     )
     output_file.close()
-    output_filepath = output_file.name.replace("\\", "/")
+    output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
 
     george_script_parts = []
     george_script_parts.append(
