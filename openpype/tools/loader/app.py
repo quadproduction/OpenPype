@@ -6,6 +6,7 @@ from qtpy import QtWidgets, QtCore
 from openpype.client import get_projects, get_project
 from openpype import style
 from openpype.lib import register_event_callback
+from openpype.settings import get_project_settings
 from openpype.pipeline import (
     install_openpype_plugins,
     legacy_io,
@@ -31,7 +32,25 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class LoaderWindow(QtWidgets.QDialog):
+class BaseToolWindow(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        self.project_name = legacy_io.active_project()
+
+        # set a default value before trying to retrieve the value in the settings
+        self.window_stays_on_top = False
+
+        if self.project_name:
+            settings = get_project_settings(self.project_name)
+            self.window_stays_on_top = settings["global"].get("windows_stays_on_top", True)
+
+        if self.window_stays_on_top:
+            # To be able to activate the Stays On top feature, the window need have no parent.
+            parent = None
+
+        super().__init__(parent)
+
+
+class LoaderWindow(BaseToolWindow):
     """Asset loader interface"""
 
     tool_name = "loader"
@@ -39,10 +58,10 @@ class LoaderWindow(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super(LoaderWindow, self).__init__(parent)
+
         title = "Asset Loader 2.1"
-        project_name = legacy_io.active_project()
-        if project_name:
-            title += " - {}".format(project_name)
+        if self.project_name:
+            title += " - {}".format(self.project_name)
         self.setWindowTitle(title)
 
         # Groups config
@@ -51,7 +70,7 @@ class LoaderWindow(QtWidgets.QDialog):
 
         # Enable minimize and maximize for app
         window_flags = QtCore.Qt.Window
-        if not parent:
+        if self.window_stays_on_top:
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
         self.setWindowFlags(window_flags)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -194,6 +213,7 @@ class LoaderWindow(QtWidgets.QDialog):
         self._first_show = True
 
         register_event_callback("taskChanged", self.on_context_task_change)
+        self.show()
 
     def resizeEvent(self, event):
         super(LoaderWindow, self).resizeEvent(event)

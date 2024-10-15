@@ -6,6 +6,11 @@
     "is_file": true,
     "children": [
         {
+            "type": "boolean",
+            "key": "windows_stays_on_top",
+            "label": "Windows Stays On Top"
+        },
+        {
             "type": "dict",
             "key": "version_start_category",
             "label": "Version Start",
