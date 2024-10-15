@@ -37,7 +37,12 @@ from openpype.settings.entities.op_version_entity import (
     OpenPypeVersionInput
 )
 
-from openpype.settings import SaveWarningExc
+from openpype.settings import (
+    SaveWarningExc,
+    PROJECT_ANATOMY_KEY,
+    PROJECT_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
+)
 from openpype.settings.lib import (
     get_system_last_saved_info,
     get_project_last_saved_info,
@@ -105,6 +110,81 @@ class IgnoreInputChangesObj:
         self._ignore_changes = ignore_changes
         if not ignore_changes:
             self.top_widget.hierarchical_style_update()
+
+
+class StandaloneCategoryWidget(QtWidgets.QWidget):
+
+    def __init__(self, content_widget, content_layout, parent=None):
+        super(StandaloneCategoryWidget, self).__init__(parent)
+
+        self.content_widget = content_widget
+        self.content_layout = content_layout
+        self._state = CategoryState.Idle
+        self.ignore_input_changes = IgnoreInputChangesObj(self)
+
+    @staticmethod
+    def create_ui_for_entity(category_widget, entity, entity_widget):
+        return SettingsCategoryWidget.create_ui_for_entity(category_widget, entity, entity_widget)
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self.set_state(value)
+
+    def set_state(self, state):
+        if self._state == state:
+            return
+
+        self._state = state
+
+    @property
+    def is_modifying_defaults(self):
+        return False
+
+    def scroll_to(self, widget):
+        pass
+
+    def go_to_fullpath(self, full_path):
+        """Full path of settings entity which can lead to different category.
+
+        Args:
+            full_path (str): Full path to settings entity. It is expected that
+                path starts with category name ("system_setting" etc.).
+        """
+        pass
+
+    def set_path(self, path):
+        """Called from clicked widget."""
+        pass
+
+    def hierarchical_style_update(self):
+        pass
+
+    def add_widget_to_layout(self, widget, label_widget=None):
+        if label_widget:
+            raise NotImplementedError(
+                "`add_widget_to_layout` on Category item can't accept labels"
+            )
+        self.content_layout.addWidget(widget, 0)
+
+    @contextlib.contextmanager
+    def working_state_context(self):
+        self.set_state(CategoryState.Working)
+        yield
+        self.set_state(CategoryState.Idle)
+
+    def add_children_gui(self):
+        for child_obj in self.entity.children:
+            item = self.create_ui_for_entity(self, child_obj, self)
+            self.input_fields.append(item)
+
+        # Add spacer to stretch children guis
+        self.content_layout.addWidget(
+            QtWidgets.QWidget(self.content_widget), 1
+        )
 
 
 class SettingsCategoryWidget(QtWidgets.QWidget):
@@ -889,7 +969,7 @@ class SystemWidget(SettingsCategoryWidget):
         return self._last_saved_info == last_saved_info
 
     def contain_category_key(self, category):
-        if category == "system_settings":
+        if category == SYSTEM_SETTINGS_KEY:
             return True
         return False
 
@@ -960,14 +1040,14 @@ class ProjectWidget(SettingsCategoryWidget):
         return self._last_saved_info == last_saved_info
 
     def contain_category_key(self, category):
-        if category in ("project_settings", "project_anatomy"):
+        if category in (PROJECT_SETTINGS_KEY, PROJECT_ANATOMY_KEY):
             return True
         return False
 
     def set_category_path(self, category, path):
         if path:
             path_items = path.split("/")
-            if path_items[0] not in ("project_settings", "project_anatomy"):
+            if path_items[0] not in (PROJECT_SETTINGS_KEY, PROJECT_ANATOMY_KEY):
                 path = "/".join([category, path])
         else:
             path = category

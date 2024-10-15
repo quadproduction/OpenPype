@@ -690,7 +690,7 @@ class ExtractBurnin(publish.Extractor):
         burnin_data.update({
             "frame_start": burnin_frame_start,
             "frame_end": burnin_frame_end,
-            "duration": burnin_duration,
+            "duration": burnin_duration
         })
         temp_data["duration"] = burnin_duration
 

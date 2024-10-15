@@ -11,7 +11,7 @@ import pyblish.api
 from openpype.lib import requests_post
 from openpype.hosts.maya.api import lib
 from openpype.pipeline import legacy_io
-from openpype.settings import get_system_settings
+from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 
 
 # mapping between Maya renderer names and Muster template ids
@@ -25,7 +25,7 @@ def _get_template_id(renderer):
     :rtype: int
     """
 
-    templates = get_system_settings()["modules"]["muster"]["templates_mapping"]
+    templates = get_system_settings()[MODULES_SETTINGS_KEY]["muster"]["templates_mapping"]
     if not templates:
         raise RuntimeError(("Muster template mapping missing in "
                             "pype-settings"))

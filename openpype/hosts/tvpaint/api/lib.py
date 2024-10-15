@@ -51,8 +51,7 @@ def parse_layers_data(data):
             "group_id": int(group_id),
             "visible": visible == "ON",
             "position": int(position),
-            # Opacity from 'tv_layerinfo' is always set to '0' so it's unusable
-            # "opacity": int(opacity),
+            "opacity": get_layer_opacity(layer_id),
             "name": name,
             "type": layer_type,
             "frame_start": int(frame_start),
@@ -541,3 +540,16 @@ def get_scene_bg_color(communicator=None):
     if not data:
         return None
     return data.split(" ")
+
+
+def get_layer_opacity(layer_id):
+    """Return the opacity set on layer.
+    layer_id(int): id of the layer to get the opacity
+
+    Returns:
+        int: Layer Opacity (0-100).
+    """
+    execute_george("tv_layerset {}".format(layer_id))
+    opacity = execute_george("tv_layerdensity")
+    execute_george("tv_layerdensity {}".format(opacity))
+    return int(opacity)

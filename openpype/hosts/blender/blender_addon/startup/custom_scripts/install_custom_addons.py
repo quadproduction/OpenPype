@@ -5,13 +5,13 @@ import argparse
 import logging
 import subprocess
 from pathlib import Path
-from openpype.settings import get_system_settings
+from openpype.settings import get_system_settings, MODULES_SETTINGS_KEY
 
 
 def execute():
     blender_addons_folder_path = get_addons_folder_path()
     system_settings = get_system_settings()
-    modules_settings = system_settings["modules"]
+    modules_settings = system_settings[MODULES_SETTINGS_KEY]
     if modules_settings["deadline"].get("enabled", False):
         install_deadline_addon(blender_addons_folder_path)
     enable_user_addons(blender_addons_folder_path)
@@ -41,16 +41,11 @@ def install_deadline_addon(blender_addons_folder_path):
         overwrite=True,
         filepath=deadline_addon_path
     )
-    deadline_addon_name = Path(deadline_addon_file_name).stem
     logging.info("Deadline addon has been correctly installed.")
 
 
 def get_python_addon_file(path):
     return next(iter(_list_python_files_in_dir(path)))
-
-
-def get_python_addons_files(path):
-    return _list_python_files_in_dir(path)
 
 
 def _list_python_files_in_dir(path):
@@ -83,7 +78,7 @@ def get_addons_folder_path():
 
 
 def enable_user_addons(blender_addons_folder_path):
-    for addon in get_python_addons_files(blender_addons_folder_path):
+    for addon in _list_python_files_in_dir(blender_addons_folder_path):
         bpy.ops.preferences.addon_enable(module=Path(addon).stem)
 
 

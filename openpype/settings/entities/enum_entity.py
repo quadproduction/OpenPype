@@ -7,7 +7,12 @@ from .input_entities import InputEntity
 from .exceptions import EntitySchemaError
 from .lib import NOT_SET, STRING_TYPE
 
-from openpype.settings import get_system_settings
+from openpype.settings import (
+    get_system_settings,
+    APPS_SETTINGS_KEY,
+    MODULES_SETTINGS_KEY,
+    SYSTEM_SETTINGS_KEY
+)
 
 
 class BaseEnumEntity(InputEntity):
@@ -280,11 +285,11 @@ class AppsEnumEntity(BaseEnumEntity):
         self.placeholder = None
 
     def _get_enum_values(self):
-        system_settings_entity = self.get_entity_from_path("system_settings")
+        system_settings_entity = self.get_entity_from_path(SYSTEM_SETTINGS_KEY)
 
         valid_keys = set()
         enum_items_list = []
-        applications_entity = system_settings_entity["applications"]
+        applications_entity = system_settings_entity[APPS_SETTINGS_KEY]
         app_entities = {}
         additional_app_names = set()
         additional_apps_entity = None
@@ -361,7 +366,7 @@ class ToolsEnumEntity(BaseEnumEntity):
         self.placeholder = None
 
     def _get_enum_values(self):
-        system_settings_entity = self.get_entity_from_path("system_settings")
+        system_settings_entity = self.get_entity_from_path(SYSTEM_SETTINGS_KEY)
 
         valid_keys = set()
         enum_items_list = []
@@ -564,7 +569,7 @@ class DeadlineLimitsPluginEnumEntity(BaseEnumEntity):
         # Import here to avoid circular import
         from openpype.modules.deadline import get_deadline_limits_plugin
 
-        modules_system_settings = get_system_settings()["modules"]
+        modules_system_settings = get_system_settings()[MODULES_SETTINGS_KEY]
         deadline_enabled = modules_system_settings["deadline"]["enabled"]
         if not deadline_enabled:
             return [], set()
@@ -654,7 +659,7 @@ class DeadlinePoolsEnumEntity(DynamicEnumEntity):
         # Import here to avoid circular import
         from openpype.pipeline.context_tools import _get_modules_manager
 
-        modules_system_settings = get_system_settings()["modules"]
+        modules_system_settings = get_system_settings()[MODULES_SETTINGS_KEY]
         deadline_enabled = modules_system_settings["deadline"]["enabled"]
         if not deadline_enabled:
             return [], set()

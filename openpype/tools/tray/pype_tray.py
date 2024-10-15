@@ -33,7 +33,9 @@ from openpype.settings import (
     get_system_settings,
     SystemSettings,
     ProjectSettings,
-    DefaultsNotDefined
+    DefaultsNotDefined,
+    GENERAL_SETTINGS_KEY,
+    MODULES_SETTINGS_KEY
 )
 from openpype.tools.utils import (
     WrappedCallbackItem,
@@ -340,9 +342,9 @@ class TrayManager:
         self.log = Logger.get_logger(self.__class__.__name__)
 
         system_settings = get_system_settings()
-        self.module_settings = system_settings["modules"]
+        self.module_settings = system_settings[MODULES_SETTINGS_KEY]
 
-        version_check_interval = system_settings["general"].get(
+        version_check_interval = system_settings[GENERAL_SETTINGS_KEY].get(
             "version_check_interval"
         )
         if version_check_interval is None:
@@ -474,7 +476,7 @@ class TrayManager:
 
         # Menu header
         system_settings = get_system_settings()
-        studio_name = system_settings["general"]["studio_name"]
+        studio_name = system_settings[GENERAL_SETTINGS_KEY]["studio_name"]
 
         header_label = QtWidgets.QLabel("OpenPype {}".format(studio_name))
         header_label.setStyleSheet(
