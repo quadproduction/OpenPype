@@ -6,6 +6,7 @@ import qtawesome
 
 from openpype import style
 from openpype.client import get_projects
+from openpype.widgets import BaseToolDialog
 from openpype.pipeline import legacy_io
 from openpype.tools.utils.delegates import VersionDelegate
 from openpype.tools.utils.lib import (
@@ -26,22 +27,20 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class SceneInventoryWindow(QtWidgets.QDialog):
+class SceneInventoryWindow(BaseToolDialog):
     """Scene Inventory window"""
 
     def __init__(self, parent=None):
         super(SceneInventoryWindow, self).__init__(parent)
 
-        if not parent:
+        if self.window_stays_on_top:
             self.setWindowFlags(
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
 
-        project_name = os.getenv("AVALON_PROJECT") or "<Project not set>"
-        self.setWindowTitle("Scene Inventory 1.0 - {}".format(project_name))
+        displayed_project_name = self.project_name or "<Project not set>"
+        self.setWindowTitle("Scene Inventory 1.0 - {}".format(displayed_project_name))
         self.setObjectName("SceneInventory")
-
-        self.resize(1100, 480)
 
         # region control
         filter_label = QtWidgets.QLabel("Search", self)
@@ -122,6 +121,8 @@ class SceneInventoryWindow(QtWidgets.QDialog):
         self._first_show = True
 
         family_config_cache.refresh()
+
+        self.resize(1100, 480)
 
     def showEvent(self, event):
         super(SceneInventoryWindow, self).showEvent(event)
