@@ -1,5 +1,5 @@
 from openpype.settings import get_project_settings
-from openpype.pipeline import legacy_io
+from openpype.pipeline import get_current_project_name
 from qtpy import QtWidgets, QtCore
 
 
@@ -7,7 +7,7 @@ class BaseToolMixin:
     def __init__(self, *args, **kwargs):
         (parent,) = args
 
-        self.project_name = legacy_io.active_project()
+        self.project_name = get_current_project_name()
 
         # set a default value before trying to retrieve the value in the settings
         self.window_stays_on_top = False

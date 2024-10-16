@@ -300,10 +300,6 @@ class Window(BaseToolWidget):
         self.raise_()
         self.activateWindow()
 
-    @property
-    def project_name(self):
-        return get_current_project_name()
-
     def showEvent(self, event):
         super(Window, self).showEvent(event)
         if self._first_show:

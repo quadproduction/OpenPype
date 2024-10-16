@@ -277,8 +277,7 @@ class LoaderWindow(BaseToolDialog):
         """Load assets from database"""
 
         # Ensure a project is loaded
-        project_name = legacy_io.active_project()
-        project_doc = get_project(project_name, fields=["_id"])
+        project_doc = get_project(self.project_name, fields=["_id"])
         assert project_doc, "Project was not found! This is a bug"
 
         self._assets_widget.refresh()

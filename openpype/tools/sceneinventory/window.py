@@ -38,8 +38,8 @@ class SceneInventoryWindow(BaseToolDialog):
                 self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
             )
 
-        project_name = os.getenv("AVALON_PROJECT") or "<Project not set>"
-        self.setWindowTitle("Scene Inventory 1.0 - {}".format(project_name))
+        displayed_project_name = self.project_name or "<Project not set>"
+        self.setWindowTitle("Scene Inventory 1.0 - {}".format(displayed_project_name))
         self.setObjectName("SceneInventory")
 
         # region control

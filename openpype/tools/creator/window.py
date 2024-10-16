@@ -10,7 +10,6 @@ from openpype.settings import get_current_project_settings
 from openpype.tools.utils.lib import qt_app_context
 from openpype.widgets import BaseToolDialog
 from openpype.pipeline import (
-    get_current_project_name,
     get_current_asset_name,
     get_current_task_name,
 )
@@ -221,12 +220,11 @@ class CreatorWindow(BaseToolDialog):
             self._set_valid_state(False)
             return
 
-        project_name = get_current_project_name()
         asset_doc = None
         if creator_plugin:
             # Get the asset from the database which match with the name
             asset_doc = get_asset_by_name(
-                project_name, asset_name, fields=["_id"]
+                self.project_name, asset_name, fields=["_id"]
             )
 
         # Get plugin
@@ -246,7 +244,7 @@ class CreatorWindow(BaseToolDialog):
 
         # Calculate subset name with Creator plugin
         subset_name = creator_plugin.get_subset_name(
-            user_input_text, task_name, asset_id, project_name
+            user_input_text, task_name, asset_id, self.project_name
         )
         # Force replacement of prohibited symbols
         # QUESTION should Creator care about this and here should be only
@@ -275,7 +273,7 @@ class CreatorWindow(BaseToolDialog):
 
         # Get all subsets of the current asset
         subset_docs = get_subsets(
-            project_name, asset_ids=[asset_id], fields=["name"]
+            self.project_name, asset_ids=[asset_id], fields=["name"]
         )
         existing_subset_names = {
             subset_doc["name"]
