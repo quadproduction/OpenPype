@@ -9,7 +9,7 @@ from openpype import (
     resources,
     style
 )
-from openpype.widgets import BaseToolWindow
+from openpype.widgets import BaseToolDialog
 from openpype.tools.utils import (
     ErrorMessageBox,
     PlaceholderLineEdit,
@@ -41,7 +41,7 @@ from .widgets import (
 )
 
 
-class PublisherWindow(BaseToolWindow):
+class PublisherWindow(BaseToolDialog):
     """Main window of publisher."""
     default_width = 1300
     default_height = 800
@@ -385,6 +385,8 @@ class PublisherWindow(BaseToolWindow):
         self._show_counter = 0
         self._window_is_visible = False
 
+        self.resize(self.default_width, self.default_height)
+
     @property
     def controller(self):
         return self._controller
@@ -489,7 +491,6 @@ class PublisherWindow(BaseToolWindow):
         )
 
     def _on_first_show(self):
-        self.resize(self.default_width, self.default_height)
         self.setStyleSheet(style.load_stylesheet())
         self._reset_on_show = self._reset_on_first_show
 

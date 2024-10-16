@@ -1,7 +1,8 @@
 from .password_dialog import PasswordDialog
-from .base_tool_window import BaseToolWindow
+from .tool_windows import BaseToolDialog, BaseToolWidget
 
 __all__ = (
     "PasswordDialog",
-    "BaseToolWindow"
+    "BaseToolDialog",
+    "BaseToolWidget"
 )

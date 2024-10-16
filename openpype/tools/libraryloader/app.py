@@ -5,7 +5,7 @@ from qtpy import QtWidgets, QtCore, QtGui
 from openpype import style
 from openpype.client import get_projects, get_project
 from openpype.pipeline import AvalonMongoDB
-from openpype.widgets import BaseToolWindow
+from openpype.widgets import BaseToolDialog
 from openpype.tools.utils import lib as tools_lib
 from openpype.tools.loader.widgets import (
     ThumbnailWidget,
@@ -22,7 +22,7 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class LibraryLoaderWindow(BaseToolWindow):
+class LibraryLoaderWindow(BaseToolDialog):
     """Asset library loader interface"""
 
     tool_title = "Library Loader 0.5"
@@ -188,6 +188,8 @@ class LibraryLoaderWindow(BaseToolWindow):
         self._message_label = message_label
         self._message_timer = message_timer
 
+        self.resize(1300, 700)
+
     def showEvent(self, event):
         super(LibraryLoaderWindow, self).showEvent(event)
         if self._first_show:
@@ -195,8 +197,6 @@ class LibraryLoaderWindow(BaseToolWindow):
             self.setStyleSheet(style.load_stylesheet())
             if self._sync_server_enabled:
                 self.resize(1800, 900)
-            else:
-                self.resize(1300, 700)
 
             tools_lib.center_window(self)
 

@@ -1,5 +1,5 @@
 from qtpy import QtWidgets, QtCore, QtGui
-from openpype.widgets import BaseToolWindow
+from openpype.widgets import BaseToolDialog
 from openpype.style import (
     load_stylesheet,
     app_icon_path
@@ -21,7 +21,7 @@ class ToolButton(QtWidgets.QPushButton):
         self.triggered.emit(self._identifier)
 
 
-class ExperimentalToolsDialog(BaseToolWindow):
+class ExperimentalToolsDialog(BaseToolDialog):
     refresh_interval = 3000
 
     def __init__(self, parent=None):
@@ -116,6 +116,8 @@ class ExperimentalToolsDialog(BaseToolWindow):
         self._refresh_on_active = True
         # Is window active
         self._window_is_active = False
+
+        self.resize(600, 600)
 
     def refresh(self):
         self._experimental_tools.refresh_availability()

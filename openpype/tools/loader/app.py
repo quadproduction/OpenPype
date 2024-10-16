@@ -6,7 +6,7 @@ from qtpy import QtWidgets, QtCore
 from openpype.client import get_projects, get_project
 from openpype import style
 from openpype.lib import register_event_callback
-from openpype.widgets import BaseToolWindow
+from openpype.widgets import BaseToolDialog
 from openpype.pipeline import (
     install_openpype_plugins,
     legacy_io,
@@ -32,7 +32,7 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class LoaderWindow(BaseToolWindow):
+class LoaderWindow(BaseToolDialog):
     """Asset loader interface"""
 
     tool_name = "loader"
@@ -194,6 +194,8 @@ class LoaderWindow(BaseToolWindow):
 
         self._first_show = True
 
+        self.resize(1300, 700)
+
         register_event_callback("taskChanged", self.on_context_task_change)
 
     def resizeEvent(self, event):
@@ -211,8 +213,7 @@ class LoaderWindow(BaseToolWindow):
             self.setStyleSheet(style.load_stylesheet())
             if self._sync_server_enabled:
                 self.resize(1800, 900)
-            else:
-                self.resize(1300, 700)
+
             lib.center_window(self)
 
     # -------------------------------

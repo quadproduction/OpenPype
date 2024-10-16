@@ -8,7 +8,7 @@ from openpype.client import get_asset_by_name, get_subsets
 from openpype import style
 from openpype.settings import get_current_project_settings
 from openpype.tools.utils.lib import qt_app_context
-from openpype.widgets import BaseToolWindow
+from openpype.widgets import BaseToolDialog
 from openpype.pipeline import (
     get_current_project_name,
     get_current_asset_name,
@@ -36,7 +36,7 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class CreatorWindow(BaseToolWindow):
+class CreatorWindow(BaseToolDialog):
     def __init__(self, parent=None):
         super(CreatorWindow, self).__init__(parent)
         self.setWindowTitle("Instance Creator")
