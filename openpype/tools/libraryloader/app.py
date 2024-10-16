@@ -206,7 +206,7 @@ class LibraryLoaderWindow(BaseToolDialog):
 
     def _set_projects(self):
         # Store current project
-        old_project_name = self.current_project
+        old_project_name = self.project_name
 
         self._ignore_project_change = True
 
@@ -219,11 +219,11 @@ class LibraryLoaderWindow(BaseToolDialog):
 
         combobox_items = [select_project_item]
 
-        project_names = self.get_filtered_projects()
+        filtered_project_names = self.get_filtered_projects()
 
-        for project_name in sorted(project_names):
-            item = QtGui.QStandardItem(project_name)
-            item.setData(project_name, QtCore.Qt.UserRole + 1)
+        for curr_project_name in sorted(filtered_project_names):
+            item = QtGui.QStandardItem(curr_project_name)
+            item.setData(curr_project_name, QtCore.Qt.UserRole + 1)
             combobox_items.append(item)
 
         root_item = self._projects_combobox.model().invisibleRootItem()
@@ -257,13 +257,13 @@ class LibraryLoaderWindow(BaseToolDialog):
 
         row = self._projects_combobox.currentIndex()
         index = self._projects_combobox.model().index(row, 0)
-        project_name = index.data(QtCore.Qt.UserRole + 1)
+        self.project_name = index.data(QtCore.Qt.UserRole + 1)
 
-        self.dbcon.Session["AVALON_PROJECT"] = project_name
+        self.dbcon.Session["AVALON_PROJECT"] = self.project_name
 
-        self._subsets_widget.on_project_change(project_name)
+        self._subsets_widget.on_project_change(self.project_name)
         if self._repres_widget:
-            self._repres_widget.on_project_change(project_name)
+            self._repres_widget.on_project_change(self.project_name)
 
         self.family_config_cache.refresh()
         self.groups_config.refresh()
@@ -271,13 +271,9 @@ class LibraryLoaderWindow(BaseToolDialog):
         self._refresh_assets()
         self._assetschanged()
 
-        project_name = self.dbcon.active_project() or "No project selected"
-        title = "{} - {}".format(self.tool_title, project_name)
+        displayed_project_name = self.project_name or "No project selected"
+        title = "{} - {}".format(self.tool_title, displayed_project_name)
         self.setWindowTitle(title)
-
-    @property
-    def current_project(self):
-        return self.dbcon.active_project() or None
 
     # -------------------------------
     # Delay calling blocking methods
@@ -336,9 +332,9 @@ class LibraryLoaderWindow(BaseToolDialog):
 
     def _refresh_assets(self):
         """Load assets from database"""
-        if self.current_project is not None:
+        if self.project_name is not None:
             # Ensure a project is loaded
-            project_doc = get_project(self.current_project, fields=["_id"])
+            project_doc = get_project(self.project_name, fields=["_id"])
             assert project_doc, "This is a bug"
 
         self._families_filter_view.set_enabled_families(set())
