@@ -6,6 +6,7 @@ from qtpy import QtWidgets, QtCore
 from openpype.client import get_projects, get_project
 from openpype import style
 from openpype.lib import register_event_callback
+from openpype.widgets import BaseToolDialog
 from openpype.pipeline import (
     install_openpype_plugins,
     legacy_io,
@@ -31,7 +32,7 @@ module = sys.modules[__name__]
 module.window = None
 
 
-class LoaderWindow(QtWidgets.QDialog):
+class LoaderWindow(BaseToolDialog):
     """Asset loader interface"""
 
     tool_name = "loader"
@@ -39,10 +40,10 @@ class LoaderWindow(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super(LoaderWindow, self).__init__(parent)
+
         title = "Asset Loader 2.1"
-        project_name = legacy_io.active_project()
-        if project_name:
-            title += " - {}".format(project_name)
+        if self.project_name:
+            title += " - {}".format(self.project_name)
         self.setWindowTitle(title)
 
         # Groups config
@@ -51,7 +52,7 @@ class LoaderWindow(QtWidgets.QDialog):
 
         # Enable minimize and maximize for app
         window_flags = QtCore.Qt.Window
-        if not parent:
+        if self.window_stays_on_top:
             window_flags |= QtCore.Qt.WindowStaysOnTopHint
         self.setWindowFlags(window_flags)
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -193,6 +194,8 @@ class LoaderWindow(QtWidgets.QDialog):
 
         self._first_show = True
 
+        self.resize(1300, 700)
+
         register_event_callback("taskChanged", self.on_context_task_change)
 
     def resizeEvent(self, event):
@@ -210,8 +213,7 @@ class LoaderWindow(QtWidgets.QDialog):
             self.setStyleSheet(style.load_stylesheet())
             if self._sync_server_enabled:
                 self.resize(1800, 900)
-            else:
-                self.resize(1300, 700)
+
             lib.center_window(self)
 
     # -------------------------------
@@ -275,8 +277,7 @@ class LoaderWindow(QtWidgets.QDialog):
         """Load assets from database"""
 
         # Ensure a project is loaded
-        project_name = legacy_io.active_project()
-        project_doc = get_project(project_name, fields=["_id"])
+        project_doc = get_project(self.project_name, fields=["_id"])
         assert project_doc, "Project was not found! This is a bug"
 
         self._assets_widget.refresh()

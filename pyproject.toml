@@ -75,6 +75,8 @@ cryptography = "39.0.0"
 opentimelineio = "^0.15.0"
 ayon-python-api = "0.4.1"
 colorama = "0.4.6"
+fastapi = ">=0.112.0,<0.113.0"
+uvicorn = "^0.30.6"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^6.0"

@@ -21,6 +21,7 @@ from openpype.pipeline import (
     get_current_asset_name,
     get_current_task_name,
 )
+from openpype.widgets import BaseToolWidget
 from openpype.pipeline import legacy_io
 from openpype.tools.utils.assets_widget import SingleSelectAssetsWidget
 from openpype.tools.utils.tasks_widget import TasksWidget
@@ -170,7 +171,7 @@ class SidePanelWidget(QtWidgets.QWidget):
         return self._workfile_doc, data
 
 
-class Window(QtWidgets.QWidget):
+class Window(BaseToolWidget):
     """Work Files Window"""
     title = "Work Files"
 
@@ -298,10 +299,6 @@ class Window(QtWidgets.QWidget):
         # Pull window to the front.
         self.raise_()
         self.activateWindow()
-
-    @property
-    def project_name(self):
-        return get_current_project_name()
 
     def showEvent(self, event):
         super(Window, self).showEvent(event)

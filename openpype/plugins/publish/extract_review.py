@@ -145,6 +145,7 @@ class ExtractReview(pyblish.api.InstancePlugin):
             repre_name = str(repre.get("name"))
             tags = repre.get("tags") or []
             custom_tags = repre.get("custom_tags")
+            files = repre.get("files")
             if "review" not in tags:
                 self.log.debug((
                     "Repre: {} - Didn't found \"review\" in tags. Skipping"
@@ -175,10 +176,15 @@ class ExtractReview(pyblish.api.InstancePlugin):
                 )
                 continue
 
+            # Filter output definition by "single_frame_filter"
+            frame_outputs = self.filter_outputs_by_frame(
+                profile_outputs, files, input_ext
+            )
+
             # Filter output definition by representation's
             # custom tags (optional)
             outputs = self.filter_outputs_by_custom_tags(
-                profile_outputs, custom_tags)
+                frame_outputs, custom_tags)
             if not outputs:
                 self.log.info((
                     "Skipped representation. All output definitions from"
@@ -766,7 +772,8 @@ class ExtractReview(pyblish.api.InstancePlugin):
         for arg in in_args:
             sub_args = arg.split(" -")
             if len(sub_args) == 1:
-                if arg and arg not in splitted_args:
+                ignore_arg = True if (arg.startswith("-") and arg in splitted_args) else False
+                if arg and not ignore_arg:
                     splitted_args.append(arg)
                 continue
 
@@ -899,17 +906,18 @@ class ExtractReview(pyblish.api.InstancePlugin):
         """
 
         repre = temp_data["origin_repre"]
+        repre_files_collection = None
         src_staging_dir = repre["stagingDir"]
         dst_staging_dir = new_repre["stagingDir"]
 
         if temp_data["input_is_sequence"]:
-            collections = clique.assemble(repre["files"])[0]
+            repre_files_collection = clique.assemble(repre["files"])[0][0]
             full_input_path = os.path.join(
                 src_staging_dir,
-                collections[0].format("{head}{padding}{tail}")
+                repre_files_collection.format("{head}{padding}{tail}")
             )
 
-            filename = collections[0].format("{head}")
+            filename = repre_files_collection.format("{head}")
             if filename.endswith("."):
                 filename = filename[:-1]
 
@@ -951,20 +959,27 @@ class ExtractReview(pyblish.api.InstancePlugin):
             output_ext_is_image
             and "sequence" in output_def["tags"]
         )
+
+        sequence_with_gaps = bool("sequence_with_gaps" in output_def["tags"])
+
         if output_is_sequence:
             new_repre_files = []
             frame_start = temp_data["output_frame_start"]
             frame_end = temp_data["output_frame_end"]
 
             filename_base = "{}_{}".format(filename, filename_suffix)
-            # Temporary tempalte for frame filling. Example output:
+            # Temporary template for frame filling. Example output:
             # "basename.%04d.exr" when `frame_end` == 1001
             repr_file = "{}.%{:0>2}d.{}".format(
                 filename_base, len(str(frame_end)), output_ext
             )
 
-            for frame in range(frame_start, frame_end + 1):
-                new_repre_files.append(repr_file % frame)
+            if not sequence_with_gaps:
+                for frame in range(frame_start, frame_end + 1):
+                    new_repre_files.append(repr_file % frame)
+            else:
+                for frame in repre_files_collection.indexes:
+                    new_repre_files.append(repr_file % frame)
 
             new_repre["sequence_file"] = repr_file
             full_output_path = os.path.join(
@@ -1582,6 +1597,50 @@ class ExtractReview(pyblish.api.InstancePlugin):
 
         self.log.debug("__ filtered_outputs: {}".format(
             [_o["filename_suffix"] for _o in filtered_outputs]
+        ))
+
+        return filtered_outputs
+
+    def filter_outputs_by_frame(self, outputs, files, file_extension):
+        """Filter output definitions by frame filter.
+
+        Filters a list of output definitions related to 'single_frame_filter' condition
+        that checks whether the provided files match certain criteria (single or
+        multiple frame file, video or all types).
+
+        Args:
+            outputs (list): Contain list of output definitions from presets.
+            files (str or list): A string or a list of filenames
+            file_extension (str): File extension
+
+        Returns:
+            list: Containg all output definitions matching entered "single_frame_filter".
+        """
+        filtered_outputs = []
+        self.log.debug(files)
+
+        # Check if files is a string (single file) or a list (potentially multiple files)
+        is_single_file = isinstance(files, str)
+        is_multi_file = file_extension in self.video_exts or isinstance(files, list) and len(files) > 1
+        is_single_file_in_list = isinstance(files, list) and len(files) == 1
+
+        for output_def in outputs:
+            frame_filter = output_def.get("filter", {}).get("single_frame_filter")
+            valid = False
+
+            if frame_filter == "everytime":
+                valid = True
+            elif frame_filter == "single_frame":
+                valid = is_single_file or is_single_file_in_list
+            elif frame_filter == "multi_frame":
+                valid = is_multi_file
+
+            if valid:
+                filtered_outputs.append(output_def)
+
+        # Logging the filenames of the filtered outputs
+        self.log.debug("__ filtered_outputs: {}".format(
+            [_o.get("filename_suffix", "unknown") for _o in filtered_outputs]
         ))
 
         return filtered_outputs

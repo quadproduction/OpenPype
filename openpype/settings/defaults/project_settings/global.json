@@ -1,4 +1,5 @@
 {
+    "windows_stays_on_top": true,
     "version_start_category": {
         "profiles": []
     },
