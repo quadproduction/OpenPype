@@ -1,6 +1,7 @@
 from openpype.settings import get_project_settings
 from openpype.pipeline import legacy_io
 from qtpy import QtWidgets
+import platform
 
 
 class BaseToolWindow(QtWidgets.QDialog):
@@ -22,7 +23,7 @@ class BaseToolWindow(QtWidgets.QDialog):
 
     def showEvent(self, event):
         super(BaseToolWindow, self).showEvent(event)
-        try:
+        if platform.system().lower() == "windows:":
             from win32gui import SetWindowPos
             import win32con
 
@@ -38,6 +39,3 @@ class BaseToolWindow(QtWidgets.QDialog):
                 0, 0, 0, 0,
                 win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_SHOWWINDOW
             )
-
-        except ImportError:
-            return
