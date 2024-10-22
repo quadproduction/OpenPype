@@ -5,6 +5,7 @@ import pyblish.api
 
 from openpype.pipeline.anatomy import Anatomy
 
+VIDEO_EXTS = ["mov", "mp4", "avi"]
 
 class IntegrateKitsuReview(pyblish.api.InstancePlugin):
     """Integrate Kitsu Review"""
@@ -35,6 +36,24 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
 
             filenames = representation.get("files")
 
+            review_path = representation.get("published_path")
+            if not review_path:
+                self.log.warning("No publish path found in representation.")
+                raise IndexError
+            self.log.debug("Found review at: {}".format(review_path))
+
+            extension = representation.get("ext")
+            if not extension:
+                self.log.warning("No extension found in representation.")
+                raise IndexError
+
+            if extension in VIDEO_EXTS:
+                gazu.task.add_preview(
+                    task_id, comment_id, review_path, normalize_movie=getattr(self, 'normalize', True)
+                )
+                self.log.info("Review upload on comment")
+                continue
+
             export_frames = instance.data.get("exportFrames", [])
             frame_start = instance.data["frameStart"]
             frame_end = instance.data["frameEnd"]
@@ -42,17 +61,6 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
             # If only one frame force a list
             if not isinstance(filenames, list):
                 filenames = [filenames]
-
-            extension = representation.get("ext")
-            if not extension:
-                self.log.warning("No extension found in representation.")
-                raise IndexError
-
-            review_path = representation.get("published_path")
-            if not review_path:
-                self.log.warning("No publish path found in representation.")
-                raise IndexError
-            self.log.debug("Found review at: {}".format(review_path))
 
             if not export_frames:
                 export_frames = list(range(frame_start, frame_end+1))
