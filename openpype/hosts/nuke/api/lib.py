@@ -48,7 +48,6 @@ from openpype.pipeline import (
     get_current_asset_name,
 )
 from openpype.pipeline.context_tools import (
-    get_current_project_asset,
     get_custom_workfile_template_from_session
 )
 from openpype.pipeline.colorspace import (
@@ -59,8 +58,7 @@ from . import gizmo_menu
 from .constants import ASSIST
 
 from .workio import (
-    save_file,
-    open_file
+    save_file
 )
 
 log = Logger.get_logger(__name__)

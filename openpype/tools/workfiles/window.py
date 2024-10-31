@@ -17,7 +17,6 @@ from openpype import style
 from openpype import resources
 from openpype.pipeline import (
     Anatomy,
-    get_current_project_name,
     get_current_asset_name,
     get_current_task_name,
 )
@@ -180,7 +179,11 @@ class Window(BaseToolWidget):
         self.setWindowTitle(self.title)
         icon = QtGui.QIcon(resources.get_openpype_icon_filepath())
         self.setWindowIcon(icon)
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.Window)
+
+        window_flags = self.windowFlags() | QtCore.Qt.Window
+        if self.window_stays_on_top:
+            window_flags |= QtCore.Qt.WindowStaysOnTopHint
+        self.setWindowFlags(window_flags)
 
         # Create pages widget and set it as central widget
         pages_widget = QtWidgets.QStackedWidget(self)

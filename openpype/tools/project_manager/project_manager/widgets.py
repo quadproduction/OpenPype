@@ -20,7 +20,7 @@ from openpype.tools.utils import (
 )
 from openpype.settings.lib import get_default_anatomy_settings
 
-from qtpy import QtWidgets, QtCore, QtGui
+from qtpy import QtWidgets, QtCore
 
 
 class NameTextEdit(QtWidgets.QLineEdit):

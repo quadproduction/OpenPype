@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Module providing support for Royal Render."""
 import os
-import openpype.modules
 from openpype.modules import OpenPypeModule, IPluginPaths
 
 
