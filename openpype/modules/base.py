@@ -38,7 +38,6 @@ from openpype.lib import (
     import_filepath,
     import_module_from_dirpath,
 )
-from openpype.lib.openpype_version import is_staging_enabled
 
 from .interfaces import (
     OpenPypeInterface,

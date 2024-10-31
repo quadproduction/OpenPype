@@ -7,8 +7,7 @@ import collections
 import contextlib
 
 from .exceptions import (
-    SchemaTemplateMissingKeys,
-    SchemaDuplicatedEnvGroupKeys
+    SchemaTemplateMissingKeys
 )
 
 from openpype.settings.constants import (

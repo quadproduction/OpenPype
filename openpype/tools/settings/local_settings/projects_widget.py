@@ -4,7 +4,6 @@ from qtpy import QtWidgets, QtCore, QtGui
 from openpype.tools.settings.settings import ProjectListWidget
 from openpype.tools.utils import PlaceholderLineEdit
 from openpype.settings.constants import (
-    PROJECT_ANATOMY_KEY,
     DEFAULT_PROJECT_KEY,
     PROJECT_SETTINGS_KEY
 )
@@ -15,7 +14,6 @@ from .constants import (
     LABEL_REMOVE_PROJECT,
     LABEL_ADD_PROJECT,
     LABEL_DISCARD_CHANGES,
-    LOCAL_ROOTS_KEY
 )
 
 NOT_SET = type("NOT_SET", (), {})()

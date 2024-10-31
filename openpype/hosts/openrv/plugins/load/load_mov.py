@@ -2,7 +2,6 @@ from openpype.pipeline import (
     load,
     get_representation_context
 )
-from openpype.hosts.openrv.api.pipeline import imprint_container
 from openpype.hosts.openrv.api.ocio import (
     set_group_ocio_active_state,
     set_group_ocio_colorspace
