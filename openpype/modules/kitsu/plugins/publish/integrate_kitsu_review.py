@@ -69,9 +69,9 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
             frame_padding = Anatomy().templates.get('frame_padding', 4)
             frame_file_format = f"{{:0{frame_padding}d}}.{{}}"
             if "burnin" in representation.get("tags", []):
-                filenames = [frame_file_format.format(index, extension) for index in export_frames]
+                filenames = [frame_file_format.format(index, review_data_extension) for index in export_frames]
 
-            subtract_pattern = rf"\d{{{frame_padding}}}\.{re.escape(extension)}"
+            subtract_pattern = rf"\d{{{frame_padding}}}\.{re.escape(review_data_extension)}"
             for filename in filenames:
                 image_filepath = re.sub(subtract_pattern, filename, review_path)
                 self.log.info(image_filepath)
