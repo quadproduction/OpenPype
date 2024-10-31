@@ -2,10 +2,12 @@
 import re
 import gazu
 import pyblish.api
+from requests.exceptions import MissingSchema
 
+from openpype.host.interfaces import MissingMethodsError
 from openpype.pipeline.anatomy import Anatomy
+from openpype.lib.transcoding import VIDEO_EXTENSIONS
 
-VIDEO_EXTS = ["mov", "mp4", "avi"]
 
 class IntegrateKitsuReview(pyblish.api.InstancePlugin):
     """Integrate Kitsu Review"""
@@ -38,20 +40,19 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
 
             review_path = representation.get("published_path")
             if not review_path:
-                self.log.warning("No publish path found in representation.")
-                raise IndexError
-            self.log.debug("Found review at: {}".format(review_path))
+                raise ValueError("No publish path found in representation.")
 
-            extension = representation.get("ext")
-            if not extension:
-                self.log.warning("No extension found in representation.")
-                raise IndexError
+            self.log.debug("Processing review representation data : {}".format(review_path))
 
-            if extension in VIDEO_EXTS:
+            review_data_extension = representation.get("ext")
+            if not review_data_extension:
+                raise ValueError("No extension specified in representation ('{}')".format(review_path))
+
+            if review_data_extension in VIDEO_EXTENSIONS:
                 gazu.task.add_preview(
                     task_id, comment_id, review_path, normalize_movie=getattr(self, 'normalize', True)
                 )
-                self.log.info("Review upload on comment")
+                self.log.info("Review uploaded on comment")
                 continue
 
             export_frames = instance.data.get("exportFrames", [])
