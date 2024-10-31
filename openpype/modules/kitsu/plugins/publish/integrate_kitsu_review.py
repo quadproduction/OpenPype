@@ -2,9 +2,7 @@
 import re
 import gazu
 import pyblish.api
-from requests.exceptions import MissingSchema
 
-from openpype.host.interfaces import MissingMethodsError
 from openpype.pipeline.anatomy import Anatomy
 from openpype.lib.transcoding import VIDEO_EXTENSIONS
 
