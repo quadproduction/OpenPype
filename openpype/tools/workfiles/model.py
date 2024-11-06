@@ -1,5 +1,6 @@
 import os
 import logging
+from pathlib import Path
 
 from qtpy import QtCore, QtGui
 import qtawesome
@@ -111,15 +112,14 @@ class WorkAreaFilesModel(QtGui.QStandardItemModel):
         new_items = []
         items_to_remove = set(self._items_by_filename.keys())
         for filename in os.listdir(self._root):
-            filepath = os.path.join(self._root, filename)
-            if os.path.isdir(filepath):
+            filepath = Path(self._root).joinpath(filename)
+            if filepath.is_dir():
                 continue
 
-            ext = os.path.splitext(filename)[1]
-            if ext not in self._file_extensions:
+            if filepath.suffix not in self._file_extensions:
                 continue
 
-            modified = os.path.getmtime(filepath)
+            modified = filepath.stat().st_mtime
 
             # Use existing item or create new one
             if filename in items_to_remove:
@@ -135,7 +135,7 @@ class WorkAreaFilesModel(QtGui.QStandardItemModel):
                 new_items.append(item)
                 self._items_by_filename[filename] = item
             # Update data that may be different
-            item.setData(filepath, FILEPATH_ROLE)
+            item.setData(str(filepath), FILEPATH_ROLE)
             item.setData(modified, DATE_MODIFIED_ROLE)
 
         # Add new items if there are any

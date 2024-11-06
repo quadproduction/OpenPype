@@ -1,6 +1,6 @@
 import os
 
-from openpype.lib import StringTemplate, optimize_path_compatibility
+from openpype.lib import StringTemplate
 from openpype.pipeline import (
     registered_host,
     get_current_context,
@@ -33,7 +33,7 @@ class LoadWorkfile(plugin.Loader):
         # Load context of current workfile as first thing
         #   - which context and extension has
         filepath = self.filepath_from_context(context)
-        filepath = optimize_path_compatibility(filepath).replace("\\", "/")
+        filepath = filepath.replace("\\", "/")
 
         if not os.path.exists(filepath):
             raise FileExistsError(
@@ -44,7 +44,7 @@ class LoadWorkfile(plugin.Loader):
         current_file = host.get_current_workfile()
         work_context = get_current_workfile_context()
 
-        george_script = "tv_LoadProject '\"'\"{}\"'\"'".format(
+        george_script = "tv_LoadProject '\"{}\"'".format(
             filepath
         )
         execute_george_through_file(george_script)
