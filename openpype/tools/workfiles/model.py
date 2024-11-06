@@ -202,7 +202,7 @@ class PublishFilesModel(QtGui.QStandardItemModel):
     This model looks for workfile family representations based on selected
     asset and task.
 
-    Asset must set to be able look for representations that could be used.
+    Asset must set to be able to look for representations that could be used.
     Task is used to filter representations by task.
     Model has few filter criteria for filling.
     - First criteria is that version document must have "workfile" in
@@ -292,7 +292,7 @@ class PublishFilesModel(QtGui.QStandardItemModel):
                 root_item.removeRows(0, rows)
         self._items_by_id = {}
 
-    def _get_workfie_representations(self):
+    def _get_workfile_representations(self):
         output = []
         # Get subset docs of asset
         subset_docs = get_subsets(
@@ -376,7 +376,7 @@ class PublishFilesModel(QtGui.QStandardItemModel):
 
         new_items = []
         items_to_remove = set(self._items_by_id.keys())
-        for item in self._get_workfie_representations():
+        for item in self._get_workfile_representations():
             filepath, repre_id = item
             # TODO handle empty filepaths
             if not filepath:
