@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Helper script create virtual environment using Poetry.
 
