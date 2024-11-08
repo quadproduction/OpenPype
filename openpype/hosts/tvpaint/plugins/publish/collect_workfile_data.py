@@ -21,7 +21,7 @@ from openpype.hosts.tvpaint.api.pipeline import (
     get_current_workfile_context,
     list_instances,
 )
-from openpype.lib import optimize_path_compatibility
+
 
 class ResetTVPaintWorkfileMetadata(pyblish.api.Action):
     """Fix invalid metadata in workfile."""
@@ -196,7 +196,7 @@ class CollectWorkfileData(pyblish.api.ContextPlugin):
             mode="w", prefix="a_tvp_", suffix=".txt", delete=False
         )
         output_file.close()
-        output_filepath = optimize_path_compatibility(output_file.name).replace("\\", "/")
+        output_filepath = output_file.name.replace("\\", "/")
         george_script_lines = [
             # Variable containing full path to output file
             "output_path = \"{}\"".format(output_filepath),
