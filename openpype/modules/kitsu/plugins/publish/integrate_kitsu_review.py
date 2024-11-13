@@ -54,15 +54,21 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
                 continue
 
             export_frames = instance.data.get("exportFrames", [])
-            frame_start = instance.data["frameStart"]
-            frame_end = instance.data["frameEnd"]
+            frame_start = instance.data.get("frameStart", 0)
+            frame_end = instance.data.get("frameEnd", None)
 
             # If only one frame force a list
             if not isinstance(filenames, list):
                 filenames = [filenames]
 
-            if not export_frames:
+            # If a frame_end is found, generate the export_frames
+            if not export_frames and frame_end:
                 export_frames = list(range(frame_start, frame_end+1))
+
+            # Else, we are publishing from a soft with no sequence
+            # Only considering frame 0
+            else:
+                export_frames = [frame_start]
 
             frame_padding = Anatomy().templates.get('frame_padding', 4)
             frame_file_format = f"{{:0{frame_padding}d}}.{{}}"
