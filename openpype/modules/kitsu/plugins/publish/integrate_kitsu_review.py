@@ -16,9 +16,6 @@ class IntegrateKitsuReview(pyblish.api.InstancePlugin):
     optional = True
 
     def process(self, instance):
-        self.log.debug('------------------------------')
-        self.log.debug(instance.data)
-        self.log.debug('------------------------------')
         if not getattr(self, 'enabled', True):
             return
 
