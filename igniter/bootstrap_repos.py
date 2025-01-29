@@ -1541,9 +1541,15 @@ class BootstrapRepos:
     def get_zxp_extensions_to_update(self, openpype_version, system_settings, force=False) -> [ZXPExtensionData]:
         # List of all Adobe software ids (named hosts) handled by OpenPype
         # TODO: where and how to store the list of Adobe software ids
-        zxp_host_ids = ["photoshop", "aftereffects"]
+        low_platform = platform.system().lower()
+        if low_platform == "linux":
+            # ZXP skipped for Linux
+            return []
+        elif low_platform == "darwin":
+            # TODO: implement this function for macOS
+            raise NotImplementedError(f"MacOS not implemented, implementation need before the first macOS release")
 
-        zxp_hosts_to_update = []
+        zxp_host_ids = ["photoshop", "aftereffects"]
 
         # Determine the user-specific Adobe extensions directory
         user_extensions_dir = Path(os.getenv('APPDATA'), 'Adobe', 'CEP', 'extensions')
