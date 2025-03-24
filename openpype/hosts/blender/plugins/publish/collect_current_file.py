@@ -38,12 +38,11 @@ class CollectBlenderCurrentFile(pyblish.api.ContextPlugin):
         filename, ext = os.path.splitext(file)
 
         task = get_current_task_name()
-
         data = {}
 
         # create instance
         instance = context.create_instance(name=filename)
-        subset = "workfile" + task.capitalize()
+        subset = "workfile" + task
 
         data.update({
             "subset": subset,
