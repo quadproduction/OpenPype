@@ -550,15 +550,11 @@ class BaseCommunicator:
 
         host_executable = launch_args[0]
         executable_file = os.path.basename(host_executable)
+        subfolder = "windows_x64"
         if "64bit" in executable_file:
             subfolder = "windows_x64"
         elif "32bit" in executable_file:
             subfolder = "windows_x86"
-        else:
-            raise ValueError(
-                "Can't determine if executable "
-                "leads to 32-bit or 64-bit TVPaint!"
-            )
 
         plugin_files_path = get_plugin_files_path()
         # Folder for right windows plugin files
